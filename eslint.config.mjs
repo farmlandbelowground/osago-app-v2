@@ -1,11 +1,76 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
-import prettier from 'eslint-config-prettier';
+import nextVitals from 'eslint-config-next/core-web-vitals'
+import nextTs from 'eslint-config-next/typescript'
+import prettier from 'eslint-config-prettier'
+import betterTailwindcss from 'eslint-plugin-better-tailwindcss'
+import perfectionist from 'eslint-plugin-perfectionist'
+import unusedImports from 'eslint-plugin-unused-imports'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    plugins: {
+      'better-tailwindcss': betterTailwindcss,
+      perfectionist,
+      'unused-imports': unusedImports,
+    },
+    settings: {
+      'better-tailwindcss': {
+        entryPoint: 'src/app/globals.css',
+      },
+    },
+    rules: {
+      ...betterTailwindcss.configs.recommended.rules,
+      curly: ['error', 'all'],
+      'no-console': ['error', { allow: ['warn', 'error', 'debug'] }],
+      'no-magic-numbers': [
+        'error',
+        {
+          ignore: [-1, 0, 0.5, 0.6, 0.8, 1, 2, 200],
+          ignoreArrayIndexes: true,
+          ignoreDefaultValues: true,
+        },
+      ],
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      'perfectionist/sort-imports': [
+        'error',
+        {
+          groups: ['external', 'internal', ['parent', 'sibling', 'index']],
+          internalPattern: ['^@/', '^@features/', '^@shared/'],
+          newlinesBetween: 'always',
+        },
+      ],
+      'perfectionist/sort-interfaces': [
+        'error',
+        { type: 'alphabetical', groupKind: 'required-first' },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+    },
+  },
+  {
+    files: ['**/constants.ts'],
+    rules: {
+      'no-magic-numbers': 'off',
+      'padding-line-between-statements': 'off',
+    },
+  },
   // Disable ESLint rules that conflict with Prettier. Keep this last.
   prettier,
   // Override default ignores of eslint-config-next.
@@ -16,6 +81,6 @@ const eslintConfig = defineConfig([
     'build/**',
     'next-env.d.ts',
   ]),
-]);
+])
 
-export default eslintConfig;
+export default eslintConfig
