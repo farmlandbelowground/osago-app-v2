@@ -1,0 +1,52 @@
+import { type User } from '@supabase/supabase-js'
+import { redirect } from 'next/navigation'
+
+import { getServerClient } from '@shared/supabase/server'
+
+import { type ProfileRole } from './types'
+
+export interface AuthSession {
+  accessToken: string
+  role: ProfileRole
+  user: User
+}
+
+export const getSession = async (): Promise<AuthSession | null> => {
+  const supabase = await getServerClient()
+
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userData.user) {
+    return null
+  }
+
+  const [{ data: sessionData }, { data: profile, error: profileError }] =
+    await Promise.all([
+      supabase.auth.getSession(),
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userData.user.id)
+        .single(),
+    ])
+
+  if (!sessionData.session || profileError || !profile) {
+    return null
+  }
+
+  return {
+    accessToken: sessionData.session.access_token,
+    role: profile.role as ProfileRole,
+    user: userData.user,
+  }
+}
+
+export const requireSession = async (): Promise<AuthSession> => {
+  const session = await getSession()
+
+  if (!session) {
+    redirect('/')
+  }
+
+  return session
+}

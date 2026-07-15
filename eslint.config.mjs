@@ -80,6 +80,9 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // Frozen legacy Vercel functions, copied verbatim — not subject to this
+    // project's TypeScript lint rules (migration-plan.md §1.1).
+    'api/**',
   ]),
 ])
 
