@@ -3,6 +3,7 @@ import { Fraunces, Inter } from 'next/font/google'
 import { type ReactNode } from 'react'
 
 import { env } from '@/env'
+import { ToastViewport } from '@shared/components/ToastViewport'
 
 import './globals.css'
 
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: Props) {
       ${inter.variable}
       ${fraunces.variable}
     `}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ToastViewport />
+      </body>
     </html>
   )
 }

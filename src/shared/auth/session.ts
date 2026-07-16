@@ -7,6 +7,8 @@ import { type ProfileRole } from './types'
 
 export interface AuthSession {
   accessToken: string
+  firstName: string | null
+  lastName: string | null
   role: ProfileRole
   user: User
 }
@@ -25,7 +27,7 @@ export const getSession = async (): Promise<AuthSession | null> => {
       supabase.auth.getSession(),
       supabase
         .from('profiles')
-        .select('role')
+        .select('role, first_name, last_name')
         .eq('id', userData.user.id)
         .single(),
     ])
@@ -36,6 +38,8 @@ export const getSession = async (): Promise<AuthSession | null> => {
 
   return {
     accessToken: sessionData.session.access_token,
+    firstName: profile.first_name,
+    lastName: profile.last_name,
     role: profile.role as ProfileRole,
     user: userData.user,
   }

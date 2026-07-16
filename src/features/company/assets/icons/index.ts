@@ -1,0 +1,5 @@
+export { default as BuildingIcon } from './building.svg'
+export { default as BuildingSimpleIcon } from './building-simple.svg'
+export { default as CheckIcon } from './check.svg'
+export { default as ImagePlaceholderIcon } from './image-placeholder.svg'
+export { default as SearchIcon } from './search.svg'
