@@ -4,7 +4,6 @@ export const PASSWORD_REQUIREMENTS_TOOLTIP =
 export const TWO_FACTOR_CODE_LENGTH = 6
 
 export const TURNSTILE_VERIFY_ENDPOINT = '/api/turnstile/verify'
-export const SIGNUP_ENDPOINT = '/api/auth/signup'
 export const TWO_FACTOR_SEND_ENDPOINT = '/api/2fa/send'
 export const TWO_FACTOR_VERIFY_ENDPOINT = '/api/2fa/verify'
 export const TWO_FACTOR_UPDATE_PHONE_ENDPOINT = '/api/2fa/update-phone'

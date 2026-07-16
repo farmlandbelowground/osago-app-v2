@@ -89,22 +89,6 @@ export const TurnstileVerifyResponseSchema = z.object({
   success: z.boolean(),
 })
 
-export const SignupSuccessSchema = z.object({
-  email: z.email(),
-  message: z.string(),
-  ok: z.literal(true),
-  userId: z.string(),
-})
-
-export const SignupErrorSchema = z.object({
-  error: z.string(),
-})
-
-export const SignupResponseSchema = z.union([
-  SignupSuccessSchema,
-  SignupErrorSchema,
-])
-
 export const TwoFactorSendResponseSchema = z.object({
   code: z.string().optional(),
   error: z.string().optional(),

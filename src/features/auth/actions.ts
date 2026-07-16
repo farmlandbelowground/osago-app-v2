@@ -4,13 +4,12 @@ import { redirect } from 'next/navigation'
 import { type ZodType } from 'zod'
 
 import { env } from '@/env'
-import { getServerClient } from '@shared/supabase/server'
+import { getServerClient, getServiceRoleClient } from '@shared/supabase/server'
 
 import {
   DASHBOARD_PATH,
   LOGIN_PATH,
   PASSWORD_RESET_ENDPOINT,
-  SIGNUP_ENDPOINT,
   TURNSTILE_VERIFY_ENDPOINT,
   TWO_FACTOR_SEND_ENDPOINT,
   TWO_FACTOR_UPDATE_PHONE_ENDPOINT,
@@ -22,7 +21,6 @@ import {
   PasswordResetResponseSchema,
   PhoneRequiredSchema,
   RegisterSchema,
-  SignupResponseSchema,
   TurnstileVerifyResponseSchema,
   TwoFactorCodeSchema,
   TwoFactorSendResponseSchema,
@@ -168,32 +166,32 @@ export const register = async (
 
   const { email, firstName, lastName, password, phone } = parsed.data
 
-  const signupResponse = await postJson(
-    SIGNUP_ENDPOINT,
-    {
-      email,
-      firstName,
-      lastName,
+  const serviceRoleClient = getServiceRoleClient()
+  const { data: signupData, error: signupError } =
+    await serviceRoleClient.auth.admin.createUser({
+      email: email.toLowerCase(),
+      email_confirm: true,
       password,
-      phone,
-      recaptchaToken: parsed.data.turnstileToken,
-    },
-    false,
-  )
-  const signupResult = signupResponse
-    ? await parseAuthApiResponse(signupResponse, SignupResponseSchema)
-    : null
+      user_metadata: {
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        role: 'customer',
+      },
+    })
 
-  if (!signupResult) {
+  if (signupError || !signupData.user) {
     return {
-      error: 'Er ging iets mis bij het aanmaken van je account.',
+      error:
+        signupError?.message ?? 'Er ging iets mis bij het aanmaken van je account.',
       status: 'error',
     }
   }
 
-  if (!('ok' in signupResult)) {
-    return { error: signupResult.error, status: 'error' }
-  }
+  await serviceRoleClient
+    .from('profiles')
+    .update({ first_name: firstName, last_name: lastName, phone })
+    .eq('id', signupData.user.id)
 
   const supabase = await getServerClient()
   const { error } = await supabase.auth.signInWithPassword({
