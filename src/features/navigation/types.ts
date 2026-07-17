@@ -8,5 +8,6 @@ export interface NavLink {
 
 export interface NavSection {
   links: NavLink[]
+  requiresFullAdmin?: boolean
   title?: string
 }

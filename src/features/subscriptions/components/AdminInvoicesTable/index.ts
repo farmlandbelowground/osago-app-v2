@@ -1,0 +1,1 @@
+export { AdminInvoicesTable } from './AdminInvoicesTable'

@@ -1,12 +1,15 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { type ZodType } from 'zod'
+import { z, type ZodType } from 'zod'
 
 import { env } from '@/env'
+import { requireSession } from '@shared/auth/session'
 import { getServerClient, getServiceRoleClient } from '@shared/supabase/server'
 
 import {
+  ACCOUNT_PATH,
   DASHBOARD_PATH,
   LOGIN_PATH,
   PASSWORD_RESET_ENDPOINT,
@@ -16,6 +19,7 @@ import {
   TWO_FACTOR_VERIFY_ENDPOINT,
 } from './constants'
 import {
+  AccountPersonalInfoSchema,
   ForgotPasswordSchema,
   LoginSchema,
   PasswordResetResponseSchema,
@@ -30,6 +34,7 @@ import {
 import {
   type AuthFlowState,
   type ForgotPasswordState,
+  type UpdatePersonalInfoState,
   type VerifyCodeState,
   type VerifyEmailState,
 } from './types'
@@ -129,7 +134,10 @@ export const login = async (
   const isHuman = await verifyTurnstileToken(parsed.data.turnstileToken)
 
   if (!isHuman) {
-    return { error: 'Bot-verificatie mislukt. Probeer opnieuw.', status: 'error' }
+    return {
+      error: 'Bot-verificatie mislukt. Probeer opnieuw.',
+      status: 'error',
+    }
   }
 
   const supabase = await getServerClient()
@@ -161,7 +169,10 @@ export const register = async (
   const isHuman = await verifyTurnstileToken(parsed.data.turnstileToken)
 
   if (!isHuman) {
-    return { error: 'Bot-verificatie mislukt. Probeer opnieuw.', status: 'error' }
+    return {
+      error: 'Bot-verificatie mislukt. Probeer opnieuw.',
+      status: 'error',
+    }
   }
 
   const { email, firstName, lastName, password, phone } = parsed.data
@@ -183,7 +194,8 @@ export const register = async (
   if (signupError || !signupData.user) {
     return {
       error:
-        signupError?.message ?? 'Er ging iets mis bij het aanmaken van je account.',
+        signupError?.message ??
+        'Er ging iets mis bij het aanmaken van je account.',
       status: 'error',
     }
   }
@@ -234,7 +246,8 @@ export const verifyTwoFactorCode = async (
 
   if (!result) {
     return {
-      error: 'Er ging iets mis. Controleer je verbinding en probeer het opnieuw.',
+      error:
+        'Er ging iets mis. Controleer je verbinding en probeer het opnieuw.',
       status: 'error',
     }
   }
@@ -319,7 +332,8 @@ export const requestPasswordReset = async (
 
   if (!result) {
     return {
-      error: 'Er ging iets mis. Controleer je verbinding en probeer het opnieuw.',
+      error:
+        'Er ging iets mis. Controleer je verbinding en probeer het opnieuw.',
       status: 'error',
     }
   }
@@ -341,4 +355,100 @@ export const verifyEmailCode = async (
     message: 'E-mailverificatie is momenteel niet beschikbaar.',
     status: 'unavailable',
   }
+}
+
+type ActionResult = { error: null } | { error: string }
+
+export const updatePersonalInfo = async (
+  _prevState: UpdatePersonalInfoState,
+  formData: FormData,
+): Promise<UpdatePersonalInfoState> => {
+  const parsed = AccountPersonalInfoSchema.safeParse(
+    Object.fromEntries(formData),
+  )
+
+  if (!parsed.success) {
+    return { error: 'Controleer de ingevulde gegevens.', success: false }
+  }
+
+  const session = await requireSession()
+  const supabase = await getServerClient()
+  const email = parsed.data.email.toLowerCase()
+
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email)
+    .neq('id', session.user.id)
+    .maybeSingle()
+
+  if (existing) {
+    return {
+      error: 'Dit e-mailadres is al in gebruik door een ander account.',
+      success: false,
+    }
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      email,
+      first_name: parsed.data.firstName,
+      last_name: parsed.data.lastName,
+      phone: parsed.data.phone,
+    })
+    .eq('id', session.user.id)
+
+  if (error) {
+    return { error: 'Opslaan is mislukt. Probeer het opnieuw.', success: false }
+  }
+
+  revalidatePath(ACCOUNT_PATH)
+  return { success: true }
+}
+
+const AccountPhotoDataUrlSchema = z.string().min(1)
+
+export const updateAccountPhoto = async (
+  dataUrl: string,
+): Promise<ActionResult> => {
+  const parsed = AccountPhotoDataUrlSchema.safeParse(dataUrl)
+
+  if (!parsed.success) {
+    return { error: 'Ongeldige profielfoto.' }
+  }
+
+  const session = await requireSession()
+  const supabase = await getServerClient()
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ photo: parsed.data })
+    .eq('id', session.user.id)
+
+  if (error) {
+    return { error: 'Profielfoto opslaan is mislukt. Probeer het opnieuw.' }
+  }
+
+  revalidatePath(ACCOUNT_PATH)
+  return { error: null }
+}
+
+export const removeAccountPhoto = async (): Promise<ActionResult> => {
+  const session = await requireSession()
+  const supabase = await getServerClient()
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ photo: null })
+    .eq('id', session.user.id)
+
+  if (error) {
+    return {
+      error: 'Profielfoto verwijderen is mislukt. Probeer het opnieuw.',
+    }
+  }
+
+  revalidatePath(ACCOUNT_PATH)
+  return { error: null }
 }
