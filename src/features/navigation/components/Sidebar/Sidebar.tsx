@@ -12,23 +12,9 @@ import {
   NAV_SECTIONS,
   USER_AVATAR_SIZE_PX,
 } from '../../constants'
+import { buildDisplayName, buildInitials } from '../../lib/buildUserDisplay'
 import { NavItem } from '../NavItem'
 import { type Props } from './types'
-
-const buildInitials = (
-  firstName: string | null,
-  lastName: string | null,
-): string =>
-  `${firstName?.[0] ?? '?'}${lastName?.[0] ?? '?'}`.toUpperCase()
-
-const buildDisplayName = (
-  firstName: string | null,
-  lastName: string | null,
-  email: string,
-): string => {
-  const name = [firstName, lastName].filter(Boolean).join(' ')
-  return name || email
-}
 
 export const Sidebar: FC<Props> = ({ email, firstName, lastName }) => {
   return (

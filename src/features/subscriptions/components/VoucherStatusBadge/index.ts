@@ -1,0 +1,1 @@
+export { VoucherStatusBadge } from './VoucherStatusBadge'

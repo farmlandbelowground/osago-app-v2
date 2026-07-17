@@ -1,0 +1,1 @@
+export { AdminVouchersTable } from './AdminVouchersTable'

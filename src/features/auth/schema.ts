@@ -18,8 +18,7 @@ export const PhoneSchema = z
   .string()
   .min(1, 'Vul een telefoonnummer in.')
   .refine(value => /^\+?\d{6,15}$/.test(stripPhoneFormatting(value)), {
-    error:
-      'Gebruik het internationale formaat, bijvoorbeeld +31 6 1234 5678.',
+    error: 'Gebruik het internationale formaat, bijvoorbeeld +31 6 1234 5678.',
   })
 
 export const LoginSchema = z.object({
@@ -112,3 +111,43 @@ export const UpdatePhoneResponseSchema = z.object({
 export const PasswordResetResponseSchema = z.object({
   ok: z.literal(true),
 })
+
+// ─── Supabase `profiles` — direct read/write for personal-info/photo (not /api/*) ───
+
+export const AccountProfileRowSchema = z.object({
+  created_at: z.string(),
+  email: z.string(),
+  first_name: z.string().nullable(),
+  id: z.uuid(),
+  last_name: z.string().nullable(),
+  phone: z.string().nullable(),
+  photo: z.string().nullable(),
+})
+
+export type AccountProfileRow = z.infer<typeof AccountProfileRowSchema>
+
+export const AccountPersonalInfoSchema = z.object({
+  email: z.email('Vul een geldig e-mailadres in.'),
+  firstName: z.string().min(1, 'Vul je voornaam in.'),
+  lastName: z.string().min(1, 'Vul je achternaam in.'),
+  phone: PhoneSchema,
+})
+
+export type AccountPersonalInfoInput = z.infer<typeof AccountPersonalInfoSchema>
+
+export const AccountPasswordSchema = z
+  .object({
+    confirmPassword: z.string().min(1, 'Bevestig je nieuwe wachtwoord.'),
+    currentPassword: z.string().min(1, 'Vul je huidige wachtwoord in.'),
+    password: PasswordSchema,
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    error: 'De twee wachtwoorden komen niet overeen.',
+    path: ['confirmPassword'],
+  })
+  .refine(data => data.password !== data.currentPassword, {
+    error: 'Nieuw wachtwoord mag niet gelijk zijn aan het huidige.',
+    path: ['password'],
+  })
+
+export type AccountPasswordInput = z.infer<typeof AccountPasswordSchema>
