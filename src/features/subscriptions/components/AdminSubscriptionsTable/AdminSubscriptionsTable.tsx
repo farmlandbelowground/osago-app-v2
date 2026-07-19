@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ChangeEvent, type FC } from 'react'
 
+import { KpiTile } from '@shared/components/KpiTile'
 import { cn } from '@shared/utils/cn'
 
 import {
@@ -15,7 +16,6 @@ import { formatEuro } from '../../lib/formatEuro'
 import { subStatus } from '../../lib/subStatus'
 import { type CustomerSelectOption } from '../../types'
 import { AdminSubscriptionModal } from '../AdminSubscriptionModal'
-import { KpiTile } from '../KpiTile'
 import { SubscriptionStatusBadge } from '../SubscriptionStatusBadge'
 import { type Props } from './types'
 
@@ -127,7 +127,10 @@ export const AdminSubscriptionsTable: FC<Props> = ({ subscriptions }) => {
       </div>
 
       <div className="card">
-        <div className="flex-between mb-3" style={{ flexWrap: 'wrap', gap: 12 }}>
+        <div
+          className="flex-between mb-3"
+          style={{ flexWrap: 'wrap', gap: 12 }}
+        >
           <div>
             <h3>Klantabonnementen</h3>
             <p className="desc" style={{ marginBottom: 0 }}>
@@ -157,7 +160,11 @@ export const AdminSubscriptionsTable: FC<Props> = ({ subscriptions }) => {
             <input
               onChange={onSearchChange}
               placeholder="Zoek op klant, e-mail of plan..."
-              style={{ width: '100%', padding: '8px 12px 8px 32px', fontSize: 13 }}
+              style={{
+                width: '100%',
+                padding: '8px 12px 8px 32px',
+                fontSize: 13,
+              }}
               type="text"
               value={searchText}
             />

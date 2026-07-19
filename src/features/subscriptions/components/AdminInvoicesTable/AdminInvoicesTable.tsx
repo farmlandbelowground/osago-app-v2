@@ -8,6 +8,7 @@ import {
   type SVGProps,
 } from 'react'
 
+import { KpiTile } from '@shared/components/KpiTile'
 import { cn } from '@shared/utils/cn'
 
 import { adminDeleteInvoice } from '../../actions'
@@ -26,7 +27,6 @@ import { isOverdueInvoice } from '../../lib/lockStatus'
 import { type InvoiceFilter, type InvoiceFilterPreset } from '../../types'
 import { AdminInvoiceModal } from '../AdminInvoiceModal'
 import { InvoiceStatusBadge } from '../InvoiceStatusBadge'
-import { KpiTile } from '../KpiTile'
 import { type Props } from './types'
 
 const DownloadIcon: FC<SVGProps<SVGSVGElement>> = props => (
@@ -232,17 +232,32 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
       </div>
 
       <div className="card mb-4" style={{ padding: '14px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            flexWrap: 'wrap',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              flexShrink: 0,
+            }}
+          >
             <FunnelIcon style={{ color: 'var(--muted)' }} />
             <span className="text-sm fw-600">Filter op factuurdatum</span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {INVOICE_FILTER_PRESET_OPTIONS.map(preset => (
               <button
-                className={cn('filter-chip', filter.preset === preset && `
-                  active
-                `)}
+                className={cn(
+                  'filter-chip',
+                  filter.preset === preset && `active`,
+                )}
                 key={preset}
                 onClick={() => onSelectPreset(preset)}
                 type="button"
@@ -252,7 +267,14 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
             ))}
           </div>
           {filter.preset === 'custom' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                flexWrap: 'wrap',
+              }}
+            >
               <input
                 onChange={onCustomFromChange}
                 style={{ padding: '6px 10px', fontSize: 13, width: 'auto' }}
@@ -271,7 +293,10 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
           <div style={{ flex: 1 }} />
           {filter.preset !== 'all' && (
             <>
-              <span className="text-xs text-muted" style={{ whiteSpace: 'nowrap' }}>
+              <span
+                className="text-xs text-muted"
+                style={{ whiteSpace: 'nowrap' }}
+              >
                 {describeInvoiceFilter(filter)}
               </span>
               <button
@@ -309,7 +334,10 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
       </div>
 
       <div className="card">
-        <div className="flex-between mb-3" style={{ flexWrap: 'wrap', gap: 12 }}>
+        <div
+          className="flex-between mb-3"
+          style={{ flexWrap: 'wrap', gap: 12 }}
+        >
           <div>
             <h3>Facturenoverzicht</h3>
             <p className="desc" style={{ marginBottom: 0 }}>
@@ -332,7 +360,11 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
             <input
               onChange={event => setSearchText(event.target.value)}
               placeholder="Zoek op nummer, klant of omschrijving..."
-              style={{ width: '100%', padding: '8px 12px 8px 32px', fontSize: 13 }}
+              style={{
+                width: '100%',
+                padding: '8px 12px 8px 32px',
+                fontSize: 13,
+              }}
               type="text"
               value={searchText}
             />

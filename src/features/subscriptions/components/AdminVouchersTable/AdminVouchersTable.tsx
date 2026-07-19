@@ -2,6 +2,8 @@
 
 import { useMemo, useState, type FC, type SVGProps } from 'react'
 
+import { KpiTile } from '@shared/components/KpiTile'
+
 import { deleteVoucher } from '../../actions'
 import { PLANS, VOUCHER_APPLIES_TO_ALL } from '../../constants'
 import { formatDateNl } from '../../lib/formatDateNl'
@@ -9,7 +11,6 @@ import { formatEuro } from '../../lib/formatEuro'
 import { voucherStatus } from '../../lib/voucherStatus'
 import { type Voucher } from '../../types'
 import { AdminVoucherModal } from '../AdminVoucherModal'
-import { KpiTile } from '../KpiTile'
 import { VoucherStatusBadge } from '../VoucherStatusBadge'
 import { type Props } from './types'
 
@@ -142,7 +143,9 @@ export const AdminVouchersTable: FC<Props> = ({ vouchers }) => {
         {sortedVouchers.length === 0 ? (
           <div className="empty" style={{ padding: '36px 20px' }}>
             <h3>Nog geen vouchercodes</h3>
-            <p>Klik op &quot;Nieuwe vouchercode&quot; om er een aan te maken.</p>
+            <p>
+              Klik op &quot;Nieuwe vouchercode&quot; om er een aan te maken.
+            </p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto', margin: '0 -24px -24px' }}>
