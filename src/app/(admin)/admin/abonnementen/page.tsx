@@ -5,12 +5,7 @@ export default async function AdminAbonnementenPage() {
   const subscriptions = await adminListSubscriptions()
 
   return (
-    <main
-      className={`
-        w-full px-10 py-8
-        max-[900px]:p-5
-      `}
-    >
+    <main className="main">
       <AdminSubscriptionsTable subscriptions={subscriptions} />
     </main>
   )

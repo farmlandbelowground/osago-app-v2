@@ -101,10 +101,13 @@ export const TwoFactorStep: FC<Props> = ({
 
       {alertMessage && <AuthAlert variant="error">{alertMessage}</AuthAlert>}
 
-      <form action={formAction} className="flex flex-col">
+      <form action={formAction}>
         <AuthField label="Inlogcode">
           <input type="hidden" name="code" value={code} />
-          <div className="flex justify-between gap-2">
+          <div
+            className="twofa-code-boxes"
+            style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}
+          >
             {digits.map((digit, index) => (
               <input
                 key={index}
@@ -119,13 +122,16 @@ export const TwoFactorStep: FC<Props> = ({
                 onChange={event => onDigitChange(index, event)}
                 onKeyDown={event => onDigitKeyDown(index, event)}
                 onPaste={onDigitPaste}
-                className={`
-                  h-14 flex-1 rounded-md border border-border bg-surface px-3.5
-                  py-3 text-center font-mono text-2xl font-semibold
-                  transition-[border-color,box-shadow] duration-150
-                  focus:border-primary
-                  focus:shadow-[0_0_0_3px_rgba(0,179,60,0.1)] focus:outline-none
-                `}
+                className="twofa-code-digit"
+                style={{
+                  flex: 1,
+                  fontFamily: "'Inter', monospace",
+                  fontSize: 24,
+                  fontWeight: 600,
+                  height: 56,
+                  minWidth: 0,
+                  textAlign: 'center',
+                }}
               />
             ))}
           </div>
@@ -138,27 +144,20 @@ export const TwoFactorStep: FC<Props> = ({
         </AuthSubmitButton>
       </form>
 
-      <div className="mt-6 text-center text-[14px] text-muted-foreground">
+      <div className="auth-toggle">
         <button
-          type="button"
           onClick={onResend}
           disabled={isResending}
-          className={`
-            font-semibold text-primary
-            hover:underline
-            disabled:opacity-50
-          `}
+          style={{ color: 'var(--green)', fontWeight: 600 }}
+          type="button"
         >
           {isResending ? 'Versturen…' : 'Geen SMS ontvangen? Stuur opnieuw'}
         </button>
-        <span className="mx-2 text-border">·</span>
+        <span style={{ color: 'var(--line)', margin: '0 8px' }}>·</span>
         <button
-          type="button"
           onClick={onCancel}
-          className={`
-            font-semibold text-primary
-            hover:underline
-          `}
+          style={{ color: 'var(--green)', fontWeight: 600 }}
+          type="button"
         >
           Annuleren
         </button>

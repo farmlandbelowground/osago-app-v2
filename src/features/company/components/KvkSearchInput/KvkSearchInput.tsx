@@ -9,7 +9,6 @@ import {
 } from 'react'
 
 import { useDebouncedValue } from '@shared/hooks/useDebouncedValue'
-import { cn } from '@shared/utils/cn'
 
 import { SearchIcon } from '../../assets/icons'
 import {
@@ -73,18 +72,10 @@ export const KvkSearchInput: FC<Props> = ({ onSelect }) => {
   }
 
   return (
-    <div className="relative" ref={containerRef}>
-      <SearchIcon className={`
-        pointer-events-none absolute top-1/2 left-3 h-[18px] w-[18px]
-        -translate-y-1/2 text-muted-foreground
-      `} />
+    <div className="kvk-search-wrap" ref={containerRef}>
+      <SearchIcon className="kvk-search-icon" height={18} width={18} />
       <input
-        className={`
-          w-full rounded-md border border-border bg-surface px-10 py-3 text-sm
-          transition-[border-color,box-shadow] duration-150
-          focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,179,60,0.1)]
-          focus:outline-none
-        `}
+        className="kvk-search-input"
         onChange={event => {
           setQuery(event.target.value)
           setActiveIndex(-1)
@@ -95,17 +86,7 @@ export const KvkSearchInput: FC<Props> = ({ onSelect }) => {
         type="text"
         value={query}
       />
-      {isFetching && (
-        <span
-          className={cn(
-            `
-              absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 animate-spin
-              rounded-full border-2 border-border
-            `,
-            'border-t-primary',
-          )}
-        />
-      )}
+      {isFetching && <span className="kvk-search-spinner active" />}
 
       {showResults && !isFetching && (
         <KvkSearchResultsList

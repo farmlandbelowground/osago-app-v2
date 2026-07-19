@@ -90,8 +90,8 @@ export const RegisterForm: FC = () => {
         <AuthAlert variant="error">{state.error}</AuthAlert>
       )}
 
-      <form action={formAction} className="flex flex-col">
-        <div className="grid grid-cols-2 gap-3.5">
+      <form action={formAction}>
+        <div className="form-row">
           <AuthField label="Voornaam">
             <AuthTextInput
               name="firstName"
@@ -138,10 +138,10 @@ export const RegisterForm: FC = () => {
 
         <AuthField
           label={
-            <div className='flex items-center'>
+            <>
               Wachtwoord
               <InfoTip tip={PASSWORD_REQUIREMENTS_TOOLTIP} />
-            </div>
+            </>
           }
         >
           <AuthTextInput
@@ -156,26 +156,18 @@ export const RegisterForm: FC = () => {
           <PasswordChecklist password={password} />
         </AuthField>
 
-        <div className="mb-1">
-          <TurnstileWidget
-            name="turnstileToken"
-            resetSignal={state.status === 'error' ? state : undefined}
-          />
-        </div>
+        <TurnstileWidget
+          name="turnstileToken"
+          resetSignal={state.status === 'error' ? state : undefined}
+        />
 
         <AuthSubmitButton isDisabled={isPending}>
           {isPending ? 'Bezig…' : 'Account aanmaken'}
         </AuthSubmitButton>
       </form>
 
-      <div className="mt-6 text-center text-[14px] text-muted-foreground">
-        Heb je al een account?{' '}
-        <Link href="/" className={`
-          font-semibold text-primary
-          hover:underline
-        `}>
-          Log hier in
-        </Link>
+      <div className="auth-toggle">
+        Heb je al een account? <Link href="/">Log hier in</Link>
       </div>
     </div>
   )

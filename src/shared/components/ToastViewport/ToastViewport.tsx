@@ -9,18 +9,26 @@ export const ToastViewport: FC = () => {
   const toasts = useToastStore(state => state.toasts)
 
   return (
-    <div className="fixed right-6 bottom-6 z-50 flex flex-col gap-2">
+    <div
+      style={{
+        bottom: 24,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        position: 'fixed',
+        right: 24,
+        zIndex: 200,
+      }}
+    >
       {toasts.map(toast => (
         <div
           className={cn(
-            `
-              max-w-[340px] rounded-md px-4.5 py-3 text-[13.5px]
-              text-primary-foreground shadow-lg
-            `,
-            toast.variant === 'success' && 'bg-primary-hover',
-            toast.variant === 'error' && 'bg-destructive',
+            'toast',
+            toast.variant === 'success' && 'success',
+            toast.variant === 'error' && 'error',
           )}
           key={toast.id}
+          style={{ position: 'static' }}
         >
           {toast.message}
         </div>

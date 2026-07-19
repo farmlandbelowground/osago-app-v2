@@ -8,12 +8,7 @@ export default async function AdminVouchersPage() {
   const vouchers = await adminListVouchers()
 
   return (
-    <main
-      className={`
-        w-full px-10 py-8
-        max-[900px]:p-5
-      `}
-    >
+    <main className="main">
       <AdminVouchersTable vouchers={vouchers} />
     </main>
   )

@@ -6,125 +6,136 @@ import { cn } from '@shared/utils/cn'
 import { ABONNEMENT_AFSLUITEN_PATH, PLANS } from '../../constants'
 import { formatEuro } from '../../lib/formatEuro'
 import { type Plan } from '../../types'
+import { type Props } from './types'
 
-const buildPlanHref = (planId: Plan['id']): string =>
-  `${ABONNEMENT_AFSLUITEN_PATH}?plan=${planId}`
+const buildPlanHref = (basePath: string, planId: Plan['id']): string =>
+  `${basePath}${basePath.includes('?') ? '&' : '?'}plan=${planId}`
 
 interface PlanCardProps {
+  basePath: string
   plan: Plan
 }
 
-const PlanCard: FC<PlanCardProps> = ({ plan }) => (
-  <div
-    className={cn(
-      'flex flex-col rounded-lg border bg-surface p-6',
-      plan.featured ? 'border-primary shadow-md' : 'border-border',
-    )}
-  >
-    {plan.featured && (
-      <span
-        className={`
-          mb-3 inline-flex w-fit items-center rounded-full bg-primary-soft
-          px-2.5 py-1 text-[11px] font-semibold text-primary-hover uppercase
-        `}
-      >
-        Meest gekozen
-      </span>
-    )}
-    <h3 className="font-serif text-lg font-medium text-foreground">
-      {plan.cardLabel ?? plan.label}
-    </h3>
-    <p className="mb-3 text-[13px] text-muted-foreground">{plan.desc}</p>
-    <div className="mb-4">
-      <span className="font-serif text-2xl font-medium text-foreground">
-        {formatEuro(plan.price)}
-      </span>{' '}
-      <span className="text-xs text-muted-foreground">{plan.priceMeta}</span>
+const PlanCard: FC<PlanCardProps> = ({ basePath, plan }) => (
+  <div className={cn('plan-card', plan.featured && 'featured')}>
+    <div className="plan-name">{plan.cardLabel ?? plan.label}</div>
+    <p className="plan-desc">{plan.desc}</p>
+
+    <div className="plan-price">
+      <span className="plan-price-amount">{formatEuro(plan.price)}</span>
     </div>
-    <ul
-      className={`
-        mb-5 flex flex-1 flex-col gap-1.5 text-[13px] text-foreground-secondary
-      `}
-    >
+    <div className="plan-price-meta">{plan.priceMeta}</div>
+
+    <ul className="plan-features">
       {plan.features.map(feature => (
-        <li className="flex items-start gap-1.5" key={feature.text}>
-          <span aria-hidden="true" className="text-primary">
-            ✓
-          </span>
-          {feature.text}
+        <li
+          className={cn(!feature.included && 'muted')}
+          key={feature.text}
+        >
+          {feature.included ? (
+            <svg
+              fill="none"
+              height="15"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+              width="15"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg
+              fill="none"
+              height="15"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="15"
+            >
+              <line x1="18" x2="6" y1="6" y2="18" />
+              <line x1="6" x2="18" y1="6" y2="18" />
+            </svg>
+          )}
+          <span>{feature.text}</span>
         </li>
       ))}
     </ul>
-    <Link
-      className={cn(
-        `
-          inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm
-          font-semibold transition
-        `,
-        plan.featured
-          ? `
-            bg-primary text-primary-foreground
-            hover:bg-primary-hover
-          `
-          : `
-            bg-muted text-foreground
-            hover:bg-border-soft
-          `,
-      )}
-      href={buildPlanHref(plan.id)}
-    >
-      {plan.ctaLabel}
-    </Link>
+
+    <div className="plan-cta">
+      <Link
+        className={cn('btn', plan.featured ? 'btn-primary' : 'btn-secondary')}
+        href={buildPlanHref(basePath, plan.id)}
+      >
+        {plan.ctaLabel}
+        <svg
+          fill="none"
+          height="13"
+          stroke="currentColor"
+          strokeWidth="2"
+          style={{ marginLeft: 4, verticalAlign: -2 }}
+          viewBox="0 0 24 24"
+          width="13"
+        >
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </Link>
+    </div>
   </div>
 )
 
-export const SubscribePlanGrid: FC = () => {
+export const SubscribePlanGrid: FC<Props> = ({
+  basePath = ABONNEMENT_AFSLUITEN_PATH,
+  category,
+}) => {
   const fullPlans = PLANS.filter(plan => plan.category === 'full')
   const valuationPlans = PLANS.filter(plan => plan.category === 'valuation')
 
+  if (category) {
+    const plans = category === 'full' ? fullPlans : valuationPlans
+
+    return (
+      <div className="plans-grid">
+        {plans.map(plan => (
+          <PlanCard basePath={basePath} key={plan.id} plan={plan} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div>
-      <h1 className="mb-6 font-serif text-2xl font-medium text-foreground">
-        Kies jouw abonnement
-      </h1>
-      <div
-        className={`
-          mb-10 grid grid-cols-1 gap-5
-          md:grid-cols-3
-        `}
-      >
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Kies jouw abonnement</h1>
+        </div>
+      </div>
+
+      <div className="plans-grid">
         {fullPlans.map(plan => (
-          <PlanCard key={plan.id} plan={plan} />
+          <PlanCard basePath={basePath} key={plan.id} plan={plan} />
         ))}
       </div>
 
-      <h2 className="mb-1 font-serif text-xl font-medium text-foreground">
-        Alleen Waardebepaling
-      </h2>
-      <p className="mb-6 text-[13.5px] text-muted-foreground">
-        Heb je alleen een waardering nodig? Kies een van de losse opties
-        hieronder — zonder verkoopbegeleiding of kopermatching.
-      </p>
-      <div
-        className={`
-          mb-10 grid grid-cols-1 gap-5
-          md:grid-cols-2
-        `}
-      >
+      <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid var(--line)' }}>
+        <h2 className="serif" style={{ fontSize: 22, margin: '0 0 4px' }}>
+          Alleen Waardebepaling
+        </h2>
+        <p className="text-muted text-sm" style={{ margin: '0 0 16px' }}>
+          Heb je alleen een waardering nodig? Kies een van de losse opties
+          hieronder — zonder verkoopbegeleiding of kopermatching.
+        </p>
+      </div>
+
+      <div className="plans-grid">
         {valuationPlans.map(plan => (
-          <PlanCard key={plan.id} plan={plan} />
+          <PlanCard basePath={basePath} key={plan.id} plan={plan} />
         ))}
       </div>
 
-      <div
-        className={`
-          rounded-md border border-info/30 bg-info/10 px-5 py-4 text-[13.5px]
-          text-info
-        `}
-      >
-        <strong className="font-semibold">Geen verrassingen.</strong> Jouw
-        abonnement loopt 6 maanden. Je kunt tot 30 dagen vóór de einddatum
-        opzeggen — daarna verlengt het automatisch tegen hetzelfde tarief.
+      <div className="alert alert-info" style={{ marginTop: 32 }}>
+        <strong>Geen verrassingen.</strong> Jouw abonnement loopt 6 maanden. Je
+        kunt tot 30 dagen vóór de einddatum opzeggen — daarna verlengt het
+        automatisch tegen hetzelfde tarief.
       </div>
     </div>
   )

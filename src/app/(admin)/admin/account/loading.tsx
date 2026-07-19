@@ -1,16 +1,24 @@
+const skeletonStyle = {
+  animation: 'pulse 2s ease-in-out infinite',
+  background: 'var(--line-soft)',
+  borderRadius: 'var(--radius)',
+}
+
 export default function Loading() {
   return (
-    <div
-      className={`
-        w-full space-y-6 px-10 pt-8 pb-20
-        max-[900px]:p-5
-      `}
-    >
-      <div className="h-9 w-64 animate-pulse rounded bg-foreground/10" />
-      <div className="h-40 animate-pulse rounded-lg bg-foreground/10" />
-      <div className="h-56 animate-pulse rounded-lg bg-foreground/10" />
-      <div className="h-40 animate-pulse rounded-lg bg-foreground/10" />
-      <div className="h-40 animate-pulse rounded-lg bg-foreground/10" />
-    </div>
+    <main className="main">
+      <div
+        style={{
+          ...skeletonStyle,
+          height: '32px',
+          marginBottom: '24px',
+          width: '192px',
+        }}
+      />
+      <div style={{ ...skeletonStyle, height: '128px', marginBottom: '24px' }} />
+      <div style={{ ...skeletonStyle, height: '176px', marginBottom: '24px' }} />
+      <div style={{ ...skeletonStyle, height: '128px', marginBottom: '24px' }} />
+      <div style={{ ...skeletonStyle, height: '128px' }} />
+    </main>
   )
 }

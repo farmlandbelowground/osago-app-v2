@@ -4,6 +4,12 @@
 
 This file is the single source of truth for AI-assisted development conventions on this stack. It, together with `rules/`, `patterns/`, and `.claude/skills/`, travels with the project so conventions are defined once and reused across sessions instead of re-explained every time.
 
+## Temporary Styling Exception (Active Through Migration Slice 14)
+
+**Overrides [Styling](rules/styling.md) and [Styling with Tailwind](patterns/styling-tailwind.md) below.** While the `osago-app` → `osago-app-v2` migration is in progress (see `../docs/migration-plan.md`), UI components use the plain CSS classes ported verbatim from the legacy app's `styles.css` into `src/app/globals.css` (e.g. `.btn`, `.field`, `.card`, `.main`) — **not** Tailwind utility classes — even though the Tailwind packages, `cn()` helper, and lint plugin remain installed. This is a deliberate, temporary speed tradeoff to finish the migration faster; it is not a reversal of the project's styling direction. See `../docs/migration-plan.md` §1.3 for the full rationale and exit condition.
+
+This exception applies only to code written as part of migration slices. Once the migration's final Tailwind-conversion slice ships, this section is deleted and `rules/styling.md` / `patterns/styling-tailwind.md` apply to all code without exception, including the migrated components.
+
 ## Stack
 
 Next.js App Router, TypeScript (strict mode), React Server Components by default with `'use client'` opt-in, Server Actions for mutations, native `fetch` + Zod for validation at every boundary, per-feature raw Zustand for client state, Tailwind CSS via a `cn()` helper (clsx + tailwind-merge) for styling, `@t3-oss/env-nextjs` for environment validation, React Hook Form + Zod resolver for complex forms, path aliases (`@/*`, `@features/*`, `@shared/*`). Adapt the specifics to your own project's actual choices — the structure and discipline below are what matters, not any single library.

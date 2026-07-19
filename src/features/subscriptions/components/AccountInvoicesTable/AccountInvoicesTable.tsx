@@ -7,45 +7,57 @@ import { type Props } from './types'
 
 export const AccountInvoicesTable: FC<Props> = ({ invoices }) => {
   return (
-    <div
-      className={`mb-6 rounded-lg border border-border bg-surface p-6 shadow-sm`}
-    >
-      <h2 className="mb-1 font-serif text-xl font-medium text-foreground">
-        Facturen
-      </h2>
-      <p className="mb-5 text-[13.5px] text-muted-foreground">
-        Overzicht van jouw facturen van Osago. Klik op &quot;Betalen&quot; om
-        een openstaande factuur direct te voldoen.
-      </p>
-
-      {invoices.length === 0 ? (
-        <div
-          className={`
-            rounded-md border border-border bg-background px-6 py-10 text-center
-          `}
-        >
-          <h3 className="mb-1 text-sm font-semibold text-foreground">
-            Nog geen facturen
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Zodra Osago een factuur voor je opstelt, verschijnt deze hier.
+    <div className="card mb-5">
+      <div
+        className="mb-3"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div>
+          <h3>Facturen</h3>
+          <p className="desc" style={{ marginBottom: 0 }}>
+            Overzicht van jouw facturen van Osago. Klik op &quot;Betalen&quot;
+            om een openstaande factuur direct te voldoen.
           </p>
         </div>
+      </div>
+
+      {invoices.length === 0 ? (
+        <div className="empty" style={{ padding: '36px 20px' }}>
+          <div className="empty-icon">
+            <svg
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="9" x2="15" y1="13" y2="13" />
+              <line x1="9" x2="15" y1="17" y2="17" />
+            </svg>
+          </div>
+          <h3>Nog geen facturen</h3>
+          <p>Zodra Osago een factuur voor je opstelt, verschijnt deze hier.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div style={{ overflowX: 'auto', margin: '0 -24px -24px' }}>
+          <table style={{ margin: 0 }}>
             <thead>
-              <tr
-                className={`
-                  border-b border-border text-xs text-muted-foreground
-                `}
-              >
-                <th className="py-2 pr-3 font-medium">Factuurnr.</th>
-                <th className="py-2 pr-3 font-medium">Datum</th>
-                <th className="py-2 pr-3 font-medium">Omschrijving</th>
-                <th className="py-2 pr-3 text-right font-medium">Bedrag</th>
-                <th className="py-2 pr-3 font-medium">Status</th>
-                <th className="py-2 font-medium" />
+              <tr>
+                <th style={{ paddingLeft: 24 }}>Factuurnr.</th>
+                <th>Datum</th>
+                <th>Omschrijving</th>
+                <th className="right">Bedrag</th>
+                <th>Status</th>
+                <th className="right" style={{ paddingRight: 24 }} />
               </tr>
             </thead>
             <tbody>
@@ -54,55 +66,43 @@ export const AccountInvoicesTable: FC<Props> = ({ invoices }) => {
                   invoice.status === 'issued' &&
                   invoice.paymentUrl !== null &&
                   !invoice.isCreditNote
+                const dateSrc = invoice.issuedAt ?? invoice.createdAt
 
                 return (
-                  <tr
-                    className={`
-                      border-b border-border-soft
-                      last:border-0
-                    `}
-                    key={invoice.id}
-                  >
-                    <td className="py-3 pr-3 font-medium text-foreground">
-                      {invoice.number}
+                  <tr key={invoice.id}>
+                    <td style={{ paddingLeft: 24 }}>
+                      <strong>{invoice.number || '—'}</strong>
                     </td>
-                    <td className="py-3 pr-3 text-muted-foreground">
-                      {invoice.issuedAt || invoice.createdAt
-                        ? formatDateNl(
-                            (invoice.issuedAt ?? invoice.createdAt) as string,
-                          )
-                        : '—'}
+                    <td className="text-muted">
+                      {dateSrc ? formatDateNl(dateSrc) : '—'}
                     </td>
-                    <td className="py-3 pr-3 text-muted-foreground">
-                      {invoice.description || invoice.period}
+                    <td>
+                      {invoice.description || invoice.period || '—'}
                       {invoice.dueAt && (
-                        <div className="text-xs text-muted-foreground-soft">
+                        <div className="text-xs text-muted">
                           Vervaldatum: {formatDateNl(invoice.dueAt)}
                         </div>
                       )}
                     </td>
-                    <td
-                      className={`
-                        py-3 pr-3 text-right font-medium text-foreground
-                      `}
-                    >
-                      {invoice.grossValue !== null
-                        ? formatEuro(invoice.grossValue)
-                        : '—'}
+                    <td className="right">
+                      <strong>
+                        {invoice.grossValue !== null
+                          ? formatEuro(invoice.grossValue)
+                          : '—'}
+                      </strong>
                     </td>
-                    <td className="py-3 pr-3">
+                    <td>
                       <InvoiceStatusBadge invoice={invoice} />
                     </td>
-                    <td className="py-3 text-right">
+                    <td
+                      className="right"
+                      style={{ paddingRight: 24, whiteSpace: 'nowrap' }}
+                    >
                       {canPay && invoice.paymentUrl && (
                         <a
-                          className={`
-                            inline-flex items-center justify-center rounded-md
-                            bg-primary px-3 py-1.5 text-xs font-semibold
-                            text-primary-foreground transition
-                            hover:bg-primary-hover
-                          `}
+                          className="btn btn-primary btn-sm"
                           href={invoice.paymentUrl}
+                          style={{ textDecoration: 'none' }}
                         >
                           Betalen
                         </a>

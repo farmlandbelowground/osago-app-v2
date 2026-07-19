@@ -32,19 +32,14 @@ export const AccountPersonalInfoForm: FC<Props> = ({ profile }) => {
   }, [showToast, state])
 
   return (
-    <div
-      className={`mb-6 rounded-lg border border-border bg-surface p-6 shadow-sm`}
-    >
-      <h2 className="mb-1 font-serif text-[17px] font-medium text-foreground">
-        Persoonlijke gegevens
-      </h2>
-      <p className="mb-3.5 text-[13px] text-muted-foreground">
-        Deze gegevens worden gebruikt voor jouw account en in documenten zoals
-        het verkoopmemorandum.
-      </p>
-
-      <form action={formAction}>
-        <div className="grid grid-cols-2 gap-3.5">
+    <form action={formAction} className="card mb-5">
+      <div className="form-section">
+        <h3 className="form-section-title">Persoonlijke gegevens</h3>
+        <p className="form-section-desc">
+          Deze gegevens worden gebruikt voor jouw account en in documenten
+          zoals het verkoopmemorandum.
+        </p>
+        <div className="form-row">
           <AuthField label="Voornaam">
             <AuthTextInput
               defaultValue={profile.firstName ?? ''}
@@ -60,7 +55,7 @@ export const AccountPersonalInfoForm: FC<Props> = ({ profile }) => {
             />
           </AuthField>
         </div>
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="form-row">
           <AuthField label="E-mailadres">
             <AuthTextInput
               defaultValue={profile.email}
@@ -79,11 +74,11 @@ export const AccountPersonalInfoForm: FC<Props> = ({ profile }) => {
             />
           </AuthField>
         </div>
+      </div>
 
-        <AccountFormSubmitButton isDisabled={isPending}>
-          {isPending ? 'Opslaan…' : 'Wijzigingen opslaan'}
-        </AccountFormSubmitButton>
-      </form>
-    </div>
+      <AccountFormSubmitButton isDisabled={isPending}>
+        {isPending ? 'Opslaan…' : 'Wijzigingen opslaan'}
+      </AccountFormSubmitButton>
+    </form>
   )
 }

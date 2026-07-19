@@ -88,29 +88,22 @@ export const AdminSubscriptionsTable: FC<Props> = ({ subscriptions }) => {
 
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-medium text-foreground">
-          Abonnementen
-        </h1>
-        <button
-          className={`
-            inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2.5
-            text-sm font-semibold text-primary-foreground transition
-            hover:bg-primary-hover
-          `}
-          onClick={() => setIsCreating(true)}
-          type="button"
-        >
-          + Nieuwe abonnement
-        </button>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Abonnementen</h1>
+        </div>
+        <div className="page-actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => setIsCreating(true)}
+            type="button"
+          >
+            + Nieuw abonnement
+          </button>
+        </div>
       </div>
 
-      <div
-        className={`
-          mb-6 grid grid-cols-2 gap-4
-          md:grid-cols-4
-        `}
-      >
+      <div className="grid-4 mb-5 grid">
         <KpiTile
           label="Actieve abonnementen"
           meta={`${stats.total} klanten totaal`}
@@ -133,28 +126,28 @@ export const AdminSubscriptionsTable: FC<Props> = ({ subscriptions }) => {
         />
       </div>
 
-      <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="card">
+        <div className="flex-between mb-3" style={{ flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h3 className={`
-              font-serif text-xl font-medium tracking-tight text-foreground
-            `}>
-              Klantabonnementen
-            </h3>
-            <p className="text-[13.5px] text-muted-foreground">
+            <h3>Klantabonnementen</h3>
+            <p className="desc" style={{ marginBottom: 0 }}>
               Klik op een rij om het abonnement aan te passen of te starten.
             </p>
           </div>
-          <div className="relative w-[280px] max-w-full">
+          <div style={{ position: 'relative', width: 280, maxWidth: '100%' }}>
             <svg
-              className={`
-                pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2
-                text-muted-foreground
-              `}
               fill="none"
               height="14"
               stroke="currentColor"
               strokeWidth="2"
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--muted)',
+                pointerEvents: 'none',
+              }}
               viewBox="0 0 24 24"
               width="14"
             >
@@ -162,135 +155,52 @@ export const AdminSubscriptionsTable: FC<Props> = ({ subscriptions }) => {
               <path d="m21 21-4.3-4.3" />
             </svg>
             <input
-              className={`
-                w-full rounded-md border border-border bg-background py-2 pr-3
-                pl-8 text-[13px]
-                focus:border-primary focus:outline-none
-              `}
               onChange={onSearchChange}
               placeholder="Zoek op klant, e-mail of plan..."
+              style={{ width: '100%', padding: '8px 12px 8px 32px', fontSize: 13 }}
               type="text"
               value={searchText}
             />
           </div>
         </div>
-        <div className="-mx-6 -mb-6 overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
+        <div style={{ overflowX: 'auto', margin: '0 -24px -24px' }}>
+          <table style={{ margin: 0 }}>
             <thead>
               <tr>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] py-3 pr-4 pl-6
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Klant
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Type
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-right text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Prijs/6 mnd
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Startdatum
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Einddatum
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Opzegdatum
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Auto-verlengen
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] px-4 py-3
-                    text-[12px] font-semibold tracking-[0.04em]
-                    text-muted-foreground uppercase
-                  `}
-                >
-                  Status
-                </th>
-                <th
-                  className={`
-                    border-b border-border-soft bg-[#FAFBFA] py-3 pr-6 pl-4
-                  `}
-                />
+                <th style={{ paddingLeft: 24 }}>Klant</th>
+                <th>Type</th>
+                <th className="right">Prijs/6 mnd</th>
+                <th>Startdatum</th>
+                <th>Einddatum</th>
+                <th>Opzegdatum</th>
+                <th>Auto-verlengen</th>
+                <th>Status</th>
+                <th className="right" style={{ paddingRight: 24 }} />
               </tr>
             </thead>
             <tbody>
               {filteredRows.map(row => (
-                <tr
-                  className={`
-                    border-b border-border-soft
-                    last:border-0
-                    hover:bg-[#E9EDEB]
-                  `}
-                  key={row.userId}
-                >
-                  <td className="py-3 pr-4 pl-6">
-                    <div className="font-bold text-foreground">
-                      {row.customerName}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
+                <tr key={row.userId}>
+                  <td style={{ paddingLeft: 24 }}>
+                    <strong>{row.customerName}</strong>
+                    <div className="text-xs text-muted">
                       {row.customerEmail}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-foreground">
-                    {row.plan?.label ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right text-foreground">
+                  <td>{row.plan?.label ?? '—'}</td>
+                  <td className="right">
                     {row.price !== null ? formatEuro(row.price) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="text-muted">
                     {row.startDate ? formatDateNl(row.startDate) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="text-muted">
                     {row.endDate ? formatDateNl(row.endDate) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  <td className="text-muted">
                     {row.cancelDate ? formatDateNl(row.cancelDate) : '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <span
                       className={cn(
                         BADGE_SHAPE_CLASSES,
@@ -302,16 +212,12 @@ export const AdminSubscriptionsTable: FC<Props> = ({ subscriptions }) => {
                       {row.autoRenew ? 'Aan' : 'Uit'}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td>
                     <SubscriptionStatusBadge status={row.status} />
                   </td>
-                  <td className="py-3 pr-6 pl-4 text-right">
+                  <td className="right" style={{ paddingRight: 24 }}>
                     <button
-                      className={`
-                        rounded-md border border-border px-3 py-1.5 text-xs
-                        font-semibold text-foreground transition
-                        hover:bg-border-soft
-                      `}
+                      className="btn btn-secondary btn-sm"
                       onClick={() => setEditingUserId(row.userId)}
                       type="button"
                     >

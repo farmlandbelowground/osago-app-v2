@@ -8,44 +8,30 @@ import { type Props } from './types'
 
 export const ModalShell: FC<Props> = ({
   children,
+  footer,
   maxWidthClassName,
   onClose,
   title,
 }) => {
   return (
-    <div
-      className={`
-        fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4
-      `}
-      onClick={onClose}
-    >
+    <div className="modal-overlay active" onClick={onClose}>
       <div
-        className={cn(
-          `
-            max-h-[90vh] w-full overflow-y-auto rounded-lg border border-border
-            bg-surface p-6 shadow-lg
-          `,
-          maxWidthClassName ?? 'max-w-lg',
-        )}
+        className={cn('modal', maxWidthClassName)}
         onClick={event => event.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 className="font-serif text-lg font-medium text-foreground">
-            {title}
-          </h2>
+        <div className="modal-header">
+          <h3>{title}</h3>
           <button
             aria-label="Sluiten"
-            className={`
-              text-muted-foreground
-              hover:text-foreground
-            `}
+            className="modal-close"
             onClick={onClose}
             type="button"
           >
             ✕
           </button>
         </div>
-        {children}
+        <div className="modal-body">{children}</div>
+        {footer && <div className="modal-footer">{footer}</div>}
       </div>
     </div>
   )

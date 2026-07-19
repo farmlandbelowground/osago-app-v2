@@ -18,13 +18,17 @@ export const CompanyFormField: FC<Props> = ({
   label,
 }) => {
   return (
-    <label className="mb-[18px] flex flex-col gap-1.5">
-      <span className="text-[13px] font-medium text-foreground-secondary">
+    <div className="field">
+      <label>
         {label}
         {field && <KvkFieldBadge field={field} kvkPrefilled={kvkPrefilled} />}
-      </span>
+      </label>
       {children}
-      {error && <span className="text-xs text-destructive">{error}</span>}
-    </label>
+      {error && (
+        <span style={{ color: 'var(--danger)', fontSize: '12px' }}>
+          {error}
+        </span>
+      )}
+    </div>
   )
 }

@@ -117,12 +117,6 @@ const TrashIcon: FC<SVGProps<SVGSVGElement>> = props => (
   </svg>
 )
 
-const TH_CLASSES = `
-  border-b border-border-soft bg-background px-4 py-3 text-[12px]
-  font-semibold tracking-[0.04em] text-muted-foreground uppercase
-`
-const TD_CLASSES = 'border-b border-border-soft px-4 py-3 text-[13.5px]'
-
 export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
   const [filter, setFilter] = useState<InvoiceFilter>({
     from: null,
@@ -213,72 +207,42 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
 
   return (
     <div>
-      <div className="mb-7 flex flex-wrap items-start justify-between gap-6">
-        <h1
-          className={`
-            font-serif text-[34px] leading-tight font-medium tracking-[-0.01em]
-            text-foreground
-          `}
-        >
-          Facturatie
-        </h1>
-        <div className="flex flex-wrap gap-2">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Facturatie</h1>
+        </div>
+        <div className="page-actions" style={{ gap: 8, flexWrap: 'wrap' }}>
           <a
-            className={`
-              inline-flex items-center rounded-md border border-border
-              bg-surface px-5 py-3 text-sm font-semibold text-foreground
-              transition
-              hover:border-foreground-secondary hover:bg-border-soft
-            `}
+            className="btn btn-secondary"
             href={exportHref}
             title="Genereer Importbestand voor Exact — past de huidige filter toe"
           >
-            <DownloadIcon className="mr-1 inline align-[-2px]" />
+            <DownloadIcon style={{ verticalAlign: -2, marginRight: 4 }} />
             Importbestand Exact
           </a>
           <button
-            className={`
-              inline-flex items-center rounded-md bg-primary px-5 py-3 text-sm
-              font-semibold text-primary-foreground transition
-              hover:bg-primary-hover
-            `}
+            className="btn btn-primary"
             onClick={() => setIsCreating(true)}
             type="button"
           >
-            <PlusIcon className="mr-1 inline align-[-2px]" />
+            <PlusIcon style={{ verticalAlign: -2, marginRight: 4 }} />
             Nieuwe factuur
           </button>
         </div>
       </div>
 
-      <div
-        className={`
-          mb-4 rounded-lg border border-border bg-surface px-[18px] py-3.5
-          shadow-sm
-        `}
-      >
-        <div className="flex flex-wrap items-center gap-3.5">
-          <div className="flex shrink-0 items-center gap-2">
-            <FunnelIcon className="text-muted-foreground" />
-            <span className="text-sm font-semibold text-foreground">
-              Filter op factuurdatum
-            </span>
+      <div className="card mb-4" style={{ padding: '14px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <FunnelIcon style={{ color: 'var(--muted)' }} />
+            <span className="text-sm fw-600">Filter op factuurdatum</span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {INVOICE_FILTER_PRESET_OPTIONS.map(preset => (
               <button
-                className={cn(
-                  `
-                    rounded-full border px-3 py-1.5 text-[13px] font-medium
-                    transition
-                  `,
-                  filter.preset === preset
-                    ? 'border-foreground bg-foreground text-white'
-                    : `
-                      border-border bg-surface text-foreground-secondary
-                      hover:border-foreground-secondary hover:bg-border-soft
-                    `,
-                )}
+                className={cn('filter-chip', filter.preset === preset && `
+                  active
+                `)}
                 key={preset}
                 onClick={() => onSelectPreset(preset)}
                 type="button"
@@ -288,45 +252,36 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
             ))}
           </div>
           {filter.preset === 'custom' && (
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <input
-                className={`
-                  rounded-md border border-border bg-background px-2.5 py-1.5
-                  text-[13px]
-                `}
                 onChange={onCustomFromChange}
+                style={{ padding: '6px 10px', fontSize: 13, width: 'auto' }}
                 type="date"
                 value={filter.from ?? ''}
               />
-              <span className="text-sm text-muted-foreground">t/m</span>
+              <span className="text-muted text-sm">t/m</span>
               <input
-                className={`
-                  rounded-md border border-border bg-background px-2.5 py-1.5
-                  text-[13px]
-                `}
                 onChange={onCustomToChange}
+                style={{ padding: '6px 10px', fontSize: 13, width: 'auto' }}
                 type="date"
                 value={filter.to ?? ''}
               />
             </div>
           )}
-          <div className="flex-1" />
+          <div style={{ flex: 1 }} />
           {filter.preset !== 'all' && (
             <>
-              <span className="text-xs whitespace-nowrap text-muted-foreground">
+              <span className="text-xs text-muted" style={{ whiteSpace: 'nowrap' }}>
                 {describeInvoiceFilter(filter)}
               </span>
               <button
-                className={`
-                  inline-flex items-center rounded-md px-2.5 py-1 text-[13px]
-                  font-medium text-foreground-secondary transition
-                  hover:bg-border-soft
-                `}
+                className="btn btn-ghost btn-sm"
                 onClick={() => onSelectPreset('all')}
+                style={{ padding: '4px 10px' }}
                 title="Filter wissen"
                 type="button"
               >
-                <XIcon className="mr-[3px] inline align-[-2px]" />
+                <XIcon style={{ verticalAlign: -2, marginRight: 3 }} />
                 Wissen
               </button>
             </>
@@ -334,12 +289,7 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
         </div>
       </div>
 
-      <div
-        className={`
-          mb-6 grid grid-cols-1 gap-5
-          md:grid-cols-3
-        `}
-      >
+      <div className="grid-3 mb-5 grid">
         <KpiTile
           label="Openstaand"
           meta={`${kpis.openCount} ${kpis.openCount === 1 ? 'factuur' : 'facturen'}`}
@@ -349,7 +299,7 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
           label="Vervallen"
           meta={`${kpis.overdueCount} ${kpis.overdueCount === 1 ? 'factuur' : 'facturen'}`}
           value={formatEuro(kpis.overdueAmount)}
-          valueClassName={kpis.overdueAmount > 0 ? 'text-[#B91C1C]' : undefined}
+          valueStyle={kpis.overdueAmount > 0 ? { color: '#B91C1C' } : undefined}
         />
         <KpiTile
           label="Betaald"
@@ -358,38 +308,31 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
         />
       </div>
 
-      <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="card">
+        <div className="flex-between mb-3" style={{ flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h2
-              className={`
-                mb-1 font-serif text-xl font-medium tracking-[-0.01em]
-                text-foreground
-              `}
-            >
-              Facturenoverzicht
-            </h2>
-            <p className="text-[13.5px] text-muted-foreground">
+            <h3>Facturenoverzicht</h3>
+            <p className="desc" style={{ marginBottom: 0 }}>
               {filter.preset === 'all'
                 ? 'Alle facturen van Osago, gesorteerd op datum.'
                 : `Facturen in geselecteerde periode (${dateFilteredInvoices.length}).`}
             </p>
           </div>
-          <div className="relative w-[280px] max-w-full">
+          <div style={{ position: 'relative', width: 280, maxWidth: '100%' }}>
             <SearchIcon
-              className={`
-                pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2
-                text-muted-foreground
-              `}
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--muted)',
+                pointerEvents: 'none',
+              }}
             />
             <input
-              className={`
-                w-full rounded-md border border-border bg-background py-2 pr-3
-                pl-8 text-[13px]
-                focus:border-primary focus:outline-none
-              `}
               onChange={event => setSearchText(event.target.value)}
               placeholder="Zoek op nummer, klant of omschrijving..."
+              style={{ width: '100%', padding: '8px 12px 8px 32px', fontSize: 13 }}
               type="text"
               value={searchText}
             />
@@ -397,107 +340,80 @@ export const AdminInvoicesTable: FC<Props> = ({ customers, invoices }) => {
         </div>
 
         {visibleInvoices.length === 0 ? (
-          <div
-            className={`
-              rounded-md border border-border bg-background px-6 py-10
-              text-center
-            `}
-          >
-            <h3 className="mb-1 text-sm font-semibold text-foreground">
+          <div className="empty" style={{ padding: '36px 20px' }}>
+            <h3>
               {invoices.length === 0
                 ? 'Nog geen facturen'
                 : 'Geen facturen in deze periode'}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p>
               {invoices.length === 0
                 ? 'Klik op "Nieuwe factuur" om de eerste factuur aan te maken.'
                 : 'Pas het filter aan, of voeg een nieuwe factuur toe.'}
             </p>
           </div>
         ) : (
-          <div className="-mx-6 -mb-6 overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+          <div style={{ overflowX: 'auto', margin: '0 -24px -24px' }}>
+            <table style={{ margin: 0 }}>
               <thead>
                 <tr>
-                  <th className={cn(TH_CLASSES, 'pl-6')}>Factuurnr.</th>
-                  <th className={TH_CLASSES}>Klant</th>
-                  <th className={TH_CLASSES}>Datum</th>
-                  <th className={TH_CLASSES}>Vervaldatum</th>
-                  <th className={TH_CLASSES}>Omschrijving</th>
-                  <th className={cn(TH_CLASSES, 'text-right')}>Bedrag</th>
-                  <th className={TH_CLASSES}>Status</th>
-                  <th className={cn(TH_CLASSES, 'pr-6')} />
+                  <th style={{ paddingLeft: 24 }}>Factuurnr.</th>
+                  <th>Klant</th>
+                  <th>Datum</th>
+                  <th>Vervaldatum</th>
+                  <th>Omschrijving</th>
+                  <th className="right">Bedrag</th>
+                  <th>Status</th>
+                  <th className="right" style={{ paddingRight: 24 }} />
                 </tr>
               </thead>
               <tbody>
                 {visibleInvoices.map(invoice => (
-                  <tr className="hover:bg-[#E9EDEB]" key={invoice.id}>
-                    <td
-                      className={cn(
-                        TD_CLASSES,
-                        `pl-6 font-medium text-foreground`,
-                      )}
-                    >
-                      <strong className="font-semibold">
-                        {invoice.number}
-                      </strong>
+                  <tr key={invoice.id}>
+                    <td style={{ paddingLeft: 24 }}>
+                      <strong>{invoice.number}</strong>
                     </td>
-                    <td className={TD_CLASSES}>
-                      <div className="font-semibold text-foreground">
+                    <td>
+                      <strong>
                         {invoice.recipientName ?? 'Onbekende ontvanger'}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
+                      </strong>
+                      <div className="text-xs text-muted">
                         {invoice.recipientEmail}
                       </div>
                     </td>
-                    <td className={cn(TD_CLASSES, 'text-muted-foreground')}>
+                    <td className="text-muted">
                       {invoice.issuedAt || invoice.createdAt
                         ? formatDateNl(
                             (invoice.issuedAt ?? invoice.createdAt) as string,
                           )
                         : '—'}
                     </td>
-                    <td className={cn(TD_CLASSES, 'text-muted-foreground')}>
+                    <td className="text-muted">
                       {invoice.dueAt ? formatDateNl(invoice.dueAt) : '—'}
                     </td>
-                    <td
-                      className={cn(
-                        TD_CLASSES,
-                        'max-w-[280px] text-muted-foreground',
-                      )}
-                    >
+                    <td style={{ maxWidth: 280 }}>
                       {invoice.description || invoice.period}
                     </td>
-                    <td
-                      className={cn(
-                        TD_CLASSES,
-                        'text-right font-medium text-foreground',
-                      )}
-                    >
-                      <strong className="font-semibold">
+                    <td className="right">
+                      <strong>
                         {invoice.grossValue !== null
                           ? formatEuro(invoice.grossValue)
                           : '—'}
                       </strong>
                     </td>
-                    <td className={TD_CLASSES}>
+                    <td>
                       <InvoiceStatusBadge invoice={invoice} />
                     </td>
                     <td
-                      className={cn(
-                        TD_CLASSES,
-                        'pr-6 text-right whitespace-nowrap',
-                      )}
+                      className="right"
+                      style={{ paddingRight: 24, whiteSpace: 'nowrap' }}
                     >
                       {invoice.status === 'draft' && (
                         <button
                           aria-label="Verwijderen"
-                          className={`
-                            inline-flex items-center justify-center rounded-md
-                            px-2 py-1.5 text-destructive transition
-                            hover:bg-border-soft
-                          `}
+                          className="btn btn-ghost btn-sm"
                           onClick={() => void onDeleteInvoice(invoice.id)}
+                          style={{ padding: '6px 8px' }}
                           title="Verwijderen"
                           type="button"
                         >

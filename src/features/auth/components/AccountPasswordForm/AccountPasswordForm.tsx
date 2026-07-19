@@ -58,23 +58,17 @@ export const AccountPasswordForm: FC<Props> = ({ email }) => {
   const password = form.watch('password')
 
   return (
-    <div
-      className={`mb-6 rounded-lg border border-border bg-surface p-6 shadow-sm`}
-    >
-      <h2 className="mb-1 font-serif text-[17px] font-medium text-foreground">
-        Wachtwoord wijzigen
-      </h2>
-      <p className="mb-3.5 text-[13px] text-muted-foreground">
-        Kies een sterk wachtwoord. {PASSWORD_REQUIREMENTS_TOOLTIP} Laat alle
-        velden leeg om jouw huidige wachtwoord te behouden.
-      </p>
+    <form className="card mb-5" onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="form-section">
+        <h3 className="form-section-title">Wachtwoord wijzigen</h3>
+        <p className="form-section-desc">
+          Kies een sterk wachtwoord. {PASSWORD_REQUIREMENTS_TOOLTIP} Laat alle
+          velden leeg om jouw huidige wachtwoord te behouden.
+        </p>
 
-      {submitError && (
-        <p className="mb-4 text-sm text-destructive">{submitError}</p>
-      )}
+        {submitError && <p style={{ color: 'var(--danger)' }}>{submitError}</p>}
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="max-w-[420px]">
+        <div style={{ maxWidth: 420 }}>
           <AuthField label="Huidig wachtwoord">
             <AuthTextInput
               {...form.register('currentPassword')}
@@ -82,14 +76,14 @@ export const AccountPasswordForm: FC<Props> = ({ email }) => {
               type="password"
             />
             {form.formState.errors.currentPassword && (
-              <p className="mt-1 text-[13px] text-destructive">
+              <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 4 }}>
                 {form.formState.errors.currentPassword.message}
               </p>
             )}
           </AuthField>
         </div>
 
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="form-row" style={{ maxWidth: 'none' }}>
           <AuthField
             label={
               <>
@@ -104,7 +98,7 @@ export const AccountPasswordForm: FC<Props> = ({ email }) => {
               type="password"
             />
             {form.formState.errors.password && (
-              <p className="mt-1 text-[13px] text-destructive">
+              <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 4 }}>
                 {form.formState.errors.password.message}
               </p>
             )}
@@ -118,17 +112,17 @@ export const AccountPasswordForm: FC<Props> = ({ email }) => {
               type="password"
             />
             {form.formState.errors.confirmPassword && (
-              <p className="mt-1 text-[13px] text-destructive">
+              <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 4 }}>
                 {form.formState.errors.confirmPassword.message}
               </p>
             )}
           </AuthField>
         </div>
+      </div>
 
-        <AccountFormSubmitButton isDisabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? 'Bezig…' : 'Wachtwoord wijzigen'}
-        </AccountFormSubmitButton>
-      </form>
-    </div>
+      <AccountFormSubmitButton isDisabled={form.formState.isSubmitting}>
+        {form.formState.isSubmitting ? 'Bezig…' : 'Wachtwoord wijzigen'}
+      </AccountFormSubmitButton>
+    </form>
   )
 }

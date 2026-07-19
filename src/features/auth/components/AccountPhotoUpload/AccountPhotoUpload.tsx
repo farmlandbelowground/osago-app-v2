@@ -92,26 +92,16 @@ export const AccountPhotoUpload: FC<Props> = ({
 
   return (
     <div
-      className={`
-        mb-6 flex items-center gap-[18px] rounded-lg border border-border
-        bg-surface p-6 shadow-sm
-      `}
+      className="card mb-5"
+      style={{ alignItems: 'center', display: 'flex', gap: 18 }}
     >
       <label
-        className={`
-          group relative shrink-0 cursor-pointer rounded-full
-          transition-transform
-          hover:scale-[1.03]
-        `}
+        className="account-avatar-wrap"
         htmlFor="account-photo-input"
         title="Klik om een profielfoto te uploaden"
       >
         <div
-          className={`
-            flex items-center justify-center overflow-hidden rounded-full
-            bg-gradient-to-br from-primary to-primary-hover font-semibold
-            text-primary-foreground
-          `}
+          className="user-avatar"
           style={{
             fontSize: ACCOUNT_AVATAR_INITIALS_FONT_SIZE_PX,
             height: ACCOUNT_PHOTO_PREVIEW_SIZE_PX,
@@ -121,7 +111,6 @@ export const AccountPhotoUpload: FC<Props> = ({
           {photo ? (
             <Image
               alt="Profielfoto"
-              className="h-full w-full object-cover"
               height={ACCOUNT_PHOTO_PREVIEW_SIZE_PX}
               src={photo}
               width={ACCOUNT_PHOTO_PREVIEW_SIZE_PX}
@@ -130,13 +119,7 @@ export const AccountPhotoUpload: FC<Props> = ({
             buildInitials(firstName, lastName)
           )}
         </div>
-        <div
-          className={`
-            absolute inset-0 flex items-center justify-center rounded-full
-            bg-[rgba(10,31,20,0.55)] text-white opacity-0 transition-opacity
-            group-hover:opacity-100
-          `}
-        >
+        <div className="account-avatar-overlay">
           <svg
             fill="none"
             height="22"
@@ -152,28 +135,24 @@ export const AccountPhotoUpload: FC<Props> = ({
       </label>
       <input
         accept={ALLOWED_ACCOUNT_PHOTO_MIME_TYPES.join(',')}
-        className="hidden"
         disabled={isPending}
         id="account-photo-input"
         onChange={event => void onFileChange(event)}
+        style={{ display: 'none' }}
         type="file"
       />
-      <div className="min-w-0 flex-1">
-        <div
-          className={`
-            font-serif text-[22px] font-medium tracking-tight text-foreground
-          `}
-        >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="serif" style={{ fontSize: 22, fontWeight: 500, letterSpacing: '-0.01em' }}>
           {firstName} {lastName}
         </div>
-        <div className="text-sm text-muted-foreground">{email}</div>
-        <div className="mt-1.5 text-xs">
+        <div className="text-sm text-muted">{email}</div>
+        <div className="text-xs" style={{ marginTop: 6 }}>
           <button
-            className="text-primary-hover underline"
             disabled={isPending}
             onClick={() =>
               document.getElementById('account-photo-input')?.click()
             }
+            style={{ color: 'var(--green-dark)', textDecoration: 'underline' }}
             type="button"
           >
             {photo ? 'Foto wijzigen' : 'Profielfoto uploaden'}
@@ -182,9 +161,9 @@ export const AccountPhotoUpload: FC<Props> = ({
             <>
               {' · '}
               <button
-                className="text-destructive underline"
                 disabled={isPending}
                 onClick={() => void onRemove()}
+                style={{ color: 'var(--danger)', textDecoration: 'underline' }}
                 type="button"
               >
                 Verwijderen
@@ -192,21 +171,17 @@ export const AccountPhotoUpload: FC<Props> = ({
             </>
           )}
         </div>
-        {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+        {error && (
+          <p className="text-xs" style={{ color: 'var(--danger)', marginTop: 4 }}>
+            {error}
+          </p>
+        )}
       </div>
       {isAdmin && (
-        <div className="text-right text-sm">
-          <span
-            className={`
-              inline-flex items-center rounded-full bg-[#EDE9FE] px-2.5 py-[3px]
-              text-[11px] font-semibold tracking-[0.03em] text-[#5B21B6]
-              uppercase
-            `}
-          >
-            Beheerder
-          </span>
+        <div className="text-sm" style={{ textAlign: 'right' }}>
+          <div className="badge badge-purple">Beheerder</div>
           {createdAt && (
-            <div className="mt-2 text-xs text-muted-foreground">
+            <div className="text-xs text-muted mt-2">
               Lid sinds {formatMemberSince(createdAt)}
             </div>
           )}

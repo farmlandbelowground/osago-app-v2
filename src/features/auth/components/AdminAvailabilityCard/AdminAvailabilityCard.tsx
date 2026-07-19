@@ -91,46 +91,48 @@ export const AdminAvailabilityCard: FC<Props> = ({ adminId }) => {
   }
 
   return (
-    <div
-      className={`mb-6 rounded-lg border border-border bg-surface p-6 shadow-sm`}
-    >
-      <h2 className="mb-1 font-serif text-[17px] font-medium text-foreground">
-        Beschikbaarheid voor afspraken
-      </h2>
-      <p className="mb-3.5 text-[13px] text-muted-foreground">
+    <div className="card mb-5">
+      <h3 style={{ margin: '0 0 4px' }}>Beschikbaarheid voor afspraken</h3>
+      <p className="desc">
         Werkuren waarop klanten je via de boekingslink kunnen reserveren. Per
         dag een of meer tijdsvensters; laat een dag leeg om die volledig dicht
         te houden.
       </p>
 
-      <div className="flex flex-col gap-2">
+      <div
+        style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}
+      >
         {APPT_WEEKDAYS.map(day => (
           <div
-            className={`
-              flex items-center gap-3.5 border-b border-border py-2
-              last:border-b-0
-            `}
             key={day}
+            style={{
+              alignItems: 'center',
+              borderBottom: '1px solid var(--line-soft)',
+              display: 'flex',
+              gap: 14,
+              padding: '8px 0',
+            }}
           >
-            <div className="w-[90px] text-[13px] font-semibold text-foreground">
+            <div style={{ fontSize: 13, fontWeight: 600, width: 90 }}>
               {APPT_WEEKDAY_LABELS[day]}
             </div>
-            <div className="flex flex-1 flex-col gap-1.5">
+            <div
+              style={{
+                display: 'flex',
+                flex: 1,
+                flexDirection: 'column',
+                gap: 6,
+              }}
+            >
               {availability[day].length === 0 ? (
-                <span className="text-xs text-muted-foreground">
-                  Niet beschikbaar
-                </span>
+                <span className="text-xs text-muted">Niet beschikbaar</span>
               ) : (
                 availability[day].map((slot, index) => (
                   <div
-                    className="flex items-center gap-1.5"
                     key={`${day}-${index}`}
+                    style={{ alignItems: 'center', display: 'flex', gap: 6 }}
                   >
                     <input
-                      className={`
-                        w-[100px] rounded-md border border-border bg-surface
-                        px-2 py-1 text-[13px]
-                      `}
                       onChange={event =>
                         setDraft(
                           updateSlot(
@@ -142,15 +144,12 @@ export const AdminAvailabilityCard: FC<Props> = ({ adminId }) => {
                           ),
                         )
                       }
+                      style={{ fontSize: 13, padding: '4px 8px', width: 100 }}
                       type="time"
                       value={slot.start}
                     />
-                    <span className="text-muted-foreground">–</span>
+                    <span className="text-muted">–</span>
                     <input
-                      className={`
-                        w-[100px] rounded-md border border-border bg-surface
-                        px-2 py-1 text-[13px]
-                      `}
                       onChange={event =>
                         setDraft(
                           updateSlot(
@@ -162,14 +161,12 @@ export const AdminAvailabilityCard: FC<Props> = ({ adminId }) => {
                           ),
                         )
                       }
+                      style={{ fontSize: 13, padding: '4px 8px', width: 100 }}
                       type="time"
                       value={slot.end}
                     />
                     <button
-                      className={`
-                        rounded-md px-2 py-1 text-sm text-muted-foreground
-                        hover:bg-border-soft
-                      `}
+                      className="btn btn-ghost btn-sm"
                       onClick={() =>
                         setDraft(removeSlot(availability, day, index))
                       }
@@ -182,11 +179,7 @@ export const AdminAvailabilityCard: FC<Props> = ({ adminId }) => {
               )}
             </div>
             <button
-              className={`
-                rounded-md border border-border bg-surface px-3 py-1.5
-                text-[13px] font-semibold text-foreground
-                hover:bg-border-soft
-              `}
+              className="btn btn-secondary btn-sm"
               onClick={() => setDraft(addSlot(availability, day))}
               type="button"
             >
@@ -196,26 +189,19 @@ export const AdminAvailabilityCard: FC<Props> = ({ adminId }) => {
         ))}
       </div>
 
-      <div className="mt-3.5 flex justify-end gap-2">
-        <button
-          className={`
-            inline-flex items-center justify-center rounded-md border
-            border-border bg-surface px-5 py-3 text-sm font-semibold
-            text-foreground transition
-            hover:bg-border-soft
-          `}
-          onClick={onReset}
-          type="button"
-        >
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          justifyContent: 'flex-end',
+          marginTop: 14,
+        }}
+      >
+        <button className="btn btn-secondary" onClick={onReset} type="button">
           Standaardwaarden
         </button>
         <button
-          className={`
-            inline-flex items-center justify-center gap-2 rounded-md bg-primary
-            px-5 py-3 text-sm font-semibold text-primary-foreground transition
-            hover:-translate-y-px hover:bg-primary-hover
-            hover:shadow-[0_4px_12px_rgba(0,179,60,0.25)]
-          `}
+          className="btn btn-primary"
           onClick={() => onSave(availability)}
           type="button"
         >

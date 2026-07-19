@@ -73,63 +73,45 @@ export const CompanyLogoUpload: FC<Props> = ({ logo }) => {
   }
 
   return (
-    <div className="flex flex-wrap items-start gap-[18px]">
-      <div
-        className={`
-          flex shrink-0 items-center justify-center overflow-hidden rounded-sm
-          border border-border bg-surface p-2
-        `}
-        style={{ height: LOGO_PREVIEW_HEIGHT_PX, width: LOGO_PREVIEW_WIDTH_PX }}
-      >
+    <div className="logo-upload-row">
+      <div className="logo-upload-preview">
         {logo ? (
           <Image
             alt="Bedrijfslogo"
-            className="max-h-full max-w-full object-contain"
             height={LOGO_PREVIEW_HEIGHT_PX}
             src={logo}
             width={LOGO_PREVIEW_WIDTH_PX}
           />
         ) : (
-          <div className={`
-            flex flex-col items-center gap-1 text-muted-foreground
-          `}>
-            <ImagePlaceholderIcon className="h-[22px] w-[22px]" />
-            <span className="text-[11px]">Geen logo</span>
+          <div className="logo-upload-placeholder">
+            <ImagePlaceholderIcon height={22} width={22} />
+            <span>Geen logo</span>
           </div>
         )}
       </div>
 
-      <div className="flex min-w-60 flex-1 flex-col gap-1.5">
+      <div className="logo-upload-actions">
         <input
           accept={ALLOWED_LOGO_MIME_TYPES.join(',')}
-          className={`
-            text-sm text-muted-foreground
-            file:mr-3 file:cursor-pointer file:rounded-md file:border
-            file:border-border file:bg-surface file:px-3.5 file:py-2
-            file:text-sm file:font-semibold file:text-foreground
-            file:transition-colors file:hover:bg-border-soft
-          `}
           disabled={isPending}
           onChange={event => void onFileChange(event)}
           type="file"
         />
-        <span className="text-xs text-muted-foreground">
-          PNG, JPG, SVG of WebP.
-        </span>
+        <span className="text-xs text-muted">PNG, JPG, SVG of WebP.</span>
         {logo && (
           <button
-            className={`
-              self-start text-xs font-medium text-destructive
-              hover:underline
-            `}
+            className="btn btn-ghost btn-sm"
             disabled={isPending}
             onClick={() => void onRemove()}
+            style={{ alignSelf: 'flex-start', marginTop: '4px' }}
             type="button"
           >
             Logo verwijderen
           </button>
         )}
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        {error && (
+          <p style={{ color: 'var(--danger)', fontSize: '11.5px' }}>{error}</p>
+        )}
       </div>
     </div>
   )

@@ -2,7 +2,9 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { type ReactNode } from 'react'
 
+import { getCompany } from '@features/company/queries'
 import { Sidebar } from '@features/navigation'
+import { WELKOM_PATHS } from '@features/onboarding'
 import {
   ABONNEMENT_AFSLUITEN_PATH,
   ACCOUNT_PATH,
@@ -22,6 +24,15 @@ interface Props {
 
 export default async function AppLayout({ children }: Props) {
   const session = await requireSession()
+
+  if (!session.onboardingSeen) {
+    const company = await getCompany(session.user.id)
+
+    if (!company?.sector) {
+      redirect(WELKOM_PATHS[0])
+    }
+  }
+
   const pathname = (await headers()).get(PATHNAME_HEADER) ?? ''
   const isLockExempt =
     pathname === ABONNEMENT_AFSLUITEN_PATH || pathname === ACCOUNT_PATH
@@ -39,20 +50,13 @@ export default async function AppLayout({ children }: Props) {
 
   return (
     <QueryProvider>
-      <div className="min-h-screen">
+      <div className="app active">
         <Sidebar
           email={session.user.email ?? ''}
           firstName={session.firstName}
           lastName={session.lastName}
         />
-        <div
-          className={`
-            ml-(--sidebar-width) min-h-screen min-w-0
-            max-[900px]:ml-0
-          `}
-        >
-          {children}
-        </div>
+        {children}
       </div>
     </QueryProvider>
   )

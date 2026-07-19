@@ -38,7 +38,7 @@ export const ForgotPasswordForm: FC = () => {
         <AuthAlert variant="error">{state.error}</AuthAlert>
       )}
 
-      <form action={formAction} className="flex flex-col">
+      <form action={formAction}>
         <AuthField label="E-mailadres">
           <AuthTextInput
             name="email"
@@ -54,13 +54,8 @@ export const ForgotPasswordForm: FC = () => {
         </AuthSubmitButton>
       </form>
 
-      <div className="mt-6 text-center text-[14px]">
-        <Link href="/" className={`
-          font-semibold text-primary
-          hover:underline
-        `}>
-          Terug naar inloggen
-        </Link>
+      <div className="auth-toggle">
+        <Link href="/">Terug naar inloggen</Link>
       </div>
     </div>
   )

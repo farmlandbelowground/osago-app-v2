@@ -37,7 +37,7 @@ export const VerifyEmailForm: FC = () => {
         </AuthAlert>
       )}
 
-      <form action={formAction} className="flex flex-col">
+      <form action={formAction}>
         <AuthField label="Bevestigingscode">
           <AuthTextInput
             name="code"
@@ -48,7 +48,12 @@ export const VerifyEmailForm: FC = () => {
             pattern="[0-9]{6}"
             autoComplete="one-time-code"
             placeholder="123456"
-            className="text-center font-mono text-[22px] tracking-[8px]"
+            style={{
+              fontFamily: "'Inter', monospace",
+              fontSize: 22,
+              letterSpacing: 8,
+              textAlign: 'center',
+            }}
           />
         </AuthField>
 
@@ -57,25 +62,17 @@ export const VerifyEmailForm: FC = () => {
         </AuthSubmitButton>
       </form>
 
-      <div className="mt-6 text-center text-[14px] text-muted-foreground">
+      <div className="auth-toggle">
         Geen code ontvangen?{' '}
         <button
-          type="button"
           onClick={() => setShowResendNote(true)}
-          className={`
-            font-semibold text-primary
-            hover:underline
-          `}
+          style={{ color: 'var(--green)', fontWeight: 600 }}
+          type="button"
         >
           Stuur opnieuw
         </button>
-        <span className="mx-2 text-border">·</span>
-        <Link href="/" className={`
-          font-semibold text-primary
-          hover:underline
-        `}>
-          Terug naar inloggen
-        </Link>
+        <span style={{ color: 'var(--line)', margin: '0 8px' }}>·</span>
+        <Link href="/">Terug naar inloggen</Link>
       </div>
     </div>
   )

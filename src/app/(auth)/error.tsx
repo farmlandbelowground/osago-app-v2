@@ -7,15 +7,12 @@ interface Props {
 
 export default function AuthError({ reset }: Props) {
   return (
-    <div className="flex flex-col items-center gap-4 text-center">
-      <h2 className="text-xl font-semibold">Er ging iets mis</h2>
-      <p className="text-muted-foreground">
+    <div style={{ textAlign: 'center' }}>
+      <h2>Er ging iets mis</h2>
+      <p className="alert alert-error">
         Probeer het opnieuw of vernieuw de pagina.
       </p>
-      <button
-        onClick={reset}
-        className="rounded-md bg-primary px-4 py-2 text-primary-foreground"
-      >
+      <button className="btn btn-primary" onClick={reset}>
         Opnieuw proberen
       </button>
     </div>

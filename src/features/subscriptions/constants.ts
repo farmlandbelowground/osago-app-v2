@@ -28,6 +28,7 @@ export const VOUCHERS_TAG = 'vouchers'
 
 export const VAT_RATE = 0.21
 export const VAT_PERCENTAGE = 21
+export const DISABLED_OPACITY = 0.4
 export const VOUCHER_PERCENTAGE_MAX = 100
 export const SUBSCRIPTION_DURATION_MONTHS = 6
 export const SUBSCRIPTION_RENEW_NOTICE_DAYS = 30
@@ -94,19 +95,17 @@ export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
   renewed: 'Wordt verlengd',
 }
 
-// Ports legacy's .badge-* color pairs verbatim (styles.css ~1474-1491).
+// Legacy's .badge-* color modifier classes (styles.css ~1486-1491).
 export const BADGE_KIND_CLASSES: Record<BadgeKind, string> = {
-  danger: 'bg-[#FEE2E2] text-[#991B1B]',
-  info: 'bg-[#E0F2FE] text-[#0369A1]',
-  neutral: 'bg-[#F3F4F6] text-[#4B5563]',
-  success: 'bg-primary-soft text-primary-hover',
-  warning: 'bg-[#FEF3C7] text-[#92400E]',
+  danger: 'badge-red',
+  info: 'badge-blue',
+  neutral: 'badge-gray',
+  success: 'badge-green',
+  warning: 'badge-amber',
 }
 
-// Ports legacy's base .badge shape verbatim (styles.css ~1474-1483) — pill,
-// no border, uppercase 11px/600.
-export const BADGE_SHAPE_CLASSES =
-  'inline-flex items-center gap-[5px] rounded-full px-2.5 py-[3px] text-[11px] font-semibold tracking-[0.03em] uppercase'
+// Legacy's base .badge shape (styles.css ~1475-1483) — pill, uppercase 11px/600.
+export const BADGE_SHAPE_CLASSES = 'badge'
 
 export const SUBSCRIPTION_STATUS_KIND: Record<SubscriptionStatus, BadgeKind> = {
   active: 'success',
@@ -289,3 +288,10 @@ export const PLANS: readonly Plan[] = [
 ] as const satisfies readonly Plan[]
 
 export const MIN_PLAN_PRICE = Math.min(...PLANS.map(plan => plan.price))
+
+export const MIN_FULL_PLAN_PRICE = Math.min(
+  ...PLANS.filter(plan => plan.category === 'full').map(plan => plan.price),
+)
+export const MIN_VALUATION_PLAN_PRICE = Math.min(
+  ...PLANS.filter(plan => plan.category === 'valuation').map(plan => plan.price),
+)

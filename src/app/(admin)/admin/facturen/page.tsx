@@ -20,12 +20,7 @@ export default async function AdminFacturenPage() {
   }))
 
   return (
-    <main
-      className={`
-        w-full px-10 py-8
-        max-[900px]:p-5
-      `}
-    >
+    <main className="main">
       <AdminInvoicesTable customers={customers} invoices={invoices} />
     </main>
   )

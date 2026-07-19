@@ -2,8 +2,6 @@
 
 import { useMemo, useState, type FC, type SVGProps } from 'react'
 
-import { cn } from '@shared/utils/cn'
-
 import { deleteVoucher } from '../../actions'
 import { PLANS, VOUCHER_APPLIES_TO_ALL } from '../../constants'
 import { formatDateNl } from '../../lib/formatDateNl'
@@ -29,12 +27,6 @@ const TrashIcon: FC<SVGProps<SVGSVGElement>> = props => (
     <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
   </svg>
 )
-
-const TH_CLASSES = `
-  border-b border-border-soft bg-background px-4 py-3 text-[12px]
-  font-semibold tracking-[0.04em] text-muted-foreground uppercase
-`
-const TD_CLASSES = 'border-b border-border-soft px-4 py-3 text-[13.5px]'
 
 export const AdminVouchersTable: FC<Props> = ({ vouchers }) => {
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -99,29 +91,22 @@ export const AdminVouchersTable: FC<Props> = ({ vouchers }) => {
 
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-medium text-foreground">
-          Vouchers
-        </h1>
-        <button
-          className={`
-            inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2.5
-            text-sm font-semibold text-primary-foreground transition
-            hover:bg-primary-hover
-          `}
-          onClick={() => setIsCreating(true)}
-          type="button"
-        >
-          + Nieuwe vouchercode
-        </button>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Vouchers</h1>
+        </div>
+        <div className="page-actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => setIsCreating(true)}
+            type="button"
+          >
+            + Nieuwe vouchercode
+          </button>
+        </div>
       </div>
 
-      <div
-        className={`
-          mb-6 grid grid-cols-2 gap-4
-          md:grid-cols-4
-        `}
-      >
+      <div className="grid-4 mb-5 grid">
         <KpiTile
           label="Totaal aantal"
           meta="In administratie"
@@ -144,41 +129,34 @@ export const AdminVouchersTable: FC<Props> = ({ vouchers }) => {
         />
       </div>
 
-      <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-        <h2 className="mb-1 font-serif text-lg font-medium text-foreground">
-          Vouchercodes
-        </h2>
-        <p className="mb-4 text-[13px] text-muted-foreground">
-          Klik op een rij om de voucher te bewerken of te deactiveren.
-        </p>
-
-        {sortedVouchers.length === 0 ? (
-          <div
-            className={`
-              rounded-md border border-border bg-background px-6 py-10
-              text-center
-            `}
-          >
-            <h3 className="mb-1 text-sm font-semibold text-foreground">
-              Nog geen vouchercodes
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Klik op &quot;Nieuwe vouchercode&quot; om er een aan te maken.
+      <div className="card">
+        <div className="flex-between mb-3">
+          <div>
+            <h3>Vouchercodes</h3>
+            <p className="desc" style={{ marginBottom: 0 }}>
+              Klik op een rij om de voucher te bewerken of te deactiveren.
             </p>
           </div>
+        </div>
+
+        {sortedVouchers.length === 0 ? (
+          <div className="empty" style={{ padding: '36px 20px' }}>
+            <h3>Nog geen vouchercodes</h3>
+            <p>Klik op &quot;Nieuwe vouchercode&quot; om er een aan te maken.</p>
+          </div>
         ) : (
-          <div className="-mx-6 -mb-6 overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+          <div style={{ overflowX: 'auto', margin: '0 -24px -24px' }}>
+            <table style={{ margin: 0 }}>
               <thead>
                 <tr>
-                  <th className={cn(TH_CLASSES, 'pl-6')}>Code</th>
-                  <th className={TH_CLASSES}>Korting</th>
-                  <th className={TH_CLASSES}>Beschrijving</th>
-                  <th className={TH_CLASSES}>Geldig t/m</th>
-                  <th className={TH_CLASSES}>Plan</th>
-                  <th className={cn(TH_CLASSES, 'text-right')}>Gebruik</th>
-                  <th className={TH_CLASSES}>Status</th>
-                  <th className={cn(TH_CLASSES, 'pr-6')} />
+                  <th style={{ paddingLeft: 24 }}>Code</th>
+                  <th>Korting</th>
+                  <th>Beschrijving</th>
+                  <th>Geldig t/m</th>
+                  <th>Plan</th>
+                  <th className="right">Gebruik</th>
+                  <th>Status</th>
+                  <th className="right" style={{ paddingRight: 24 }} />
                 </tr>
               </thead>
               <tbody>
@@ -188,64 +166,49 @@ export const AdminVouchersTable: FC<Props> = ({ vouchers }) => {
                   )
 
                   return (
-                    <tr className="hover:bg-[#E9EDEB]" key={voucher.id}>
-                      <td
-                        className={cn(
-                          TD_CLASSES,
-                          `pl-6 font-bold tracking-[0.05em] text-foreground`,
-                        )}
-                      >
-                        {voucher.code}
+                    <tr key={voucher.id}>
+                      <td style={{ paddingLeft: 24 }}>
+                        <strong
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            letterSpacing: '0.05em',
+                          }}
+                        >
+                          {voucher.code}
+                        </strong>
                       </td>
-                      <td className={cn(TD_CLASSES, 'text-foreground')}>
+                      <td>
                         {voucher.type === 'percentage'
                           ? `${voucher.value}%`
                           : formatEuro(voucher.value)}
                       </td>
-                      <td
-                        className={cn(
-                          TD_CLASSES,
-                          'max-w-[280px] text-muted-foreground',
-                        )}
-                      >
+                      <td style={{ maxWidth: 280 }}>
                         {voucher.description || '—'}
                       </td>
-                      <td className={cn(TD_CLASSES, 'text-muted-foreground')}>
+                      <td className="text-muted">
                         {voucher.validUntil
                           ? formatDateNl(voucher.validUntil)
                           : 'Onbeperkt'}
                       </td>
-                      <td className={cn(TD_CLASSES, 'text-muted-foreground')}>
+                      <td>
                         {voucher.appliesTo === VOUCHER_APPLIES_TO_ALL
                           ? 'Alle plannen'
                           : (plan?.label ?? voucher.appliesTo)}
                       </td>
-                      <td
-                        className={cn(
-                          TD_CLASSES,
-                          'text-right text-muted-foreground',
-                        )}
-                      >
+                      <td className="right text-muted">
                         {voucher.maxUses !== null
                           ? `${voucher.usedCount}/${voucher.maxUses}`
                           : voucher.usedCount}
                       </td>
-                      <td className={TD_CLASSES}>
+                      <td>
                         <VoucherStatusBadge voucher={voucher} />
                       </td>
                       <td
-                        className={cn(
-                          TD_CLASSES,
-                          'pr-6 text-right whitespace-nowrap',
-                        )}
+                        className="right"
+                        style={{ paddingRight: 24, whiteSpace: 'nowrap' }}
                       >
                         <button
-                          className={`
-                            inline-flex items-center rounded-md px-3 py-[7px]
-                            text-[13px] font-semibold text-foreground-secondary
-                            transition
-                            hover:bg-border-soft
-                          `}
+                          className="btn btn-ghost btn-sm"
                           onClick={() => setEditingId(voucher.id)}
                           type="button"
                         >
@@ -253,12 +216,9 @@ export const AdminVouchersTable: FC<Props> = ({ vouchers }) => {
                         </button>
                         <button
                           aria-label="Verwijderen"
-                          className={`
-                            inline-flex items-center justify-center rounded-md
-                            px-2 py-1.5 text-foreground-secondary transition
-                            hover:bg-border-soft
-                          `}
+                          className="btn btn-ghost btn-sm"
                           onClick={() => void onDelete(voucher)}
+                          style={{ padding: '6px 8px' }}
                           title="Verwijderen"
                           type="button"
                         >

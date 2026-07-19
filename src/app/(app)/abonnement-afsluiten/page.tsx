@@ -28,12 +28,7 @@ export default async function AbonnementAfsluitenPage({ searchParams }: Props) {
   const selectedPlan = PLANS.find(plan => plan.id === planId) ?? null
 
   return (
-    <main
-      className={`
-        w-full px-10 pt-8 pb-20
-        max-[900px]:p-5
-      `}
-    >
+    <main className="main">
       <SubscribePlanGrid />
       {selectedPlan && <SubscribeConfirmModal plan={selectedPlan} />}
     </main>

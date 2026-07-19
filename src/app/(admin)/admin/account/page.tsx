@@ -18,21 +18,9 @@ export default async function AdminAccountPage() {
   }
 
   return (
-    <main
-      className={`
-        w-full px-10 pt-8 pb-20
-        max-[900px]:p-5
-      `}
-    >
-      <div className="mb-7">
-        <h1
-          className={`
-            font-serif text-[34px] leading-tight font-medium tracking-tight
-            text-foreground
-          `}
-        >
-          Mijn account
-        </h1>
+    <main className="main">
+      <div className="page-header">
+        <h1 className="page-title">Mijn account</h1>
       </div>
 
       <AccountPhotoUpload

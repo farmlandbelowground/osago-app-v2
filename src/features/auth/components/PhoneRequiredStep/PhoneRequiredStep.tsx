@@ -26,7 +26,7 @@ export const PhoneRequiredStep: FC<Props> = ({
 
       {phoneError && <AuthAlert variant="error">{phoneError}</AuthAlert>}
 
-      <form action={formAction} className="flex flex-col">
+      <form action={formAction}>
         <AuthField label="Mobiel telefoonnummer">
           <AuthTextInput
             name="phone"
@@ -42,14 +42,11 @@ export const PhoneRequiredStep: FC<Props> = ({
         </AuthSubmitButton>
       </form>
 
-      <div className="mt-6 text-center text-[14px]">
+      <div className="auth-toggle">
         <button
-          type="button"
           onClick={onCancel}
-          className={`
-            font-semibold text-primary
-            hover:underline
-          `}
+          style={{ color: 'var(--green)', fontWeight: 600 }}
+          type="button"
         >
           Annuleren
         </button>

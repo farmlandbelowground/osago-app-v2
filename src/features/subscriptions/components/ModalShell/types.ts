@@ -1,8 +1,9 @@
-import { type PropsWithChildren } from 'react'
+import { type PropsWithChildren, type ReactNode } from 'react'
 
 export interface CustomProps {
   onClose: () => void
   title: string
+  footer?: ReactNode
   maxWidthClassName?: string
 }
 

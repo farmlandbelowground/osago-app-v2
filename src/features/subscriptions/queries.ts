@@ -99,121 +99,12 @@ export const getOwnInvoices = async (): Promise<Invoice[]> => {
   return result.error !== null ? [] : result.data.invoices
 }
 
-// TEMP: local Mollie test-mode account has no invoices — mocking the list so
-// the /admin/facturen UI can be eyeballed. Revert once verified.
-const MOCK_INVOICES: Invoice[] = [
-  {
-    createdAt: '2026-07-15T09:00:00+02:00',
-    currency: 'EUR',
-    description: 'Osago Plus — abonnement',
-    dueAt: null,
-    grossValue: 1799,
-    id: 'inv_mock_draft1',
-    isCreditNote: false,
-    issuedAt: null,
-    number: 'inv_mock_draft1',
-    paidAt: null,
-    paymentTerm: null,
-    paymentUrl: null,
-    pdfUrl: null,
-    period: '',
-    recipientEmail: 'nieuwe.klant@example.com',
-    recipientIdentifier: 'nieuwe.klant@example.com#business',
-    recipientName: 'Nieuwe Klant B.V.',
-    status: 'draft',
-  },
-  {
-    createdAt: '2026-07-10T09:00:00+02:00',
-    currency: 'EUR',
-    description: 'Osago Basis — abonnement',
-    dueAt: '2026-07-24T09:00:00+02:00',
-    grossValue: 999,
-    id: 'inv_mock_open1',
-    isCreditNote: false,
-    issuedAt: '2026-07-10T09:00:00+02:00',
-    number: '2026.0042',
-    paidAt: null,
-    paymentTerm: '14 days',
-    paymentUrl: 'https://www.mollie.com/checkout/mock-open1',
-    pdfUrl: 'https://www.mollie.com/pdf/mock-open1',
-    period: '',
-    recipientEmail: 'jan.devries@example.com',
-    recipientIdentifier: 'jan.devries@example.com#consumer',
-    recipientName: 'Jan de Vries',
-    status: 'issued',
-  },
-  {
-    createdAt: '2026-06-01T09:00:00+02:00',
-    currency: 'EUR',
-    description: 'Osago Premium — abonnement',
-    dueAt: '2026-06-15T09:00:00+02:00',
-    grossValue: 2499,
-    id: 'inv_mock_overdue1',
-    isCreditNote: false,
-    issuedAt: '2026-06-01T09:00:00+02:00',
-    number: '2026.0031',
-    paidAt: null,
-    paymentTerm: '14 days',
-    paymentUrl: 'https://www.mollie.com/checkout/mock-overdue1',
-    pdfUrl: 'https://www.mollie.com/pdf/mock-overdue1',
-    period: '',
-    recipientEmail: 'bedrijf.bv@example.com',
-    recipientIdentifier: 'bedrijf.bv@example.com#business',
-    recipientName: 'Bedrijf B.V.',
-    status: 'issued',
-  },
-  {
-    createdAt: '2026-05-01T09:00:00+02:00',
-    currency: 'EUR',
-    description: 'Waardebepaling Basis',
-    dueAt: '2026-05-15T09:00:00+02:00',
-    grossValue: 299,
-    id: 'inv_mock_paid1',
-    isCreditNote: false,
-    issuedAt: '2026-05-01T09:00:00+02:00',
-    number: '2026.0018',
-    paidAt: '2026-05-04T09:00:00+02:00',
-    paymentTerm: '14 days',
-    paymentUrl: null,
-    pdfUrl: 'https://www.mollie.com/pdf/mock-paid1',
-    period: '',
-    recipientEmail: 'anna.jansen@example.com',
-    recipientIdentifier: 'anna.jansen@example.com#consumer',
-    recipientName: 'Anna Jansen',
-    status: 'paid',
-  },
-  {
-    createdAt: '2026-04-20T09:00:00+02:00',
-    currency: 'EUR',
-    description: 'Creditnota — Osago Plus (te veel gefactureerd)',
-    dueAt: null,
-    grossValue: -1799,
-    id: 'inv_mock_credit1',
-    isCreditNote: true,
-    issuedAt: '2026-04-20T09:00:00+02:00',
-    number: 'C-2026.0009',
-    paidAt: '2026-04-20T09:00:00+02:00',
-    paymentTerm: null,
-    paymentUrl: null,
-    pdfUrl: 'https://www.mollie.com/pdf/mock-credit1',
-    period: '',
-    recipientEmail: 'jan.devries@example.com',
-    recipientIdentifier: 'jan.devries@example.com#consumer',
-    recipientName: 'Jan de Vries',
-    status: 'paid',
-  },
-]
-
 export const adminListInvoices = async (): Promise<Invoice[]> => {
   const result = await legacyApiFetch(`${SALES_INVOICE_LIST_ENDPOINT}?all=1`, {
     schema: SalesInvoiceListResponseSchema,
   })
 
-  if (result.error !== null) {
-    return MOCK_INVOICES
-  }
-
-  return result.data.invoices.length > 0 ? result.data.invoices : MOCK_INVOICES
+  return result.data?.invoices || [];
 }
 
 export const adminListVouchers = async (): Promise<Voucher[]> => {
@@ -254,11 +145,14 @@ export const adminListSubscriptions = async (): Promise<
   AdminSubscriptionRow[]
 > => {
   const supabase = await getServerClient()
-  const [{ data: subscriptionRows }, { data: profileRows }] =
-    await Promise.all([
+  const [{ data: subscriptionRows }, { data: profileRows }] = await Promise.all(
+    [
       supabase.from('subscriptions').select('*'),
-      supabase.from('profiles').select('id, email, first_name, last_name, role'),
-    ])
+      supabase
+        .from('profiles')
+        .select('id, email, first_name, last_name, role'),
+    ],
+  )
 
   const subscriptionsByUserId = new Map(
     (subscriptionRows ?? [])
