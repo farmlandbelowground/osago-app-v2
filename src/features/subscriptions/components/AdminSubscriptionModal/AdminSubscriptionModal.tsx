@@ -5,7 +5,6 @@ import { type FC } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { useToastStore } from '@shared/store/toast'
-import { cn } from '@shared/utils/cn'
 
 import { adminCancelSubscription, adminSaveSubscription } from '../../actions'
 import { PLANS, SUBSCRIPTION_DURATION_MONTHS } from '../../constants'
@@ -111,36 +110,24 @@ export const AdminSubscriptionModal: FC<Props> = ({
 
   return (
     <ModalShell
-      maxWidthClassName="max-w-2xl"
+      maxWidthClassName="modal-lg"
       onClose={onClose}
       title={hasExisting ? 'Abonnement beheren' : 'Nieuw abonnement'}
     >
       <form onSubmit={event => void form.handleSubmit(onSubmit)(event)}>
         {subscription ? (
-          <p className="mb-4 text-sm text-foreground">
+          <div className="text-sm text-muted mb-4">
             Klant:{' '}
-            <span className="font-semibold">
+            <strong style={{ color: 'var(--ink)' }}>
               {customers.find(
                 customer => customer.userId === subscription.userId,
               )?.label ?? subscription.userId}
-            </span>
-          </p>
+            </strong>
+          </div>
         ) : (
-          <div className="mb-4">
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Klant *
-            </label>
-            <select
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              {...form.register('userId')}
-            >
+          <div className="field" style={{ marginBottom: 18 }}>
+            <label>Klant *</label>
+            <select {...form.register('userId')}>
               <option value="">Selecteer klant...</option>
               {customers.map(customer => (
                 <option key={customer.userId} value={customer.userId}>
@@ -149,169 +136,173 @@ export const AdminSubscriptionModal: FC<Props> = ({
               ))}
             </select>
             {form.formState.errors.userId && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="text-xs" style={{ color: 'var(--danger)' }}>
                 {form.formState.errors.userId.message}
               </p>
             )}
           </div>
         )}
 
-        <h3 className="mb-2 text-sm font-semibold text-foreground">
-          Abonnementstype
-        </h3>
-        <p className="mb-2 text-xs text-muted-foreground">
-          Volledige abonnementen
-        </p>
-        <div className="mb-4 grid grid-cols-3 gap-2">
-          {PLANS.filter(plan => plan.category === 'full').map(plan => (
-            <label
-              className={cn(
-                'cursor-pointer rounded-md border px-3 py-2.5 text-xs',
-                form.watch('planId') === plan.id
-                  ? 'border-primary bg-primary-soft'
-                  : 'border-border bg-background',
-              )}
-              key={plan.id}
-            >
-              <input
-                checked={form.watch('planId') === plan.id}
-                className="sr-only"
-                onChange={() => onSelectPlan(plan.id)}
-                type="radio"
-                value={plan.id}
-              />
-              <div className="font-semibold text-foreground">{plan.label}</div>
-              <div className="text-muted-foreground">
-                €{plan.price} per 6 maanden
-              </div>
-            </label>
-          ))}
-        </div>
-        <p className="mb-2 text-xs text-muted-foreground">
-          Alleen Waardebepaling
-        </p>
-        <div className="mb-4 grid grid-cols-2 gap-2">
-          {PLANS.filter(plan => plan.category === 'valuation').map(plan => (
-            <label
-              className={cn(
-                'cursor-pointer rounded-md border px-3 py-2.5 text-xs',
-                form.watch('planId') === plan.id
-                  ? 'border-primary bg-primary-soft'
-                  : 'border-border bg-background',
-              )}
-              key={plan.id}
-            >
-              <input
-                checked={form.watch('planId') === plan.id}
-                className="sr-only"
-                onChange={() => onSelectPlan(plan.id)}
-                type="radio"
-                value={plan.id}
-              />
-              <div className="font-semibold text-foreground">{plan.label}</div>
-              <div className="text-muted-foreground">€{plan.price}</div>
-            </label>
-          ))}
+        <div className="form-section" style={{ marginBottom: 18 }}>
+          <h3 className="form-section-title" style={{ fontSize: 15 }}>
+            Abonnementstype
+          </h3>
+
+          <div
+            className="text-xs text-muted fw-600"
+            style={{ textTransform: 'uppercase', letterSpacing: '0.05em', margin: '8px 0 6px' }}
+          >
+            Volledige abonnementen
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 10,
+              marginBottom: 8,
+            }}
+          >
+            {PLANS.filter(plan => plan.category === 'full').map(plan => (
+              <label
+                key={plan.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  padding: 12,
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  background: '#fff',
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    checked={form.watch('planId') === plan.id}
+                    onChange={() => onSelectPlan(plan.id)}
+                    style={{ accentColor: 'var(--green)' }}
+                    type="radio"
+                    value={plan.id}
+                  />
+                  <strong>{plan.label}</strong>
+                </span>
+                <span className="text-xs text-muted">{plan.desc}</span>
+                <span className="text-sm" style={{ marginTop: 4 }}>
+                  <strong>€{plan.price}</strong> per 6 maanden
+                </span>
+              </label>
+            ))}
+          </div>
+
+          <div
+            className="text-xs text-muted fw-600"
+            style={{ textTransform: 'uppercase', letterSpacing: '0.05em', margin: '8px 0 6px' }}
+          >
+            Alleen Waardebepaling
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 10,
+              marginBottom: 8,
+            }}
+          >
+            {PLANS.filter(plan => plan.category === 'valuation').map(plan => (
+              <label
+                key={plan.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  padding: 12,
+                  border: '1px solid var(--line)',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  background: '#fff',
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    checked={form.watch('planId') === plan.id}
+                    onChange={() => onSelectPlan(plan.id)}
+                    style={{ accentColor: 'var(--green)' }}
+                    type="radio"
+                    value={plan.id}
+                  />
+                  <strong>{plan.label}</strong>
+                </span>
+                <span className="text-xs text-muted">{plan.desc}</span>
+                <span className="text-sm" style={{ marginTop: 4 }}>
+                  <strong>€{plan.price}</strong>
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Prijs per 6 maanden (€)
-            </label>
+        <div className="form-row" style={{ marginBottom: 14 }}>
+          <div className="field">
+            <label>Prijs per 6 maanden (€)</label>
             <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
               type="number"
               {...form.register('price', { valueAsNumber: true })}
             />
             {form.formState.errors.price && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="text-xs" style={{ color: 'var(--danger)' }}>
                 {form.formState.errors.price.message}
               </p>
             )}
           </div>
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Startdatum
-            </label>
-            <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              type="date"
-              {...form.register('startDate')}
-            />
+          <div className="field">
+            <label>Startdatum</label>
+            <input type="date" {...form.register('startDate')} />
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-[1fr_auto] items-end gap-3">
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Einddatum (looptijd standaard 6 maanden)
-            </label>
-            <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              type="date"
-              {...form.register('endDate')}
-            />
+        <div className="form-row" style={{ marginBottom: 14 }}>
+          <div className="field">
+            <label>Einddatum (looptijd standaard 6 maanden)</label>
+            <input type="date" {...form.register('endDate')} />
           </div>
-          <button
-            className={`
-              rounded-md border border-border px-3 py-2.5 text-xs font-semibold
-              text-foreground
-              hover:bg-border-soft
-            `}
-            onClick={onSetEndDateFromStart}
-            type="button"
-          >
-            + 6 maanden vanaf startdatum
-          </button>
+          <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={onSetEndDateFromStart}
+              type="button"
+            >
+              + 6 maanden vanaf startdatum
+            </button>
+          </div>
         </div>
 
-        <label
-          className={`
-            mb-4 flex items-center justify-between rounded-md border
-            border-border bg-background px-4 py-3
-          `}
-        >
-          <span className="text-sm font-medium text-foreground">
-            Automatisch verlengen
-          </span>
-          <input type="checkbox" {...form.register('autoRenew')} />
-        </label>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label className="toggle-switch" style={{ padding: '6px 0' }}>
+            <input type="checkbox" {...form.register('autoRenew')} />
+            <span className="toggle-track" />
+            <span>
+              <span className="toggle-label">Automatisch verlengen</span>
+              <span className="toggle-hint">
+                Bij einddatum wordt het abonnement automatisch met 6 maanden
+                verlengd.
+              </span>
+            </span>
+          </label>
+        </div>
 
         {form.formState.errors.root && (
-          <p className="mb-4 text-sm text-destructive">
+          <p className="text-sm" style={{ color: 'var(--danger)', marginTop: 14 }}>
             {form.formState.errors.root.message}
           </p>
         )}
 
-        <div className="flex items-center justify-between gap-2">
+        <div
+          className="flex-between"
+          style={{ marginTop: 18, gap: 8 }}
+        >
           {hasExisting ? (
             <button
-              className={`
-                text-sm font-semibold text-destructive
-                hover:underline
-              `}
+              className="btn btn-danger"
               onClick={() => void onCancelSubscription()}
               type="button"
             >
@@ -320,25 +311,12 @@ export const AdminSubscriptionModal: FC<Props> = ({
           ) : (
             <span />
           )}
-          <div className="flex gap-2">
-            <button
-              className={`
-                rounded-md border border-border px-4 py-2.5 text-sm
-                font-semibold text-foreground
-                hover:bg-border-soft
-              `}
-              onClick={onClose}
-              type="button"
-            >
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={onClose} type="button">
               Annuleren
             </button>
             <button
-              className={`
-                rounded-md bg-primary px-4 py-2.5 text-sm font-semibold
-                text-primary-foreground transition
-                hover:bg-primary-hover
-                disabled:opacity-50
-              `}
+              className="btn btn-primary"
               disabled={form.formState.isSubmitting}
               type="submit"
             >

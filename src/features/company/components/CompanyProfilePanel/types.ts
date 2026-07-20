@@ -4,6 +4,7 @@ export interface Props {
   company: Company | null
   firstName: string | null
   sectorOptions: SectorOption[]
+  onboardingNextPath?: string
 }
 
 export interface KvkLinkState {

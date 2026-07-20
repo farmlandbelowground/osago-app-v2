@@ -7,6 +7,21 @@ import { formatEuro } from '../../lib/formatEuro'
 import { isOverdueInvoice } from '../../lib/lockStatus'
 import { type Props } from './types'
 
+const WarningIcon: FC = () => (
+  <svg
+    fill="none"
+    height="24"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    width="24"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" x2="12" y1="8" y2="12" />
+    <line x1="12" x2="12.01" y1="16" y2="16" />
+  </svg>
+)
+
 export const AccountBlockedBanner: FC<Props> = ({
   invoices,
   lockReason,
@@ -21,38 +36,34 @@ export const AccountBlockedBanner: FC<Props> = ({
 
     return (
       <div
-        className={`
-          mb-6 rounded-lg border border-destructive/30 bg-destructive/5 p-5
-        `}
+        className="card mb-5"
+        style={{ borderLeft: '4px solid #B91C1C', background: '#FEF2F2' }}
       >
-        <h3 className="mb-1.5 font-serif text-lg font-medium text-foreground">
-          Je account is beperkt
-        </h3>
-        <p
-          className={`
-            mb-4 text-[13.5px] leading-relaxed text-foreground-secondary
-          `}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ flexShrink: 0, color: '#B91C1C' }}>
+            <WarningIcon />
+          </div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ color: '#7f1d1d', margin: '0 0 4px 0' }}>
+              Je account is beperkt
+            </h3>
+            <p style={{ margin: 0, color: '#7f1d1d', lineHeight: 1.5 }}>
+              {plan && subscription?.endDate
+                ? `Je ${plan.label}-abonnement is verlopen op ${formatDateNl(subscription.endDate)}.`
+                : 'Je abonnement is verlopen.'}{' '}
+              Zolang je abonnement niet is verlengd, kun je alleen &quot;Mijn
+              account&quot; bereiken. Zodra je nieuwe betaling binnen is bij
+              Mollie krijg je meteen weer volledige toegang.
+            </p>
+          </div>
+        </div>
+        <div
+          style={{ marginTop: 14, display: 'flex', justifyContent: 'flex-end' }}
         >
-          {plan && subscription?.endDate && (
-            <>
-              Je {plan.label}-abonnement is verlopen op{' '}
-              {formatDateNl(subscription.endDate)}.{' '}
-            </>
-          )}
-          Zolang je abonnement niet is verlengd, kun je alleen &quot;Mijn
-          account&quot; bereiken. Zodra je nieuwe betaling binnen is bij Mollie
-          krijg je meteen weer volledige toegang.
-        </p>
-        <Link
-          className={`
-            inline-flex items-center justify-center rounded-md bg-primary px-4
-            py-2.5 text-sm font-semibold text-primary-foreground transition
-            hover:bg-primary-hover
-          `}
-          href={ABONNEMENT_AFSLUITEN_PATH}
-        >
-          Verleng abonnement
-        </Link>
+          <Link className="btn btn-primary" href={ABONNEMENT_AFSLUITEN_PATH}>
+            Verleng abonnement
+          </Link>
+        </div>
       </div>
     )
   }
@@ -61,57 +72,61 @@ export const AccountBlockedBanner: FC<Props> = ({
 
   return (
     <div
-      className={`
-        mb-6 rounded-lg border border-destructive/30 bg-destructive/5 p-5
-      `}
+      className="card mb-5"
+      style={{ borderLeft: '4px solid #B91C1C', background: '#FEF2F2' }}
     >
-      <h3 className="mb-1.5 font-serif text-lg font-medium text-foreground">
-        Je account is beperkt
-      </h3>
-      <p
-        className={`
-          mb-4 text-[13.5px] leading-relaxed text-foreground-secondary
-        `}
-      >
-        Er staat een vervallen factuur open. Zolang deze niet betaald is, kun je
-        alleen &quot;Mijn account&quot; bereiken. Zodra je betaling binnen is
-        bij Mollie krijg je meteen weer volledige toegang.
-      </p>
-      <ul className="flex flex-col gap-2">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ flexShrink: 0, color: '#B91C1C' }}>
+          <WarningIcon />
+        </div>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ color: '#7f1d1d', margin: '0 0 4px 0' }}>
+            Je account is beperkt
+          </h3>
+          <p style={{ margin: 0, color: '#7f1d1d', lineHeight: 1.5 }}>
+            Er staat een vervallen factuur open. Zolang deze niet betaald is,
+            kun je alleen &quot;Mijn account&quot; bereiken. Zodra je betaling
+            binnen is bij Mollie krijg je meteen weer volledige toegang.
+          </p>
+        </div>
+      </div>
+      <div style={{ marginTop: 14 }}>
         {overdueInvoices.map(invoice => (
-          <li
-            className={`
-              flex flex-wrap items-center justify-between gap-3 rounded-md
-              border border-border bg-surface px-4 py-3
-            `}
+          <div
             key={invoice.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '10px 0',
+              borderTop: '1px solid rgba(185,28,28,0.15)',
+            }}
           >
-            <div>
-              <div className="text-sm font-semibold text-foreground">
-                {invoice.number} · {invoice.description || invoice.period}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600 }}>
+                {invoice.number || '—'} ·{' '}
+                {invoice.description || invoice.period || ''}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {invoice.dueAt && `Verlopen op ${formatDateNl(invoice.dueAt)}`}
+              <div className="text-xs" style={{ color: '#7f1d1d' }}>
+                Verlopen op {invoice.dueAt ? formatDateNl(invoice.dueAt) : '—'}
                 {invoice.grossValue !== null &&
                   ` · ${formatEuro(invoice.grossValue)}`}
               </div>
             </div>
             {invoice.paymentUrl && (
               <a
-                className={`
-                  inline-flex items-center justify-center rounded-md bg-primary
-                  px-3.5 py-2 text-sm font-semibold text-primary-foreground
-                  transition
-                  hover:bg-primary-hover
-                `}
+                className="btn btn-primary btn-sm"
                 href={invoice.paymentUrl}
+                rel="noopener"
+                style={{ textDecoration: 'none', flexShrink: 0 }}
+                target="_blank"
               >
                 Betaal nu
               </a>
             )}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }

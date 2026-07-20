@@ -11,21 +11,14 @@ export default async function AdminLayout({ children }: Props) {
   const session = await requireRole('admin_user')
 
   return (
-    <div className="min-h-screen">
+    <div className="app active">
       <AdminSidebar
         email={session.user.email ?? ''}
         firstName={session.firstName}
         lastName={session.lastName}
         role={session.role === 'admin' ? 'admin' : 'admin_user'}
       />
-      <div
-        className={`
-          ml-(--sidebar-width) min-h-screen min-w-0
-          max-[900px]:ml-0
-        `}
-      >
-        {children}
-      </div>
+      {children}
     </div>
   )
 }

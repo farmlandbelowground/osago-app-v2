@@ -1,22 +1,22 @@
 export default function Loading() {
   return (
-    <div
-      className={`
-        w-full space-y-6 px-10 pt-8 pb-20
-        max-[900px]:p-5
-      `}
-    >
-      <div className="h-9 w-64 animate-pulse rounded bg-foreground/10" />
-      <div
-        className={`
-          grid grid-cols-1 gap-5
-          md:grid-cols-3
-        `}
-      >
-        <div className="h-72 animate-pulse rounded-lg bg-foreground/10" />
-        <div className="h-72 animate-pulse rounded-lg bg-foreground/10" />
-        <div className="h-72 animate-pulse rounded-lg bg-foreground/10" />
+    <main className="main">
+      <div className="empty" style={{ padding: '80px 20px' }}>
+        <div className="empty-icon">
+          <span
+            style={{
+              display: 'inline-block',
+              width: 18,
+              height: 18,
+              border: '2px solid currentColor',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              animation: 'spin360 .8s linear infinite',
+            }}
+          />
+        </div>
+        <p className="text-muted">Abonnementen laden…</p>
       </div>
-    </div>
+    </main>
   )
 }

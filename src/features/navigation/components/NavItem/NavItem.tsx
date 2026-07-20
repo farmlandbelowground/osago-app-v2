@@ -15,23 +15,9 @@ export const NavItem: FC<Props> = ({ link }) => {
   const Icon = link.icon
 
   return (
-    <Link
-      className={cn(
-        `
-          mb-0.5 flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm
-          font-medium text-foreground-secondary transition-colors
-        `,
-        isActive
-          ? 'bg-primary-soft font-semibold text-primary-hover'
-          : 'hover:bg-border-soft',
-      )}
-      href={link.href}
-    >
+    <Link className={cn('nav-item', isActive && 'active')} href={link.href}>
       <Icon
-        className={cn(
-          'shrink-0',
-          isActive ? 'text-primary' : 'text-muted-foreground',
-        )}
+        className="nav-icon"
         height={NAV_ICON_SIZE_PX}
         width={NAV_ICON_SIZE_PX}
       />

@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
 import { useState, type FC } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -49,8 +50,10 @@ const buildInitialKvkLink = (company: Company | null): KvkLinkState => ({
 export const CompanyProfilePanel: FC<Props> = ({
   company,
   firstName,
+  onboardingNextPath,
   sectorOptions,
 }) => {
+  const router = useRouter()
   const [kvkLink, setKvkLink] = useState<KvkLinkState>(() =>
     buildInitialKvkLink(company),
   )
@@ -161,85 +164,66 @@ export const CompanyProfilePanel: FC<Props> = ({
       return
     }
 
+    if (onboardingNextPath) {
+      router.push(onboardingNextPath)
+      return
+    }
+
     showToast('Bedrijfsprofiel opgeslagen.')
   }
 
   return (
-    <div className="flex flex-col">
+    <div>
       {!company?.sector && (
-        <div className={`
-          mb-6 rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-3.5 py-3
-          text-[13px] text-[#1E40AF]
-        `}>
-          <strong className="font-semibold">
-            Welkom{firstName && `, ${firstName}`}!
-          </strong>{' '}
-          Begin jouw verkooptraject door jouw bedrijfsprofiel in te vullen.
-          Deze gegevens worden gebruikt om jouw waardebepaling,
-          verkoopmemorandum en kopersmatching te genereren — je kunt later
-          altijd terugkeren om aanpassingen te maken.
+        <div className="alert alert-info">
+          <strong>Welkom{firstName && `, ${firstName}`}!</strong> Begin jouw
+          verkooptraject door jouw bedrijfsprofiel in te vullen. Deze gegevens
+          worden gebruikt om jouw waardebepaling, verkoopmemorandum en
+          kopersmatching te genereren — je kunt later altijd terugkeren om
+          aanpassingen te maken.
         </div>
       )}
 
-      <div className={`
-        relative mb-6 rounded-lg border border-border bg-gradient-to-br
-        from-background to-surface px-6 py-5
-      `}>
-        <div className="mb-3.5 flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <BuildingSimpleIcon className={`
-              h-[22px] w-[22px] shrink-0 text-primary
-            `} />
-            <h3 className={`
-              font-serif text-[18px] font-medium tracking-tight text-foreground
-            `}>
+      <div className="kvk-card">
+        <div className="kvk-head">
+          <div className="kvk-title">
+            <BuildingSimpleIcon height={22} width={22} />
+            <h3>
               {isLinked
                 ? 'Gekoppeld met het KVK Handelsregister'
                 : 'Zoek jouw bedrijf in het KVK Handelsregister'}
             </h3>
           </div>
           {isLinked ? (
-            <span className={`
-              inline-flex items-center gap-1 rounded-full border border-primary
-              bg-primary-soft px-2.5 py-[3px] text-[10.5px] font-semibold
-              tracking-wide text-primary-hover uppercase
-            `}>
-              <CheckIcon className="h-3 w-3" />
+            <span
+              className="kvk-badge"
+              style={{
+                background: 'var(--green-soft)',
+                color: 'var(--green-dark)',
+                borderColor: 'var(--green)',
+              }}
+            >
+              <CheckIcon height={12} width={12} />
               Gekoppeld
             </span>
           ) : (
-            <span className={`
-              inline-flex items-center gap-1.5 rounded-full border border-border
-              bg-surface px-2.5 py-[3px] text-[10.5px] font-semibold
-              tracking-wide text-muted-foreground uppercase
-            `}>
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              KVK Handelsregister
-            </span>
+            <span className="kvk-badge">KVK Handelsregister</span>
           )}
         </div>
 
         <KvkSearchInput onSelect={result => void onKvkSelect(result)} />
 
         {isLinked ? (
-          <div className={`
-            mt-2.5 flex flex-wrap items-center justify-between gap-3 rounded-md
-            border border-primary bg-primary-soft px-4 py-3.5
-          `}>
-            <div className="flex items-center gap-3">
-              <div className={`
-                flex h-8 w-8 shrink-0 items-center justify-center rounded-full
-                bg-primary text-primary-foreground
-              `}>
-                <CheckIcon className="h-4 w-4" />
+          <div className="kvk-selected">
+            <div className="kvk-selected-info">
+              <div className="kvk-selected-check">
+                <CheckIcon height={16} width={16} />
               </div>
               <div>
-                <div className={`
-                  text-sm leading-tight font-semibold text-foreground
-                `}>
+                <div className="kvk-selected-name">
                   {form.getValues('name')}
                 </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">
+                <div className="kvk-selected-meta">
                   KVK {kvkLink.kvkNummer}
                   {kvkLink.vestigingsnummer &&
                     ` · Vestiging ${kvkLink.vestigingsnummer}`}
@@ -247,11 +231,7 @@ export const CompanyProfilePanel: FC<Props> = ({
               </div>
             </div>
             <button
-              className={`
-                rounded-md px-3 py-1.5 text-[13px] font-semibold
-                text-foreground-secondary
-                hover:bg-border-soft
-              `}
+              className="btn btn-ghost btn-sm"
               onClick={() => void onUnlink()}
               type="button"
             >
@@ -259,30 +239,48 @@ export const CompanyProfilePanel: FC<Props> = ({
             </button>
           </div>
         ) : (
-          <p className="mt-2.5 text-xs leading-normal text-muted-foreground">
+          <div className="kvk-help">
             Selecteer jouw bedrijf om naam, KVK-nummer, locatie,
             oprichtingsjaar en sector automatisch in te vullen. Je kunt alle
             velden daarna nog aanpassen.
-          </p>
+          </div>
         )}
       </div>
 
       {!isLinked ? (
-        <div className={`
-          rounded-lg border border-border bg-background px-6 py-12 text-center
-        `}>
-          <div className={`
-            mx-auto mb-4 flex h-14 w-14 items-center justify-center
-            rounded-[14px] border border-border bg-surface
-          `}>
-            <BuildingIcon className="h-[26px] w-[26px] text-muted-foreground" />
+        <div
+          className="card"
+          style={{ textAlign: 'center', padding: '48px 24px', background: '#FAFBFA' }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '56px',
+              height: '56px',
+              borderRadius: '14px',
+              background: '#fff',
+              border: '1px solid var(--line)',
+              marginBottom: '16px',
+            }}
+          >
+            <BuildingIcon height={26} style={{ color: 'var(--muted)' }} width={26} />
           </div>
-          <h3 className="mb-1.5 font-serif text-xl font-medium text-foreground">
+          <h3
+            style={{
+              fontFamily: "'Fraunces',serif",
+              fontWeight: 500,
+              fontSize: '20px',
+              marginBottom: '6px',
+            }}
+          >
             Eerst jouw bedrijf koppelen
           </h3>
-          <p className={`
-            mx-auto max-w-md text-[13.5px] leading-relaxed text-muted-foreground
-          `}>
+          <p
+            className="text-muted"
+            style={{ maxWidth: '480px', margin: '0 auto', fontSize: '13.5px', lineHeight: 1.55 }}
+          >
             Zoek jouw bedrijf hierboven in het KVK Handelsregister om aan de
             slag te gaan. Zodra een bedrijf is gekoppeld, verschijnen de
             Algemene informatie en Jouw situatie hier.

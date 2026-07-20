@@ -81,177 +81,106 @@ export const AdminVoucherModal: FC<Props> = ({ onClose, voucher }) => {
 
   return (
     <ModalShell
+      maxWidthClassName="modal-lg"
       onClose={onClose}
       title={voucher ? 'Vouchercode bewerken' : 'Nieuwe vouchercode'}
     >
       {voucher && (
-        <p className="mb-4 text-sm text-foreground">
-          Reeds gebruikt:{' '}
-          <span className="font-semibold">{voucher.usedCount}</span> keer
-        </p>
+        <div className="text-sm text-muted mb-4">
+          Reeds gebruikt: <strong>{voucher.usedCount}</strong> keer
+        </div>
       )}
 
       <form onSubmit={event => void form.handleSubmit(onSubmit)(event)}>
-        <div className="mb-4 flex items-end gap-3">
-          <div className="flex-1">
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Code *
-            </label>
+        <div className="form-row">
+          <div className="field">
+            <label>Code *</label>
             <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm tracking-widest uppercase
-              `}
               placeholder="Bijv. WELKOM10"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}
               {...form.register('code')}
             />
-            <p className="mt-1 text-xs text-muted-foreground">
+            <span
+              className="text-xs text-muted"
+              style={{ marginTop: 4, display: 'block' }}
+            >
               Hoofdletters en cijfers, geen spaties.
-            </p>
+            </span>
             {form.formState.errors.code && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="text-xs" style={{ color: 'var(--danger)' }}>
                 {form.formState.errors.code.message}
               </p>
             )}
           </div>
-          <label
-            className={`
-              mb-1 flex items-center gap-2 text-sm font-medium text-foreground
-            `}
-          >
-            <input type="checkbox" {...form.register('active')} />
-            Actief
-          </label>
+          <div className="field">
+            <label>Status</label>
+            <label className="toggle-switch" style={{ padding: '8px 0' }}>
+              <input type="checkbox" {...form.register('active')} />
+              <span className="toggle-track" />
+              <span className="toggle-label">Actief</span>
+            </label>
+          </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Type korting *
-            </label>
-            <select
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              {...form.register('type')}
-            >
+        <div className="form-row">
+          <div className="field">
+            <label>Type korting *</label>
+            <select {...form.register('type')}>
               <option value="percentage">Percentage</option>
               <option value="fixed">Vast bedrag</option>
             </select>
           </div>
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Waarde *
-            </label>
+          <div className="field">
+            <label>Waarde *</label>
             <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
               placeholder={type === 'percentage' ? '10' : '500'}
               type="number"
               {...form.register('value', { valueAsNumber: true })}
             />
-            <p className="mt-1 text-xs text-muted-foreground">
+            <span
+              className="text-xs text-muted"
+              style={{ marginTop: 4, display: 'block' }}
+            >
               {type === 'percentage'
                 ? 'Percentage tussen 0 en 100.'
                 : "Bedrag in euro's."}
-            </p>
+            </span>
             {form.formState.errors.value && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="text-xs" style={{ color: 'var(--danger)' }}>
                 {form.formState.errors.value.message}
               </p>
             )}
           </div>
         </div>
 
-        <div className="mb-4">
-          <label
-            className={`
-              mb-1.5 block text-[13px] font-medium text-foreground-secondary
-            `}
-          >
-            Beschrijving
-          </label>
+        <div className="field">
+          <label>Beschrijving</label>
           <input
-            className={`
-              w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-              text-sm
-            `}
             placeholder="Bijv. Welkomstkorting voor nieuwe klanten"
             {...form.register('description')}
           />
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Geldig vanaf (optioneel)
-            </label>
-            <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              type="date"
-              {...form.register('validFrom')}
-            />
+        <div className="form-row">
+          <div className="field">
+            <label>Geldig vanaf (optioneel)</label>
+            <input type="date" {...form.register('validFrom')} />
           </div>
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Geldig t/m (optioneel)
-            </label>
-            <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              type="date"
-              {...form.register('validUntil')}
-            />
+          <div className="field">
+            <label>Geldig t/m (optioneel)</label>
+            <input type="date" {...form.register('validUntil')} />
             {form.formState.errors.validUntil && (
-              <p className="mt-1 text-xs text-destructive">
+              <p className="text-xs" style={{ color: 'var(--danger)' }}>
                 {form.formState.errors.validUntil.message}
               </p>
             )}
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Max. aantal keer te gebruiken (optioneel)
-            </label>
+        <div className="form-row">
+          <div className="field">
+            <label>Max. aantal keer te gebruiken (optioneel)</label>
             <input
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
               placeholder="Onbeperkt"
               type="number"
               {...form.register('maxUses', {
@@ -259,21 +188,9 @@ export const AdminVoucherModal: FC<Props> = ({ onClose, voucher }) => {
               })}
             />
           </div>
-          <div>
-            <label
-              className={`
-                mb-1.5 block text-[13px] font-medium text-foreground-secondary
-              `}
-            >
-              Geldig voor
-            </label>
-            <select
-              className={`
-                w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-                text-sm
-              `}
-              {...form.register('appliesTo')}
-            >
+          <div className="field">
+            <label>Geldig voor</label>
+            <select {...form.register('appliesTo')}>
               <option value={VOUCHER_APPLIES_TO_ALL}>Alle abonnementen</option>
               {PLANS.map(plan => (
                 <option key={plan.id} value={plan.id}>
@@ -285,18 +202,15 @@ export const AdminVoucherModal: FC<Props> = ({ onClose, voucher }) => {
         </div>
 
         {form.formState.errors.root && (
-          <p className="mb-4 text-sm text-destructive">
+          <p className="text-sm" style={{ color: 'var(--danger)', marginBottom: 16 }}>
             {form.formState.errors.root.message}
           </p>
         )}
 
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex-between" style={{ gap: 8 }}>
           {voucher ? (
             <button
-              className={`
-                text-sm font-semibold text-destructive
-                hover:underline
-              `}
+              className="btn btn-danger"
               onClick={() => void onDelete()}
               type="button"
             >
@@ -305,25 +219,12 @@ export const AdminVoucherModal: FC<Props> = ({ onClose, voucher }) => {
           ) : (
             <span />
           )}
-          <div className="flex gap-2">
-            <button
-              className={`
-                rounded-md border border-border px-4 py-2.5 text-sm
-                font-semibold text-foreground
-                hover:bg-border-soft
-              `}
-              onClick={onClose}
-              type="button"
-            >
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={onClose} type="button">
               Annuleren
             </button>
             <button
-              className={`
-                rounded-md bg-primary px-4 py-2.5 text-sm font-semibold
-                text-primary-foreground transition
-                hover:bg-primary-hover
-                disabled:opacity-50
-              `}
+              className="btn btn-primary"
               disabled={form.formState.isSubmitting}
               type="submit"
             >

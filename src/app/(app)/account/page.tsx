@@ -1,9 +1,12 @@
+import Link from 'next/link'
+
 import {
   AccountPasswordForm,
   AccountPersonalInfoForm,
   AccountPhotoUpload,
 } from '@features/auth'
 import { getAccountProfile } from '@features/auth/queries'
+import { WELKOM_PATHS } from '@features/onboarding'
 import {
   AccountBlockedBanner,
   AccountInvoicesTable,
@@ -35,21 +38,32 @@ export default async function AccountPage() {
   const lockReason = lockStatus(subscription, invoices)
 
   return (
-    <main
-      className={`
-        w-full px-10 pt-8 pb-20
-        max-[900px]:p-5
-      `}
-    >
-      <div className="mb-7">
-        <h1
-          className={`
-            font-serif text-[34px] leading-tight font-medium tracking-tight
-            text-foreground
-          `}
-        >
-          Mijn account
-        </h1>
+    <main className="main">
+      <div className="page-header">
+        <h1 className="page-title">Mijn account</h1>
+        {session.role === 'customer' && (
+          <div className="page-actions">
+            <Link
+              className="btn btn-secondary"
+              href={WELKOM_PATHS[0]}
+              title="Doorloop opnieuw de stappen om jouw bedrijfsprofiel en financiën te controleren"
+            >
+              <svg
+                fill="none"
+                height="14"
+                stroke="currentColor"
+                strokeWidth="2"
+                style={{ marginRight: 4, verticalAlign: -2 }}
+                viewBox="0 0 24 24"
+                width="14"
+              >
+                <polyline points="9 11 12 14 22 4" />
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+              Onboarding starten
+            </Link>
+          </div>
+        )}
       </div>
 
       <AccountPhotoUpload

@@ -68,7 +68,7 @@ export const TurnstileWidget: FC<Props> = ({ name, resetSignal }) => {
         strategy="afterInteractive"
         onReady={() => setIsScriptReady(true)}
       />
-      <div ref={containerRef} />
+      <div className="recaptcha-wrap" ref={containerRef} />
       <input ref={hiddenInputRef} type="hidden" name={name} defaultValue="" />
     </>
   )

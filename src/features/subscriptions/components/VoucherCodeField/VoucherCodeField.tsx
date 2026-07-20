@@ -52,48 +52,43 @@ export const VoucherCodeField: FC<Props> = ({
   }
 
   return (
-    <div className="mb-4">
-      <label
-        className={`
-          mb-1.5 block text-[13px] font-medium text-foreground-secondary
-        `}
-      >
-        Vouchercode (optioneel)
-      </label>
-      <div className="flex gap-2">
+    <div className="field" style={{ marginBottom: 14 }}>
+      <label>Vouchercode (optioneel)</label>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
         <input
-          className={`
-            w-full rounded-md border border-border bg-surface px-3.5 py-2.5
-            text-sm
-            focus:border-primary focus:outline-none
-          `}
+          autoCapitalize="characters"
+          autoComplete="off"
           disabled={isPending}
           onChange={onChange}
           placeholder="Bijv. WELKOM10"
+          style={{
+            flex: 1,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontFamily: "'Inter', sans-serif",
+          }}
           type="text"
           value={code}
         />
         <button
-          className={`
-            shrink-0 rounded-md border border-border bg-background px-4 py-2.5
-            text-sm font-semibold text-foreground transition
-            hover:bg-border-soft
-            disabled:opacity-50
-          `}
+          className="btn btn-secondary"
           disabled={isPending || !code.trim()}
           onClick={() => void onApply()}
+          style={{ whiteSpace: 'nowrap' }}
           type="button"
         >
           Toepassen
         </button>
       </div>
-      {applied && (
-        <p className="mt-2 text-[13px] font-medium text-primary-hover">
-          ✓ {applied.code} toegepast — je bespaart{' '}
-          {formatEuro(applied.discount)}
-        </p>
-      )}
-      {error && <p className="mt-2 text-[13px] text-destructive">✕ {error}</p>}
+      <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.4 }}>
+        {applied && (
+          <span style={{ color: 'var(--green-dark)', fontWeight: 500 }}>
+            ✓ {applied.code} toegepast — je bespaart{' '}
+            {formatEuro(applied.discount)}
+          </span>
+        )}
+        {error && <span style={{ color: 'var(--danger)' }}>✕ {error}</span>}
+      </div>
     </div>
   )
 }

@@ -105,7 +105,7 @@ export const ResetPasswordForm: FC = () => {
         </AuthAlert>
       )}
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <AuthField
           label={
             <>
@@ -122,7 +122,7 @@ export const ResetPasswordForm: FC = () => {
             aria-invalid={form.formState.errors.password ? 'true' : 'false'}
           />
           {form.formState.errors.password && (
-            <p className="mt-1 text-[13px] text-destructive">
+            <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 4 }}>
               {form.formState.errors.password.message}
             </p>
           )}
@@ -139,7 +139,7 @@ export const ResetPasswordForm: FC = () => {
             }
           />
           {form.formState.errors.confirmPassword && (
-            <p className="mt-1 text-[13px] text-destructive">
+            <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 4 }}>
               {form.formState.errors.confirmPassword.message}
             </p>
           )}

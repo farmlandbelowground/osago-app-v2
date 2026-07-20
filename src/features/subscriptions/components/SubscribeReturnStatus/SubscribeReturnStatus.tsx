@@ -7,43 +7,55 @@ import { type Props } from './types'
 export const SubscribeReturnStatus: FC<Props> = ({ error }) => {
   return (
     <div
-      className={`
-        mx-auto flex max-w-md flex-col items-center gap-4 py-20 text-center
-      `}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 14,
+        padding: '80px 0',
+        textAlign: 'center',
+      }}
     >
-      <div
-        className={`
-          flex h-14 w-14 items-center justify-center rounded-full
-          bg-destructive/10 text-2xl text-destructive
-        `}
+      <svg
+        fill="none"
+        height="36"
+        stroke="var(--danger)"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width="36"
       >
-        !
-      </div>
-      <h2 className="font-serif text-xl font-medium text-foreground">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" x2="12" y1="8" y2="12" />
+        <line x1="12" x2="12.01" y1="16" y2="16" />
+      </svg>
+      <div className="serif" style={{ fontSize: 20, fontWeight: 500 }}>
         Abonnement kon niet worden geactiveerd
-      </h2>
-      <p className="text-[13.5px] text-muted-foreground">
+      </div>
+      <div className="text-muted text-sm" style={{ maxWidth: 400 }}>
         De betaling is voltooid, maar de activatie is nog niet doorgekomen. Klik
         opnieuw om te herproberen — dat is veilig en dubbele activatie is niet
         mogelijk.
-      </p>
+      </div>
       {error && (
-        <p
-          className={`
-            rounded-md bg-muted px-3 py-2 font-mono text-xs
-            text-muted-foreground
-          `}
+        <div
+          className="text-xs"
+          style={{
+            color: 'var(--muted)',
+            fontFamily: 'monospace',
+            maxWidth: 600,
+            wordBreak: 'break-word',
+            background: '#F4F4F2',
+            padding: '8px 12px',
+            borderRadius: 6,
+          }}
         >
           {error}
-        </p>
+        </div>
       )}
       <Link
-        className={`
-          inline-flex items-center justify-center rounded-md bg-primary px-4
-          py-2.5 text-sm font-semibold text-primary-foreground transition
-          hover:bg-primary-hover
-        `}
+        className="btn btn-primary"
         href={`${ABONNEMENT_AFSLUITEN_PATH}?paid=1`}
+        style={{ marginTop: 8 }}
       >
         Opnieuw proberen
       </Link>

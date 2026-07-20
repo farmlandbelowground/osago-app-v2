@@ -9,10 +9,7 @@ export const KvkFieldBadge: FC<Props> = ({ field, kvkPrefilled }) => {
 
   return (
     <span
-      className={`
-        ml-1.5 rounded-sm bg-primary-light px-1.5 py-0.5 text-[11px] font-medium
-        text-primary
-      `}
+      className="kvk-prefilled"
       title="Automatisch ingevuld via KVK Handelsregister"
     >
       via KVK

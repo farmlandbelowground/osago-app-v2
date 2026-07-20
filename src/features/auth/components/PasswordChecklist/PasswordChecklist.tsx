@@ -24,16 +24,11 @@ export const PasswordChecklist: FC<Props> = ({ password }) => {
   ]
 
   return (
-    <ul className="mt-2 text-xs leading-[1.55]">
+    <ul className="pwd-checklist">
       {checks.map(check => (
         <li
           key={check.label}
-          className={cn(
-            'flex items-center gap-1.5 py-px',
-            check.isMet
-              ? 'font-medium text-primary-hover'
-              : 'text-muted-foreground-soft',
-          )}
+          className={cn(check.isMet ? 'ok' : 'pending')}
         >
           <span aria-hidden="true">{check.isMet ? '✓' : '•'}</span>
           {check.label}

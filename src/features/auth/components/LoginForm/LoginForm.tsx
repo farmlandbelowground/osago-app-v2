@@ -58,7 +58,7 @@ export const LoginForm: FC = () => {
         <AuthAlert variant="error">{state.error}</AuthAlert>
       )}
 
-      <form action={formAction} className="flex flex-col">
+      <form action={formAction}>
         <AuthField label="E-mailadres">
           <AuthTextInput
             name="email"
@@ -79,39 +79,21 @@ export const LoginForm: FC = () => {
           />
         </AuthField>
 
-        <div className="mb-1 flex justify-center">
-          <TurnstileWidget
-            name="turnstileToken"
-            resetSignal={state.status === 'error' ? state : undefined}
-          />
-        </div>
+        <TurnstileWidget
+          name="turnstileToken"
+          resetSignal={state.status === 'error' ? state : undefined}
+        />
 
         <AuthSubmitButton isDisabled={isPending}>
           {isPending ? 'Bezig…' : 'Inloggen'}
         </AuthSubmitButton>
       </form>
 
-      <div className="mt-6 text-center text-[14px] text-muted-foreground">
+      <div className="auth-toggle">
         Nog geen account?{' '}
-        <Link
-          href="/registreer"
-          className={`
-            font-semibold text-primary
-            hover:underline
-          `}
-        >
-          Registreer hier
-        </Link>
-        <span className="mx-2 text-border">·</span>
-        <Link
-          href="/wachtwoord-vergeten"
-          className={`
-            font-semibold text-primary
-            hover:underline
-          `}
-        >
-          Wachtwoord vergeten?
-        </Link>
+        <Link href="/registreer">Registreer hier</Link>
+        <span style={{ color: 'var(--line)', margin: '0 8px' }}>·</span>
+        <Link href="/wachtwoord-vergeten">Wachtwoord vergeten?</Link>
       </div>
     </div>
   )

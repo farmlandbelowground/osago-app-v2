@@ -22,6 +22,10 @@ const eslintConfig = defineConfig([
     },
     rules: {
       ...betterTailwindcss.configs.recommended.rules,
+      // Components no longer use Tailwind utility classes (styling now comes
+      // from the legacy stylesheet's classes ported into globals.css), so
+      // this rule has no valid Tailwind class set left to check against.
+      'better-tailwindcss/no-unregistered-classes': 'off',
       curly: ['error', 'all'],
       'no-console': ['error', { allow: ['warn', 'error', 'debug'] }],
       'no-magic-numbers': [
@@ -65,7 +69,10 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ['**/constants.ts'],
+    // Matches both a flat `constants.ts` and a topic-split `constants/<topic>.ts`
+    // directory (see rules/constants.md's scope table) — both are "the file",
+    // just organized differently once the literal volume warrants splitting.
+    files: ['**/constants.ts', '**/constants/*.ts'],
     rules: {
       'no-magic-numbers': 'off',
       'padding-line-between-statements': 'off',

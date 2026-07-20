@@ -1,0 +1,7 @@
+export const FIN_YEARS = [2023, 2024, 2025, 2026, 2027, 2028] as const
+export const FIN_CURRENT_YEAR = 2026
+
+export const NON_LEGAL_ENTITY_HOURLY_RATE = 1_450
+
+export const FIN_DISPLAY_HISTORICAL_YEAR_COUNT = 3
+export const FIN_DISPLAY_FORECAST_YEAR_COUNT_MIN = 3
