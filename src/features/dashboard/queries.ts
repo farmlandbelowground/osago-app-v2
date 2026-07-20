@@ -1,5 +1,11 @@
 import { getCompany } from '@features/company/queries'
 import { getSubscription } from '@features/subscriptions/queries'
+import { computeValuationProgress } from '@features/valuation/lib/computeValuationProgress'
+import {
+  getCompanyValuationFields,
+  getEstimatedValue as getValuationEstimatedValue,
+  getFinancials,
+} from '@features/valuation/queries'
 import { getServerClient } from '@shared/supabase/server'
 
 import { ACTIVE_CONVERSATION_STAGES } from './constants'
@@ -10,13 +16,34 @@ import { type BuyerPipelineCounts, type DashboardTodo } from './types'
 export const getDashboardTodos = async (
   userId: string,
 ): Promise<DashboardTodo[]> => {
-  const [company, subscription] = await Promise.all([
-    getCompany(userId),
-    getSubscription(userId),
-  ])
+  const [company, subscription, financials, valuationFields] =
+    await Promise.all([
+      getCompany(userId),
+      getSubscription(userId),
+      getFinancials(userId),
+      getCompanyValuationFields(userId),
+    ])
 
-  return computeDashboardTodos({ company, subscription })
+  const { financialsAnyValue, valueDriversComplete } = computeValuationProgress(
+    {
+      financials,
+      valuationMade: false,
+      valuationReport: null,
+      valueDriverAnswers: valuationFields?.valueDriverAnswers ?? {},
+    },
+  )
+
+  return computeDashboardTodos({
+    company,
+    financialsAnyValue,
+    subscription,
+    valueDriversComplete,
+  })
 }
+
+export const getEstimatedValue = async (
+  userId: string,
+): Promise<number | null> => getValuationEstimatedValue(userId)
 
 export const getBuyerPipelineCounts = async (
   userId: string,

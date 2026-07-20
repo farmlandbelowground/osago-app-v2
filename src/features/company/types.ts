@@ -15,8 +15,10 @@ export interface Company {
   legalForm: string
   logo: string | null
   name: string
+  netProfit: number | null
   postalCode: string
   reasonForSale: string
+  recurringRevenue: number | null
   sector: string
   street: string
   userId: string

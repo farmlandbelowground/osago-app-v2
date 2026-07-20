@@ -69,7 +69,10 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ['**/constants.ts'],
+    // Matches both a flat `constants.ts` and a topic-split `constants/<topic>.ts`
+    // directory (see rules/constants.md's scope table) — both are "the file",
+    // just organized differently once the literal volume warrants splitting.
+    files: ['**/constants.ts', '**/constants/*.ts'],
     rules: {
       'no-magic-numbers': 'off',
       'padding-line-between-statements': 'off',
