@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { DASHBOARD_PATH } from '@features/auth'
 import { getCompany } from '@features/company/queries'
+import { runAiCompose } from '@shared/ai-compose/lib/runAiCompose'
 import { type ApiResult } from '@shared/api/fetcher'
 import { legacyApiFetch } from '@shared/api/legacyApiFetch'
 import { requireSession } from '@shared/auth/session'
@@ -20,23 +21,22 @@ import {
   VD_PERCENTAGE_SLIDER_STEP,
 } from './constants/valueDrivers'
 import { buildReportAiPrompt } from './lib/buildReportAiPrompt'
+import { buildValuationGammaPrompt } from './lib/buildValuationGammaPrompt'
 import { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
 import {
   computeHeuristicValuation,
   deriveHeuristicValuationCompanyInputs,
   resolveHeuristicDcfParams,
 } from './lib/computeHeuristicValuation'
-import { extractAnthropicText } from './lib/extractAnthropicText'
 import {
   getCompanyValuationFields,
   getFinancials,
+  getValuationReportGammaInput,
   getValuationRecord,
   isValuationMade,
   resolveDisplayCompanyData,
 } from './queries'
 import {
-  AnthropicErrorSchema,
-  AnthropicMessagesResponseSchema,
   CompanyValuationExtraSchema,
   DcfNewInputsSchema,
   FinancialsExtractionResponseSchema,
@@ -584,25 +584,55 @@ export const composeReportText = async (
     savedReport: fields.valuationReport,
   })
 
-  const result = await legacyApiFetch('/api/anthropic/v1/messages', {
-    method: 'POST',
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-    schema: AnthropicMessagesResponseSchema,
-    errorSchema: AnthropicErrorSchema,
+  return runAiCompose({ maxTokens, model, prompt })
+}
+
+// Ports the pre-flight + prompt build of generateValuationViaGamma
+// (osago-bundle.js:19913-19938). The valuation must be made first; the shared
+// Gamma flow (client) then runs the generation with variant 'valuation'.
+export const prepareValuationReportGamma = async (): Promise<
+  ApiResult<{
+    description: string
+    fileName: string
+    inputText: string
+    numCards: number
+  }>
+> => {
+  const session = await requireSession()
+  const userId = session.user.id
+
+  const { result } = await getValuationRecord(userId)
+  if (!isValuationMade(result)) {
+    return {
+      data: null,
+      error:
+        'Klik eerst op "Waardering maken" voordat je het rapport genereert.',
+    }
+  }
+
+  const input = await getValuationReportGammaInput(userId)
+  if (!input) {
+    return {
+      data: null,
+      error: 'Onvoldoende gegevens om het rapport te genereren.',
+    }
+  }
+
+  const built = buildValuationGammaPrompt(input)
+  const stamp = new Date().toLocaleDateString('nl-NL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
   })
 
-  if (result.error !== null) {
-    return { data: null, error: result.error }
+  return {
+    data: {
+      description:
+        'Indicatief waarderingsrapport — bewerkbaar PowerPoint-bestand, controleer en pas aan waar nodig.',
+      fileName: `Waarderingsrapport ${stamp}.pptx`,
+      inputText: built.text,
+      numCards: built.slideCount,
+    },
+    error: null,
   }
-
-  const text = extractAnthropicText(result.data)
-  if (!text) {
-    return { data: null, error: 'Geen bruikbare respons ontvangen.' }
-  }
-
-  return { data: { text }, error: null }
 }

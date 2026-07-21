@@ -24,6 +24,7 @@ const REPORT_KEYS = [
 
 interface ComputeValuationProgressInput {
   financials: FinancialYearInput[]
+  hasValuationPdfInVault: boolean
   valuationMade: boolean
   valuationReport: ValuationReportPresence | null
   valueDriverAnswers: ValueDriverAnswers
@@ -31,6 +32,7 @@ interface ComputeValuationProgressInput {
 
 export const computeValuationProgress = ({
   financials,
+  hasValuationPdfInVault,
   valueDriverAnswers,
   valuationReport,
   valuationMade,
@@ -53,6 +55,6 @@ export const computeValuationProgress = ({
     valueDriversComplete,
     valuationReportStarted,
     valuationMade,
-    hasValuationPdfInVault: false,
+    hasValuationPdfInVault,
   }
 }

@@ -1,5 +1,10 @@
 import { MIJN_BEDRIJF_PATH } from '@features/company/constants'
 import { type Company } from '@features/company/types'
+import {
+  KOPERMATCHING_PATH,
+  VERKOOPPROCES_PATH,
+} from '@features/leads/constants/routes'
+import { VERKOOPPRESENTATIE_PATH } from '@features/presentation/constants/routes'
 import { ABONNEMENT_AFSLUITEN_PATH } from '@features/subscriptions/constants'
 import { subStatus } from '@features/subscriptions/lib/subStatus'
 import { type Subscription } from '@features/subscriptions/types'
@@ -17,13 +22,22 @@ import {
 import { type DashboardTodo } from '../types'
 
 interface ComputeDashboardTodosInput {
+  anonDone: boolean
+  autoLeadStarted: boolean
   company: Company | null
   financialsAnyValue: boolean
+  hasValuationPdfInVault: boolean
+  hasWerkruimteAccess: boolean
+  manualLeadsCount: number
+  memoDone: boolean
+  newStageLeadNames: string[]
+  presentationFieldsFilled: boolean
   subscription: Subscription | null
   valuationCanBeMade: boolean
   valuationMade: boolean
   valuationReportStarted: boolean
   valueDriversComplete: boolean
+  werkruimteUnlocked: boolean
 }
 
 export const isCompanyProfileComplete = (company: Company | null): boolean =>
@@ -33,13 +47,22 @@ export const isCompanyProfileComplete = (company: Company | null): boolean =>
   })
 
 export const computeDashboardTodos = ({
+  anonDone,
+  autoLeadStarted,
   company,
   financialsAnyValue,
+  hasValuationPdfInVault,
+  hasWerkruimteAccess,
+  manualLeadsCount,
+  memoDone,
+  newStageLeadNames,
+  presentationFieldsFilled,
   subscription,
   valuationCanBeMade,
   valuationMade,
   valuationReportStarted,
   valueDriversComplete,
+  werkruimteUnlocked,
 }: ComputeDashboardTodosInput): DashboardTodo[] => {
   const todos: DashboardTodo[] = []
 
@@ -98,6 +121,60 @@ export const computeDashboardTodos = ({
         href: WAARDEBEPALING_PATH,
         label: 'Maak de waardering',
       })
+    }
+
+    // "Waarderingsrapport maken" — only after the valuation is made; done once
+    // the PDF is in the vault (osago-bundle.js:3914-3916). Legacy targeted
+    // /waardebepaling; v2 targets /waarderingsrapport, where the generate button
+    // actually lives (spec §3.9/§3.12).
+    if (valuationMade) {
+      todos.push({
+        done: hasValuationPdfInVault,
+        href: WAARDERINGSRAPPORT_PATH,
+        label: 'Waarderingsrapport maken',
+      })
+    }
+  }
+
+  // Werkruimte block (osago-bundle.js:3918-3944). The presentation to-dos always
+  // show for full-plan subscribers; the buyer to-dos only once both documents
+  // unlock the werkruimte.
+  if (hasWerkruimteAccess) {
+    todos.push({
+      done: presentationFieldsFilled,
+      href: VERKOOPPRESENTATIE_PATH,
+      label:
+        'Vul de gegevens voor het anonieme verkoopprofiel en het verkoopmemorandum in',
+    })
+    todos.push({
+      done: memoDone,
+      href: VERKOOPPRESENTATIE_PATH,
+      label: 'Maak het verkoopmemorandum',
+    })
+    todos.push({
+      done: anonDone,
+      href: VERKOOPPRESENTATIE_PATH,
+      label: 'Maak het anoniem verkoopprofiel',
+    })
+
+    if (werkruimteUnlocked) {
+      todos.push({
+        done: autoLeadStarted,
+        href: KOPERMATCHING_PATH,
+        label: 'Start de automatische leadsidentificatie',
+      })
+      todos.push({
+        done: manualLeadsCount > 0,
+        href: KOPERMATCHING_PATH,
+        label: 'Voeg handmatig leads toe',
+      })
+      for (const name of newStageLeadNames) {
+        todos.push({
+          done: false,
+          href: VERKOOPPROCES_PATH,
+          label: `Interesse van ${name} opvolgen`,
+        })
+      }
     }
   }
 
