@@ -3,8 +3,3 @@ export interface DashboardTodo {
   href: string
   label: string
 }
-
-export interface BuyerPipelineCounts {
-  activeConversations: number
-  identifiedBuyers: number
-}
