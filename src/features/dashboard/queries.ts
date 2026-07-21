@@ -5,6 +5,8 @@ import {
   getCompanyValuationFields,
   getEstimatedValue as getValuationEstimatedValue,
   getFinancials,
+  getValuationRecord,
+  isValuationMade,
 } from '@features/valuation/queries'
 import { getServerClient } from '@shared/supabase/server'
 
@@ -16,27 +18,35 @@ import { type BuyerPipelineCounts, type DashboardTodo } from './types'
 export const getDashboardTodos = async (
   userId: string,
 ): Promise<DashboardTodo[]> => {
-  const [company, subscription, financials, valuationFields] =
+  const [company, subscription, financials, valuationFields, valuationRecord] =
     await Promise.all([
       getCompany(userId),
       getSubscription(userId),
       getFinancials(userId),
       getCompanyValuationFields(userId),
+      getValuationRecord(userId),
     ])
 
-  const { financialsAnyValue, valueDriversComplete } = computeValuationProgress(
-    {
+  const valuationMade = isValuationMade(valuationRecord.result)
+
+  const { financialsAnyValue, valueDriversComplete, valuationReportStarted } =
+    computeValuationProgress({
       financials,
-      valuationMade: false,
-      valuationReport: null,
+      valuationMade,
+      valuationReport: valuationFields?.valuationReport ?? null,
       valueDriverAnswers: valuationFields?.valueDriverAnswers ?? {},
-    },
-  )
+    })
+
+  const valuationCanBeMade =
+    financialsAnyValue && valueDriversComplete && valuationReportStarted
 
   return computeDashboardTodos({
     company,
     financialsAnyValue,
     subscription,
+    valuationCanBeMade,
+    valuationMade,
+    valuationReportStarted,
     valueDriversComplete,
   })
 }

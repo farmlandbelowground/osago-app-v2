@@ -6,6 +6,8 @@ import { type Subscription } from '@features/subscriptions/types'
 import {
   FINANCIELE_GEGEVENS_PATH,
   VALUE_DRIVERS_PATH,
+  WAARDEBEPALING_PATH,
+  WAARDERINGSRAPPORT_PATH,
 } from '@features/valuation/constants/routes'
 
 import {
@@ -18,6 +20,9 @@ interface ComputeDashboardTodosInput {
   company: Company | null
   financialsAnyValue: boolean
   subscription: Subscription | null
+  valuationCanBeMade: boolean
+  valuationMade: boolean
+  valuationReportStarted: boolean
   valueDriversComplete: boolean
 }
 
@@ -31,6 +36,9 @@ export const computeDashboardTodos = ({
   company,
   financialsAnyValue,
   subscription,
+  valuationCanBeMade,
+  valuationMade,
+  valuationReportStarted,
   valueDriversComplete,
 }: ComputeDashboardTodosInput): DashboardTodo[] => {
   const todos: DashboardTodo[] = []
@@ -77,6 +85,20 @@ export const computeDashboardTodos = ({
       href: VALUE_DRIVERS_PATH,
       label: 'Vul de value drivers van jouw bedrijf in',
     })
+
+    todos.push({
+      done: valuationReportStarted,
+      href: WAARDERINGSRAPPORT_PATH,
+      label: 'Vul de gegevens ten behoeve van het waarderingsrapport in',
+    })
+
+    if (valuationCanBeMade || valuationMade) {
+      todos.push({
+        done: valuationMade,
+        href: WAARDEBEPALING_PATH,
+        label: 'Maak de waardering',
+      })
+    }
   }
 
   return todos

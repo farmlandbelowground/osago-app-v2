@@ -166,6 +166,32 @@ export const ValuationReviewSchema = z.object({
   approvedBy: z.string().optional(),
 })
 
+// ─── `companies.extra.valuationReport` — the four free-text fields ───
+
+export const ValuationReportSchema = z.object({
+  foreword: z.string().optional(),
+  financialsNote: z.string().optional(),
+  valueDriversNote: z.string().optional(),
+  closing: z.string().optional(),
+})
+
+export const ValuationReportFieldSchema = z.enum([
+  'foreword',
+  'financialsNote',
+  'valueDriversNote',
+  'closing',
+])
+
+// ─── frozen `api/anthropic/v1/messages` contract (read only what we use) ───
+
+export const AnthropicMessagesResponseSchema = z.object({
+  content: z.array(z.object({ text: z.string().optional() })),
+})
+
+export const AnthropicErrorSchema = z.object({
+  error: z.object({ type: z.string().optional(), message: z.string() }),
+})
+
 // ─── `companies.dcf_new_inputs` (promoted jsonb, migration 0008) ───
 
 const RiskFactorInputSchema = z.object({
@@ -218,6 +244,7 @@ export const CompanyValuationExtraSchema = z
     manualMultipleValue: z.number().nullable().optional(),
     nonLegalEntityValuation: NonLegalEntityValuationSchema.optional(),
     valuationReview: ValuationReviewSchema.optional(),
+    valuationReport: ValuationReportSchema.optional(),
     kostprijsOmzetV2: z.number().nullable().optional(),
     lastClosedBalanceYear: z.number().int().nullable().optional(),
     bedrijfskostenV2: z.number().nullable().optional(),

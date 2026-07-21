@@ -299,3 +299,17 @@ export interface ValuationReportPresence {
   foreword?: string
   valueDriversNote?: string
 }
+
+export type ValuationReportField =
+  'foreword' | 'financialsNote' | 'valueDriversNote' | 'closing'
+
+export interface ValuationReportContent {
+  closing: string
+  financialsNote: string
+  foreword: string
+  valueDriversNote: string
+}
+
+export type AiComposeAction = 'generate' | 'rewrite'
+
+export type AiComposeLength = 'short' | 'normal' | 'long'
