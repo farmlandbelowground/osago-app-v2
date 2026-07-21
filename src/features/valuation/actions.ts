@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
+import { DASHBOARD_PATH } from '@features/auth'
 import { getCompany } from '@features/company/queries'
 import { type ApiResult } from '@shared/api/fetcher'
 import { legacyApiFetch } from '@shared/api/legacyApiFetch'
@@ -12,17 +13,20 @@ import { getServerClient } from '@shared/supabase/server'
 import {
   FINANCIELE_GEGEVENS_PATH,
   WAARDEBEPALING_PATH,
+  WAARDERINGSRAPPORT_PATH,
 } from './constants/routes'
 import {
   VALUE_DRIVERS,
   VD_PERCENTAGE_SLIDER_STEP,
 } from './constants/valueDrivers'
+import { buildReportAiPrompt } from './lib/buildReportAiPrompt'
 import { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
 import {
   computeHeuristicValuation,
   deriveHeuristicValuationCompanyInputs,
   resolveHeuristicDcfParams,
 } from './lib/computeHeuristicValuation'
+import { extractAnthropicText } from './lib/extractAnthropicText'
 import {
   getCompanyValuationFields,
   getFinancials,
@@ -31,9 +35,12 @@ import {
   resolveDisplayCompanyData,
 } from './queries'
 import {
+  AnthropicErrorSchema,
+  AnthropicMessagesResponseSchema,
   CompanyValuationExtraSchema,
   DcfNewInputsSchema,
   FinancialsExtractionResponseSchema,
+  ValuationReportFieldSchema,
   ValueDriverAnswersSchema,
 } from './schema'
 import {
@@ -44,6 +51,7 @@ import {
   type Normalization,
   type ShareholderValueInputs,
   type ValueDriverAnswers,
+  type ValuationReportField,
   type ValuationReview,
   type ValuationSnapshotCompany,
 } from './types'
@@ -491,4 +499,110 @@ export const saveDcfNewInputs = async (
   revalidatePath(FINANCIELE_GEGEVENS_PATH)
   revalidatePath(WAARDEBEPALING_PATH)
   return { error: null }
+}
+
+export const saveValuationReportField = async (
+  field: ValuationReportField,
+  value: string,
+): Promise<ActionResult> => {
+  const parsedField = ValuationReportFieldSchema.safeParse(field)
+  if (!parsedField.success) {
+    return { error: 'Onbekend veld in het waarderingsrapport.' }
+  }
+
+  const session = await requireSession()
+  const supabase = await getServerClient()
+  const currentExtra = await getExistingExtra(session.user.id)
+
+  const { error } = await supabase.from('companies').upsert(
+    {
+      extra: {
+        ...currentExtra,
+        valuationReport: {
+          ...currentExtra.valuationReport,
+          [parsedField.data]: value,
+        },
+      },
+      user_id: session.user.id,
+    },
+    { onConflict: 'user_id' },
+  )
+
+  if (error) {
+    return { error: 'Opslaan van het waarderingsrapport is mislukt.' }
+  }
+
+  revalidatePath(WAARDERINGSRAPPORT_PATH)
+  revalidatePath(WAARDEBEPALING_PATH)
+  revalidatePath(DASHBOARD_PATH)
+  return { error: null }
+}
+
+const ComposeReportTextInputSchema = z.object({
+  action: z.enum(['generate', 'rewrite']),
+  field: ValuationReportFieldSchema,
+  length: z.enum(['short', 'normal', 'long']),
+  instruction: z.string().optional(),
+  currentValue: z.string().optional(),
+})
+
+export const composeReportText = async (
+  input: z.infer<typeof ComposeReportTextInputSchema>,
+): Promise<ApiResult<{ text: string }>> => {
+  const parsed = ComposeReportTextInputSchema.safeParse(input)
+  if (!parsed.success) {
+    return { data: null, error: 'Ongeldige invoer voor de AI-tekst.' }
+  }
+
+  const session = await requireSession()
+  const userId = session.user.id
+
+  const [company, fields, financialsList] = await Promise.all([
+    getCompany(userId),
+    getCompanyValuationFields(userId),
+    getFinancials(userId),
+  ])
+
+  if (!company || !fields) {
+    return { data: null, error: 'Onvoldoende gegevens om tekst te genereren.' }
+  }
+
+  const financials: Record<number, FinancialYearInput> = Object.fromEntries(
+    financialsList.map(row => [row.year, row]),
+  )
+  const lastClosedYear = fields.lastClosedYear ?? new Date().getFullYear() - 1
+  const revenue = financials[lastClosedYear]?.revenue ?? null
+
+  const { maxTokens, model, prompt } = buildReportAiPrompt({
+    action: parsed.data.action,
+    company,
+    currentValue: parsed.data.currentValue ?? '',
+    field: parsed.data.field,
+    instruction: parsed.data.instruction ?? '',
+    length: parsed.data.length,
+    revenue,
+    savedReport: fields.valuationReport,
+  })
+
+  const result = await legacyApiFetch('/api/anthropic/v1/messages', {
+    method: 'POST',
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+    schema: AnthropicMessagesResponseSchema,
+    errorSchema: AnthropicErrorSchema,
+  })
+
+  if (result.error !== null) {
+    return { data: null, error: result.error }
+  }
+
+  const text = extractAnthropicText(result.data)
+  if (!text) {
+    return { data: null, error: 'Geen bruikbare respons ontvangen.' }
+  }
+
+  return { data: { text }, error: null }
 }

@@ -1,4 +1,5 @@
 export const FINANCIELE_GEGEVENS_PATH = '/financiele-gegevens'
 export const VALUE_DRIVERS_PATH = '/value-drivers'
 export const WAARDEBEPALING_PATH = '/waardebepaling'
+export const WAARDERINGSRAPPORT_PATH = '/waarderingsrapport'
 export const MIJN_BEDRIJF_PATH = '/mijn-bedrijf'

@@ -7,6 +7,8 @@ export { ValuationLockInModal } from './components/ValuationLockInModal'
 export { ValuationReviewStatusCard } from './components/ValuationReviewStatusCard'
 export { MakeValuationButton } from './components/MakeValuationButton'
 export { ValuationLockGate } from './components/ValuationLockGate'
+export { ValuationReportEditor } from './components/ValuationReportEditor'
+export { ValuationReportPrereqGate } from './components/ValuationReportPrereqGate'
 
 export {
   DEFAULT_DCF_NEW_INPUTS,
@@ -47,6 +49,7 @@ export {
   FINANCIELE_GEGEVENS_PATH,
   VALUE_DRIVERS_PATH,
   WAARDEBEPALING_PATH,
+  WAARDERINGSRAPPORT_PATH,
   MIJN_BEDRIJF_PATH,
 } from './constants/routes'
 export { DCF_SECTORCORRECTIE_BASE_MULTIPLE } from './constants/dcf'

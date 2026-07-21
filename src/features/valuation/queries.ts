@@ -43,6 +43,7 @@ import {
   type ValuationDcfParams,
   type ValuationMultiple,
   type ValuationResultRecord,
+  type ValuationReportContent,
   type ValuationReview,
   type ValuationSettings,
   type ValueDriverAnswers,
@@ -98,6 +99,7 @@ export interface CompanyValuationFields {
   normalizations: Normalization[]
   shareholderValue: ShareholderValueInputs
   valuationBand: number | null
+  valuationReport: ValuationReportContent
   valuationReview: ValuationReview | null
   valuationSettings: ValuationSettings
   valueDriverAnswers: ValueDriverAnswers
@@ -126,6 +128,12 @@ const rowToCompanyValuationFields = (
     manualMultipleValue: row.extra.manualMultipleValue ?? null,
   },
   nonLegalEntityConfig: row.extra.nonLegalEntityValuation ?? null,
+  valuationReport: {
+    foreword: row.extra.valuationReport?.foreword ?? '',
+    financialsNote: row.extra.valuationReport?.financialsNote ?? '',
+    valueDriversNote: row.extra.valuationReport?.valueDriversNote ?? '',
+    closing: row.extra.valuationReport?.closing ?? '',
+  },
   valuationReview: row.extra.valuationReview ?? null,
   shareholderValue: {
     kostprijsOmzetV2: row.extra.kostprijsOmzetV2 ?? null,

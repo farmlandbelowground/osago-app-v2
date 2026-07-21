@@ -45,7 +45,7 @@ export default async function WaardebepalingPage() {
   const progress = computeValuationProgress({
     financials: resolved.financialsList,
     valuationMade: resolved.made,
-    valuationReport: null,
+    valuationReport: liveFields?.valuationReport ?? null,
     valueDriverAnswers: resolved.valueDriverAnswers,
   })
 

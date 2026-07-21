@@ -2,7 +2,7 @@ import { type ZodType } from 'zod'
 
 import { env } from '@/env'
 
-import { apiFetch, type ApiResult } from './fetcher'
+import { apiFetch, type ApiErrorShape, type ApiResult } from './fetcher'
 
 const resolveAccessToken = async (): Promise<string | null> => {
   if (typeof window === 'undefined') {
@@ -29,6 +29,7 @@ const resolveUrl = (path: string): string => {
 
 interface LegacyFetcherInit<T> extends RequestInit {
   schema: ZodType<T>
+  errorSchema?: ZodType<ApiErrorShape>
 }
 
 export const legacyApiFetch = async <T>(
