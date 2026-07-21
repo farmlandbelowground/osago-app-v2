@@ -2,18 +2,14 @@
 
 import { useEffect, useRef, useState, type FC } from 'react'
 
-import { composeReportText } from '@features/valuation/actions'
+import { useToastStore } from '@shared/store/toast'
+
 import {
   AI_INSTRUCTION_PLACEHOLDER,
   AI_LENGTH_OPTIONS,
   AI_OVERWRITE_CONFIRM_THRESHOLD,
-} from '@features/valuation/constants/aiCompose'
-import {
-  type AiComposeAction,
-  type AiComposeLength,
-} from '@features/valuation/types'
-import { useToastStore } from '@shared/store/toast'
-
+} from '../../constants'
+import { type AiComposeAction, type AiComposeLength } from '../../types'
 import { type Props } from './types'
 
 const Chevron: FC = () => (
@@ -49,7 +45,11 @@ const Spinner: FC = () => (
   </svg>
 )
 
-export const AiPillGroup: FC<Props> = ({ currentValue, field, onResult }) => {
+export const AiPillGroup: FC<Props> = ({
+  currentValue,
+  onCompose,
+  onResult,
+}) => {
   const showToast = useToastStore(state => state.showToast)
   const [openMenu, setOpenMenu] = useState<AiComposeAction | null>(null)
   const [instruction, setInstruction] = useState('')
@@ -79,12 +79,11 @@ export const AiPillGroup: FC<Props> = ({ currentValue, field, onResult }) => {
   ): Promise<void> => {
     setLoadingAction(action)
     try {
-      const result = await composeReportText({
+      const result = await onCompose({
         action,
-        field,
-        length,
-        instruction: instructionText || undefined,
         currentValue,
+        instruction: instructionText || undefined,
+        length,
       })
 
       if (result.error !== null) {

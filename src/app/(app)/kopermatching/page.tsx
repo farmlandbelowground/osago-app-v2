@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { MIJN_BEDRIJF_PATH } from '@features/company/constants'
 import { getCompany } from '@features/company/queries'
+import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import {
   AutoLeadsPanel,
   BuyerMatchingTabs,
@@ -10,6 +11,7 @@ import {
   OsagoValidatedPanel,
   getCandidateLeads,
 } from '@features/leads'
+import { WerkruimteLockGate } from '@features/presentation'
 import {
   firstAllowedCustomerPage,
   getAllowedCustomerPages,
@@ -70,31 +72,36 @@ export default async function KopermatchingPage() {
     )
   }
 
-  const [autoLeads, osagoLeads, manualLeads] = await Promise.all([
-    getCandidateLeads(userId, 'auto_identified'),
-    getCandidateLeads(userId, 'osago_validated'),
-    getCandidateLeads(userId, 'manual'),
-  ])
+  const [autoLeads, osagoLeads, manualLeads, memoDone, anonDone] =
+    await Promise.all([
+      getCandidateLeads(userId, 'auto_identified'),
+      getCandidateLeads(userId, 'osago_validated'),
+      getCandidateLeads(userId, 'manual'),
+      documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.memorandum]),
+      documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
+    ])
 
   return (
     <main className="main">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Kopermatching</h1>
+      <WerkruimteLockGate unlocked={memoDone && anonDone}>
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Kopermatching</h1>
+          </div>
         </div>
-      </div>
 
-      <BuyerMatchingTabs
-        autoPanel={
-          <AutoLeadsPanel
-            city={company.city}
-            leads={autoLeads}
-            sector={company.sector}
-          />
-        }
-        manualPanel={<ManualLeadsPanel leads={manualLeads} />}
-        osagoPanel={<OsagoValidatedPanel leads={osagoLeads} />}
-      />
+        <BuyerMatchingTabs
+          autoPanel={
+            <AutoLeadsPanel
+              city={company.city}
+              leads={autoLeads}
+              sector={company.sector}
+            />
+          }
+          manualPanel={<ManualLeadsPanel leads={manualLeads} />}
+          osagoPanel={<OsagoValidatedPanel leads={osagoLeads} />}
+        />
+      </WerkruimteLockGate>
     </main>
   )
 }

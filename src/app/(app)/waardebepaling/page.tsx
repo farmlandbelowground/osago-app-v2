@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 
+import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import { getSubscription } from '@features/subscriptions/queries'
 import {
   DCF_SECTORCORRECTIE_BASE_MULTIPLE,
@@ -32,11 +33,15 @@ export default async function WaardebepalingPage() {
 
   await recomputeHeuristicValuation(session.user.id)
 
-  const [resolved, liveFields, subscription] = await Promise.all([
-    resolveDisplayCompanyData(session.user.id),
-    getCompanyValuationFields(session.user.id),
-    getSubscription(session.user.id),
-  ])
+  const [resolved, liveFields, subscription, hasValuationPdfInVault] =
+    await Promise.all([
+      resolveDisplayCompanyData(session.user.id),
+      getCompanyValuationFields(session.user.id),
+      getSubscription(session.user.id),
+      documentExistsByPrefix(session.user.id, [
+        DOCUMENT_PREFIXES.valuationReport,
+      ]),
+    ])
 
   if (!resolved) {
     redirect(MIJN_BEDRIJF_PATH)
@@ -44,6 +49,7 @@ export default async function WaardebepalingPage() {
 
   const progress = computeValuationProgress({
     financials: resolved.financialsList,
+    hasValuationPdfInVault,
     valuationMade: resolved.made,
     valuationReport: liveFields?.valuationReport ?? null,
     valueDriverAnswers: resolved.valueDriverAnswers,

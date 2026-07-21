@@ -2,11 +2,14 @@
 
 import { useState, type CSSProperties, type FC } from 'react'
 
-import { saveValuationReportField } from '@features/valuation/actions'
+import {
+  composeReportText,
+  saveValuationReportField,
+} from '@features/valuation/actions'
 import { OPTIONAL_BADGE_LABEL } from '@features/valuation/constants/valuationReport'
+import { AiPillGroup } from '@shared/ai-compose'
 import { useToastStore } from '@shared/store/toast'
 
-import { AiPillGroup } from '../AiPillGroup'
 import { type Props } from './types'
 
 const badgeStyle: CSSProperties = {
@@ -72,7 +75,15 @@ export const ValuationReportSection: FC<Props> = ({
         <div className="field" style={{ marginBottom: 0, marginTop: 14 }}>
           <AiPillGroup
             currentValue={value}
-            field={section.field}
+            onCompose={request =>
+              composeReportText({
+                action: request.action,
+                currentValue: request.currentValue,
+                field: section.field,
+                instruction: request.instruction,
+                length: request.length,
+              })
+            }
             onResult={setValue}
           />
           <textarea

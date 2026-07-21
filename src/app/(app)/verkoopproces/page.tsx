@@ -2,12 +2,14 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { getCompany } from '@features/company/queries'
+import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import {
   KOPERMATCHING_PATH,
   PipelineBoard,
   PipelineEmptyState,
   getPipelineLeads,
 } from '@features/leads'
+import { WerkruimteLockGate } from '@features/presentation'
 import {
   firstAllowedCustomerPage,
   getAllowedCustomerPages,
@@ -25,29 +27,33 @@ export default async function VerkoopprocesPage() {
     redirect(firstAllowedCustomerPage(getAllowedCustomerPages(subscription)))
   }
 
-  const [leads, company] = await Promise.all([
+  const [leads, company, memoDone, anonDone] = await Promise.all([
     getPipelineLeads(userId),
     getCompany(userId),
+    documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.memorandum]),
+    documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
   ])
 
   return (
     <main className="main">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Verkoopproces</h1>
+      <WerkruimteLockGate unlocked={memoDone && anonDone}>
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Verkoopproces</h1>
+          </div>
+          <div className="page-actions">
+            <Link className="btn btn-secondary" href={KOPERMATCHING_PATH}>
+              + Koper toevoegen vanuit matching
+            </Link>
+          </div>
         </div>
-        <div className="page-actions">
-          <Link className="btn btn-secondary" href={KOPERMATCHING_PATH}>
-            + Koper toevoegen vanuit matching
-          </Link>
-        </div>
-      </div>
 
-      {leads.length === 0 ? (
-        <PipelineEmptyState />
-      ) : (
-        <PipelineBoard companyHasName={!!company?.name} leads={leads} />
-      )}
+        {leads.length === 0 ? (
+          <PipelineEmptyState />
+        ) : (
+          <PipelineBoard companyHasName={!!company?.name} leads={leads} />
+        )}
+      </WerkruimteLockGate>
     </main>
   )
 }

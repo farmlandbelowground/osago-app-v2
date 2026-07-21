@@ -15,7 +15,10 @@ import {
 import {
   APP_CONFIG_SMALL_EBITDA_DEDUCTIONS_KEY,
   APP_CONFIG_SMALL_ORG_DEDUCTIONS_KEY,
+  VALUATION_BAND_DEFAULT_PCT,
 } from './constants/sectorMultiples'
+import { type ValuationReportGammaData } from './lib/buildValuationGammaPrompt'
+import { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
 import { computeIndicatieveOndernemingswaarde } from './lib/computeIndicatieveOndernemingswaarde'
 import {
   computeSectorcorrectieFromMultiple,
@@ -438,4 +441,75 @@ export const getEstimatedValue = async (
   const dcfResult = dcfNewCompute(resolved, fin, fields.normalizations)
 
   return Math.round(dcfResult.berekening.totalen.totaal)
+}
+
+// Gathers the valuation-report Gamma prompt input the same way /waardebepaling
+// derives its displayed figures (enterprise/shareholder/band), plus the report
+// text + financials table (spec §3.9). Returns null when a valuation record or
+// company profile is missing.
+export const getValuationReportGammaInput = async (
+  userId: string,
+): Promise<ValuationReportGammaData | null> => {
+  const [
+    resolved,
+    company,
+    fields,
+    valuationMultiples,
+    smallEbitdaDeductions,
+    smallOrgDeductions,
+  ] = await Promise.all([
+    resolveDisplayCompanyData(userId),
+    getCompany(userId),
+    getCompanyValuationFields(userId),
+    getValuationMultiples(),
+    getSmallEbitdaDeductions(),
+    getSmallOrgDeductions(),
+  ])
+
+  if (!resolved || !company || !fields) {
+    return null
+  }
+
+  const indicative = computeIndicatieveOndernemingswaarde({
+    employees: resolved.employees,
+    fin: resolved.financials,
+    historyWeightOverrides: {},
+    lastClosedYear: resolved.lastClosedYear,
+    nonLegalEntityConfig: resolved.nonLegalEntityConfig,
+    normalizations: resolved.normalizations,
+    sector: resolved.sector,
+    smallEbitdaDeductions,
+    smallOrgDeductions,
+    valuationMultiples,
+    valuationSettings: resolved.valuationSettings,
+  })
+
+  const { result } = await getValuationRecord(userId)
+  const enterpriseValue =
+    indicative.value !== null
+      ? indicative.value
+      : Math.round(result?.dcfValue ?? 0)
+
+  const adjustment = computeAandeelhouderswaardeVerrekening({
+    financials: resolved.financials,
+    lastClosedYear: resolved.lastClosedYear,
+    shareholderValue: fields.shareholderValue,
+  })
+
+  const valuationBand =
+    resolved.valuationBand ??
+    Math.ceil(enterpriseValue * VALUATION_BAND_DEFAULT_PCT)
+
+  return {
+    companyName: company.name,
+    description: company.description,
+    employees: company.employees,
+    enterpriseValue,
+    financials: resolved.financials,
+    sector: company.sector,
+    shareholderValue: enterpriseValue + adjustment,
+    usp: company.usp,
+    valuationBand,
+    valuationReport: fields.valuationReport,
+  }
 }

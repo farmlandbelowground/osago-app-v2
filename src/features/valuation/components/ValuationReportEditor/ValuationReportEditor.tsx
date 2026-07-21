@@ -5,12 +5,17 @@ import { REPORT_SECTIONS } from '@features/valuation/constants/valuationReport'
 import { ValuationReportSection } from '../ValuationReportSection'
 import { type Props } from './types'
 
-export const ValuationReportEditor: FC<Props> = ({ content }) => (
+export const ValuationReportEditor: FC<Props> = ({
+  content,
+  footer,
+  headerActions,
+}) => (
   <>
     <div className="page-header">
       <div>
         <h1 className="page-title">Waarderingsrapport</h1>
       </div>
+      {headerActions}
     </div>
 
     <div id="valuation-report-form">
@@ -23,5 +28,7 @@ export const ValuationReportEditor: FC<Props> = ({ content }) => (
         />
       ))}
     </div>
+
+    {footer}
   </>
 )
