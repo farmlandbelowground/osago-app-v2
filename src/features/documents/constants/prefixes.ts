@@ -7,6 +7,9 @@
 export const DOCUMENT_PREFIXES = {
   anonymousProfile: 'Anoniem verkoopprofiel',
   contract: 'Verkoopcontract_',
+  // Trailing space is load-bearing: legacy backs the scorecard "reeds gemaakt"
+  // check on fileName.startsWith('Verbeterrapport ') (osago-bundle.js:7615).
+  improvementReport: 'Verbeterrapport ',
   jaarstukkenUpload: 'Jaarstukken upload',
   loi: 'LOI_',
   memorandum: 'Verkoopmemorandum',
