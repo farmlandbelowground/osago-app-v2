@@ -1,0 +1,6 @@
+export { DocumentVaultSections } from './components/DocumentVaultSections'
+export { DOCUMENTENKLUIS_PATH } from './constants/routes'
+export { DOCUMENT_PREFIXES } from './constants/prefixes'
+export { logSelfGeneratedDocument } from './actions'
+export { documentExistsByPrefix, getUserDocuments } from './queries'
+export { type Document, type DocumentSource } from './types'

@@ -16,13 +16,28 @@ import { buildDisplayName, buildInitials } from '../../lib/buildUserDisplay'
 import { NavItem } from '../NavItem'
 import { type Props } from './types'
 
-export const Sidebar: FC<Props> = ({ email, firstName, lastName }) => {
+export const Sidebar: FC<Props> = ({
+  allowedPaths,
+  email,
+  firstName,
+  lastName,
+}) => {
+  // Hide nav links the customer's plan doesn't grant (ports
+  // applyCustomerPlanVisibility, osago-bundle.js:2906-2932). `null` = full plan,
+  // everything visible. A section with no visible links is dropped entirely.
+  const visibleSections = NAV_SECTIONS.map(section => ({
+    ...section,
+    links: section.links.filter(
+      link => allowedPaths === null || allowedPaths.includes(link.href),
+    ),
+  })).filter(section => section.links.length > 0)
+
   return (
     <aside className="sidebar">
       <Logo />
 
       <nav>
-        {NAV_SECTIONS.map(section => (
+        {visibleSections.map(section => (
           <div className="nav-section" key={section.title ?? 'primary'}>
             {section.title && (
               <div className="nav-section-title">{section.title}</div>

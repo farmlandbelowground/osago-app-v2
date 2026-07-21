@@ -5,7 +5,11 @@ import { KpiTile } from '@shared/components/KpiTile'
 import { BuyersIcon, ConversationsIcon, ValueIcon } from '../../assets/icons'
 import { type Props } from './types'
 
-export const DashboardKpiRow: FC<Props> = ({ counts, estimatedValue }) => {
+export const DashboardKpiRow: FC<Props> = ({
+  counts,
+  estimatedValue,
+  hasWerkruimteAccess,
+}) => {
   return (
     <div className="grid-3 mb-5 grid">
       <KpiTile
@@ -23,14 +27,28 @@ export const DashboardKpiRow: FC<Props> = ({ counts, estimatedValue }) => {
       <KpiTile
         icon={<BuyersIcon height={18} width={18} />}
         label="Geïdentificeerde kopers"
-        meta={`${counts.activeConversations} actief in proces`}
-        value={String(counts.identifiedBuyers)}
+        meta={
+          hasWerkruimteAccess
+            ? `${counts.activeConversations} actief in proces`
+            : 'Werkruimte-abonnement vereist'
+        }
+        value={
+          hasWerkruimteAccess ? String(counts.identifiedBuyers) : 'Geen toegang'
+        }
       />
       <KpiTile
         icon={<ConversationsIcon height={18} width={18} />}
         label="Lopende gesprekken"
-        meta="Actieve dealflow"
-        value={String(counts.activeConversations)}
+        meta={
+          hasWerkruimteAccess
+            ? 'Actieve dealflow'
+            : 'Werkruimte-abonnement vereist'
+        }
+        value={
+          hasWerkruimteAccess
+            ? String(counts.activeConversations)
+            : 'Geen toegang'
+        }
       />
     </div>
   )

@@ -1,0 +1,1 @@
+export { OsagoValidatedPanel } from './OsagoValidatedPanel'

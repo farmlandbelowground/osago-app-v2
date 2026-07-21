@@ -3,20 +3,25 @@ import { redirect } from 'next/navigation'
 import { type ReactNode } from 'react'
 
 import { getCompany } from '@features/company/queries'
-import { Sidebar } from '@features/navigation'
+import { CustomerAccessGuard, Sidebar } from '@features/navigation'
 import { WELKOM_PATHS } from '@features/onboarding'
+import { ACCOUNT_PATH } from '@features/subscriptions/constants'
 import {
-  ABONNEMENT_AFSLUITEN_PATH,
-  ACCOUNT_PATH,
-} from '@features/subscriptions/constants'
+  firstAllowedCustomerPage,
+  getAllowedCustomerPages,
+  isCustomerPageAllowed,
+  lockPermitsPath,
+} from '@features/subscriptions/lib/customerAccess'
 import { lockStatus } from '@features/subscriptions/lib/lockStatus'
 import {
   getOwnInvoices,
   getSubscription,
 } from '@features/subscriptions/queries'
+import { type LockReason } from '@features/subscriptions/types'
 import { requireSession } from '@shared/auth/session'
 import { QueryProvider } from '@shared/components/QueryProvider'
 import { PATHNAME_HEADER } from '@shared/constants/headers'
+import { cn } from '@shared/utils/cn'
 
 interface Props {
   children: ReactNode
@@ -34,28 +39,47 @@ export default async function AppLayout({ children }: Props) {
   }
 
   const pathname = (await headers()).get(PATHNAME_HEADER) ?? ''
-  const isLockExempt =
-    pathname === ABONNEMENT_AFSLUITEN_PATH || pathname === ACCOUNT_PATH
 
-  if (!isLockExempt) {
+  // Customer access model — ports legacy's navigate() gate + applyOverdueLock +
+  // applyCustomerPlanVisibility (osago-bundle.js:3010-3042, 11642, 2906-2932).
+  // Enforced here for hard loads; the CustomerAccessGuard re-enforces on
+  // client-side navigation (a shared layout is not re-run across <Link> nav).
+  let lockReason: LockReason = null
+  let allowedPaths: string[] | null = null
+
+  if (session.role === 'customer') {
     const [subscription, invoices] = await Promise.all([
       getSubscription(session.user.id),
       getOwnInvoices(),
     ])
 
-    if (lockStatus(subscription, invoices)) {
-      redirect(ACCOUNT_PATH)
+    lockReason = lockStatus(subscription, invoices)
+    allowedPaths = getAllowedCustomerPages(subscription)
+
+    if (lockReason) {
+      if (!lockPermitsPath(lockReason, pathname)) {
+        redirect(ACCOUNT_PATH)
+      }
+    } else if (!isCustomerPageAllowed(pathname, allowedPaths)) {
+      redirect(firstAllowedCustomerPage(allowedPaths))
     }
   }
 
   return (
     <QueryProvider>
-      <div className="app active">
+      <div className={cn('app active', lockReason && 'customer-locked')}>
         <Sidebar
+          allowedPaths={allowedPaths}
           email={session.user.email ?? ''}
           firstName={session.firstName}
           lastName={session.lastName}
         />
+        {session.role === 'customer' && (
+          <CustomerAccessGuard
+            allowedPaths={allowedPaths}
+            lockReason={lockReason}
+          />
+        )}
         {children}
       </div>
     </QueryProvider>

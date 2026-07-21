@@ -122,6 +122,46 @@ export const SUBSCRIPTION_ARR_STATUSES: readonly SubscriptionStatus[] = [
   'renewed',
 ]
 
+// A "lopend" subscription per legacy's getAllowedCustomerPages
+// (osago-bundle.js:12703-12722) — the gate every paid customer page keys off.
+export const ACTIVE_SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = [
+  'active',
+  'ending',
+  'renewed',
+]
+
+// Customer page access-lists — port legacy's getAllowedCustomerPages
+// (osago-bundle.js:12703-12722) using v2 route paths. A non-lopend subscription
+// gets the restricted set; a lopend `valuation`-category plan gets the valuation
+// set; a lopend `full` plan is unrestricted (null, see getAllowedCustomerPages).
+export const RESTRICTED_ALLOWED_PATHS: readonly string[] = [
+  '/dashboard',
+  '/mijn-bedrijf',
+  '/account',
+  '/abonnement-afsluiten',
+]
+
+export const VALUATION_ALLOWED_PATHS: readonly string[] = [
+  '/dashboard',
+  '/waardebepaling',
+  '/financiele-gegevens',
+  '/value-drivers',
+  '/waarderingsrapport',
+  '/mijn-bedrijf',
+  '/documentenkluis',
+  '/account',
+  '/abonnement-afsluiten',
+]
+
+// Lock/plan navigation toasts — ported verbatim from legacy navigate()
+// (osago-bundle.js:3027-3028, 3039).
+export const OVERDUE_LOCK_MESSAGE =
+  'Er staat een vervallen factuur open. Betaal deze eerst om je account te ontgrendelen.'
+export const EXPIRED_LOCK_MESSAGE =
+  'Je abonnement is verlopen. Verleng het om je account weer te ontgrendelen.'
+export const PLAN_RESTRICTED_MESSAGE =
+  'Deze pagina is niet beschikbaar binnen jouw huidige abonnement.'
+
 export const INVOICE_FILTER_PRESET_LABELS: Record<InvoiceFilterPreset, string> =
   {
     all: 'Alles',
@@ -293,5 +333,7 @@ export const MIN_FULL_PLAN_PRICE = Math.min(
   ...PLANS.filter(plan => plan.category === 'full').map(plan => plan.price),
 )
 export const MIN_VALUATION_PLAN_PRICE = Math.min(
-  ...PLANS.filter(plan => plan.category === 'valuation').map(plan => plan.price),
+  ...PLANS.filter(plan => plan.category === 'valuation').map(
+    plan => plan.price,
+  ),
 )

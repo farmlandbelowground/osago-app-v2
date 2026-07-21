@@ -3,6 +3,7 @@
 import { useRef, useState, type ChangeEvent, type FC } from 'react'
 import { read, utils } from 'xlsx'
 
+import { logSelfGeneratedDocument } from '@features/documents/actions'
 import { extractFinancials } from '@features/valuation/actions'
 import { type FinancialsExtraction } from '@features/valuation/types'
 import { type ApiResult } from '@shared/api/fetcher'
@@ -42,6 +43,34 @@ const readFileAsArrayBuffer = (file: File): Promise<ArrayBuffer> =>
     reader.onerror = () => reject(reader.error)
     reader.readAsArrayBuffer(file)
   })
+
+// Log the uploaded source file to the Documentenkluis, non-blocking — the vault
+// save must never break the extraction (ports handleFinancialsUpload step 1,
+// osago-bundle.js:10434-10448). Carried over from Slice 6 (spec §1.1.4).
+const logSourceToVault = (file: File): void => {
+  void (async () => {
+    try {
+      const dataUrl = await readFileAsDataUrl(file)
+      const fileBase64 = dataUrl.split(',')[1] ?? ''
+      if (!fileBase64) {
+        return
+      }
+      const stamp = new Date().toLocaleDateString('nl-NL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+      await logSelfGeneratedDocument({
+        description: 'Bron-jaarstukken voor automatische financiële extractie.',
+        fileBase64,
+        fileName: `Jaarstukken upload ${stamp} — ${file.name}`,
+        fileType: file.type || 'application/octet-stream',
+      })
+    } catch {
+      // Vault logging must never break the extraction.
+    }
+  })()
+}
 
 const extractFromSpreadsheet = async (
   file: File,
@@ -85,12 +114,15 @@ export const FinancialsExtractionUpload: FC<Props> = ({ onExtracted }) => {
           return
         }
 
+        logSourceToVault(file)
         const dataUrl = await readFileAsDataUrl(file)
         const dataBase64 = dataUrl.split(',')[1] ?? ''
         result = await extractFinancials({ dataBase64, kind: 'pdf' })
       } else if (extension === '.xlsx' || extension === '.xls') {
+        logSourceToVault(file)
         result = await extractFromSpreadsheet(file)
       } else if (extension === '.csv') {
+        logSourceToVault(file)
         const text = await readFileAsText(file)
         result = await extractFinancials({ kind: 'text', text })
       } else {

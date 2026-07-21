@@ -1,0 +1,1 @@
+export { OsagoBadge } from './OsagoBadge'

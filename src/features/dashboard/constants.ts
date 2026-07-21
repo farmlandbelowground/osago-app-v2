@@ -1,8 +1,6 @@
 import { type Company } from '@features/company/types'
 import { type SubscriptionStatus } from '@features/subscriptions/types'
 
-import { type LeadPipelineStage } from './schema'
-
 export const REQUIRED_COMPANY_FIELDS: readonly (keyof Company)[] = [
   'name',
   'website',
@@ -22,13 +20,6 @@ export const ACTIVE_SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = [
   'active',
   'ending',
   'renewed',
-]
-
-export const ACTIVE_CONVERSATION_STAGES: readonly LeadPipelineStage[] = [
-  'contact_made',
-  'interest_confirmed',
-  'negotiation',
-  'closing',
 ]
 
 export const WELCOME_VIDEO_URL =
