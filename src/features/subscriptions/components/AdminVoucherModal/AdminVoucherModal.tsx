@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { type FC } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { ModalShell } from '@shared/components/ModalShell'
 import { useToastStore } from '@shared/store/toast'
 
 import { deleteVoucher, saveVoucher } from '../../actions'
@@ -12,7 +13,6 @@ import {
   AdminVoucherFormSchema,
   type AdminVoucherFormInput,
 } from '../../schema'
-import { ModalShell } from '../ModalShell'
 import { type Props } from './types'
 
 const VALID_UNTIL_DATE_LENGTH = 10
@@ -202,7 +202,10 @@ export const AdminVoucherModal: FC<Props> = ({ onClose, voucher }) => {
         </div>
 
         {form.formState.errors.root && (
-          <p className="text-sm" style={{ color: 'var(--danger)', marginBottom: 16 }}>
+          <p
+            className="text-sm"
+            style={{ color: 'var(--danger)', marginBottom: 16 }}
+          >
             {form.formState.errors.root.message}
           </p>
         )}
@@ -220,7 +223,11 @@ export const AdminVoucherModal: FC<Props> = ({ onClose, voucher }) => {
             <span />
           )}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary" onClick={onClose} type="button">
+            <button
+              className="btn btn-secondary"
+              onClick={onClose}
+              type="button"
+            >
               Annuleren
             </button>
             <button

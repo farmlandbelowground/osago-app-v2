@@ -1,0 +1,1 @@
+export { PartnerRegistration } from './PartnerRegistration'

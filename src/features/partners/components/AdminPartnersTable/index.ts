@@ -1,0 +1,1 @@
+export { AdminPartnersTable } from './AdminPartnersTable'
