@@ -1,0 +1,1 @@
+export { AdminRecentCustomersTable } from './AdminRecentCustomersTable'

@@ -10,6 +10,7 @@ import { Logo } from '@shared/components/Logo'
 import { HelpIcon, LogoutIcon } from '../../assets/icons'
 import {
   FOOTER_ICON_SIZE_PX,
+  MEDEWERKER_NAV_SECTION,
   NAV_SECTIONS,
   USER_AVATAR_SIZE_PX,
 } from '../../constants'
@@ -21,13 +22,21 @@ export const Sidebar: FC<Props> = ({
   allowedPaths,
   email,
   firstName,
+  isMedewerker = false,
   lastName,
   photo,
 }) => {
+  // The medewerker-only "In ontwikkeling" section is appended only while an
+  // Osago employee is impersonating (index.html:309-316); a real customer never
+  // sees it.
+  const sections = isMedewerker
+    ? [...NAV_SECTIONS, MEDEWERKER_NAV_SECTION]
+    : NAV_SECTIONS
+
   // Hide nav links the customer's plan doesn't grant (ports
   // applyCustomerPlanVisibility, osago-bundle.js:2906-2932). `null` = full plan,
   // everything visible. A section with no visible links is dropped entirely.
-  const visibleSections = NAV_SECTIONS.map(section => ({
+  const visibleSections = sections.map(section => ({
     ...section,
     links: section.links.filter(
       link => allowedPaths === null || allowedPaths.includes(link.href),

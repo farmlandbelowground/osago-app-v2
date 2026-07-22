@@ -17,6 +17,7 @@ import {
   SocialsGeneratorIcon,
   ValuationIcon,
   ValueDriversIcon,
+  VerkoopklaarMakenIcon,
   VerkoopprocesIcon,
   VouchersIcon,
   WaardebepalingIcon,
@@ -88,6 +89,20 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     title: 'Bedrijf',
   },
 ] as const satisfies readonly NavSection[]
+
+// Medewerker-only "In ontwikkeling" section (index.html:309-316). Rendered by
+// the customer Sidebar only while an Osago employee is impersonating; a real
+// customer never sees it. Ports legacy's data-medewerker-only nav section.
+export const MEDEWERKER_NAV_SECTION: NavSection = {
+  links: [
+    {
+      href: '/verkoopklaar-maken',
+      icon: VerkoopklaarMakenIcon,
+      label: 'Verkoopklaar maken',
+    },
+  ],
+  title: 'In ontwikkeling',
+}
 
 export const NAV_ICON_SIZE_PX = 18
 export const USER_AVATAR_SIZE_PX = 36

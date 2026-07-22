@@ -1,0 +1,1 @@
+export { SocialsPlatformIcon } from './SocialsPlatformIcon'

@@ -600,6 +600,18 @@ a {
     transform: rotate(360deg);
   }
 }
+/* Socials-generator loading spinner (ported from osago-bundle.js:28212). */
+.sg-spin {
+  animation: sg-spin 1s linear infinite;
+}
+@keyframes sg-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 .kvk-results {
   position: absolute;
   top: calc(100% + 4px);
@@ -4341,4 +4353,85 @@ details[open] > summary > .advanced-fin-chevron {
   .main {
     padding: 20px;
   }
+}
+
+/* ── Slice 13 — medewerker (impersonation) tool styling ──────────────
+   Legacy repeated the same amber inline styles on every employee-only
+   control (border-color:#D97706;color:#92400E), the "Alleen voor
+   medewerkers" pill, and the amber alert box. Consolidated here as helper
+   classes (defined after .btn/.alert so source order wins without
+   !important). See docs/specs/slice-13-remaining-admin-only-screens.md §6. */
+.btn.btn-medewerker { border-color: #D97706; color: #92400E; }
+.medewerker-badge {
+  font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 99px;
+  border: 1px solid #D97706; color: #92400E; background: #FEF7E6;
+  letter-spacing: 0.02em; display: inline-block;
+}
+.alert.alert-amber { background: #FEF7E6; border-left: 3px solid #D97706; }
+
+/* ── Slice 13 — admin mailtemplates viewer (legacy styled these inline) ── */
+.email-tpl-list { padding: 0; overflow: hidden; }
+.email-tpl-group {
+  padding: 12px 16px 6px; background: #FAFBFA;
+  border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.email-tpl-row {
+  padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer;
+  display: flex; align-items: center; gap: 10px; background: #fff;
+  transition: background .12s ease;
+}
+.email-tpl-row.active { background: #F0F9F4; }
+.email-tpl-row-main { flex: 1; min-width: 0; }
+.email-tpl-name { font-weight: 600; font-size: 13.5px; color: var(--ink); }
+.email-tpl-row.active .email-tpl-name { color: var(--green-dark); }
+.email-tpl-desc { margin-top: 2px; line-height: 1.4; }
+.email-readonly-box {
+  padding: 10px 12px; background: #FAFBFA; border: 1px solid var(--line);
+  border-radius: var(--radius-sm); font-size: 13.5px; color: var(--ink);
+  word-break: break-word;
+}
+.email-readonly-body {
+  font-family: 'Inter', sans-serif; line-height: 1.55; white-space: pre-wrap;
+}
+.email-preview-head {
+  background: #F4F4F2; border-bottom: 1px solid var(--line); padding: 10px 16px;
+  font-size: 12px; color: var(--muted);
+}
+.email-preview-iframe { width: 100%; height: 560px; border: none; background: #F4F4F2; }
+.email-preview-text {
+  padding: 18px 22px; font-family: 'Inter', sans-serif; font-size: 14px;
+  line-height: 1.65; white-space: pre-wrap; color: var(--ink);
+}
+
+/* ── Slice 13 — admin medewerker (team) cards ── */
+.team-avatar {
+  width: 48px; height: 48px; border-radius: 10px;
+  background: linear-gradient(135deg, #1F3328, #0A1F14); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; flex-shrink: 0; overflow: hidden;
+}
+.team-rooster-cell {
+  text-align: center; padding: 6px 2px; border: 1px solid var(--line);
+  background: var(--line-soft); border-radius: 6px; color: var(--muted);
+}
+.team-rooster-cell[data-open='true'] {
+  border-color: var(--green); background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+/* ── Slice 13 — admin medewerker (team) cards (legacy styled these inline) ── */
+.team-avatar {
+  width: 48px; height: 48px; border-radius: 10px;
+  background: linear-gradient(135deg, #1F3328, #0A1F14); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; flex-shrink: 0; overflow: hidden;
+}
+.team-rooster-cell {
+  text-align: center; padding: 6px 2px; border: 1px solid var(--line);
+  background: var(--line-soft); border-radius: 6px; color: var(--muted);
+}
+.team-rooster-cell[data-open='true'] {
+  border-color: var(--green); background: var(--green-soft);
+  color: var(--green-dark);
 }

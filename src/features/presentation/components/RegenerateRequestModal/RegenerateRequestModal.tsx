@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties, type FC } from 'react'
 
+import { requestDocumentRegeneration } from '../../actions'
 import { REGEN_DOC_FEE, REGEN_DOC_INFO } from '../../constants/presentation'
 import { type Props } from './types'
 
@@ -132,7 +133,12 @@ export const RegenerateRequestModal: FC<Props> = ({
           </button>
           <button
             className="btn btn-primary"
-            onClick={() => setConfirmed(true)}
+            onClick={() => {
+              // Fire-and-forget internal upsell notification (legacy
+              // deliverTemplatedEmail is not awaited); confirmation shows immediately.
+              void requestDocumentRegeneration(documentType)
+              setConfirmed(true)
+            }}
             type="button"
           >
             Aanvragen

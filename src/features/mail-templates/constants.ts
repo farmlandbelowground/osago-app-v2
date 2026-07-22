@@ -1,0 +1,6 @@
+export const APP_CONFIG_EMAIL_TEMPLATES_KEY = 'emailTemplates'
+export const DEFAULT_FROM_NAME = 'Osago'
+export const DEFAULT_FROM_EMAIL = 'support@osago.nl'
+export const PREVIEW_RECIPIENT = 'Voorbeeld klant <voorbeeld@example.nl>'
+export const PREVIEW_MODE_HTML = 'html'
+export const PREVIEW_MODE_TEXT = 'text'

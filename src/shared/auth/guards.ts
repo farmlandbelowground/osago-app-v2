@@ -17,3 +17,16 @@ export const requireRole = async (role: AdminRole): Promise<AuthSession> => {
 
   return session
 }
+
+// Gate for the medewerker-only /verkoopklaar-maken route. Legacy silently
+// redirects a non-impersonated visit to the dashboard (osago-bundle.js:3474-3482);
+// v2 does the same server-side.
+export const requireImpersonation = async (): Promise<AuthSession> => {
+  const session = await requireSession()
+
+  if (!session.impersonatedBy) {
+    redirect('/dashboard')
+  }
+
+  return session
+}

@@ -1,0 +1,1 @@
+export { ScorecardTabStrip } from './ScorecardTabStrip'

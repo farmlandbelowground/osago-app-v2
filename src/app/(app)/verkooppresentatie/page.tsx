@@ -90,6 +90,7 @@ export default async function VerkooppresentatiePage() {
         </div>
         <PresentationGenerateActions
           anonDone={anonDone}
+          isMedewerker={Boolean(session.impersonatedBy)}
           memoDone={memoDone}
           reviewRequired={reviewRequired}
           reviewStatus={presentation.reviewStatus}

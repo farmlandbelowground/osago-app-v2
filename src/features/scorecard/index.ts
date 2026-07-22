@@ -21,6 +21,9 @@ export {
   SCORECARD_TAB_HIDDEN_BY_SECTOR,
 } from './constants/visibility'
 
+export { ScorecardWorkspace } from './components/ScorecardWorkspace'
+export { getScorecardCompany } from './queries'
+
 export { buildImprovementReportData } from './lib/buildImprovementReportData'
 export { computeScorecardStats } from './lib/computeScorecardStats'
 export { getFilteredScorecard } from './lib/getFilteredScorecard'

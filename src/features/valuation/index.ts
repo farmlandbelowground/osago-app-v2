@@ -57,3 +57,18 @@ export { VALUATION_BAND_DEFAULT_PCT } from './constants/sectorMultiples'
 export { DEFAULT_SHAREHOLDER_VALUE_INPUTS } from './constants/shareholderValue'
 
 export * from './types'
+export { AdminValuationSettings } from './components/admin/AdminValuationSettings'
+export { ValuationControleCard } from './components/medewerker/ValuationControleCard'
+export { ValuationControleDcfCard } from './components/medewerker/ValuationControleDcfCard'
+export { ValuationReportEmployeeTools } from './components/medewerker/ValuationReportEmployeeTools'
+export { ValuationUnlockButton } from './components/medewerker/ValuationUnlockButton'
+export {
+  approveValuationReviewByAdmin,
+  resetValuationByAdmin,
+  resetValuationPdfByAdmin,
+} from './actions'
+export { buildValuationPptxT5, type T5DeckData } from './lib/buildValuationPptxT5'
+export {
+  type DcfExportCompany,
+  type DcfExportData,
+} from './lib/dcfExportShared'

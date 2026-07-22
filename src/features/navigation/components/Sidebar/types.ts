@@ -4,4 +4,5 @@ export interface Props {
   firstName: string | null
   lastName: string | null
   photo: string | null
+  isMedewerker?: boolean
 }

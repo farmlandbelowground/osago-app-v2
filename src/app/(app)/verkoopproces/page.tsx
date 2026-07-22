@@ -51,7 +51,11 @@ export default async function VerkoopprocesPage() {
         {leads.length === 0 ? (
           <PipelineEmptyState />
         ) : (
-          <PipelineBoard companyHasName={!!company?.name} leads={leads} />
+          <PipelineBoard
+            companyHasName={!!company?.name}
+            isMedewerker={Boolean(session.impersonatedBy)}
+            leads={leads}
+          />
         )}
       </WerkruimteLockGate>
     </main>
