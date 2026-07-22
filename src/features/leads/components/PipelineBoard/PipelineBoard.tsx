@@ -25,7 +25,11 @@ import { type Props } from './types'
 // Ports renderPipeline + bindPipeline (osago-bundle.js:21512-21641): six stage
 // columns with count badges, HTML5 drag-and-drop between columns, and a
 // click-to-open detail modal (suppressed right after a drop).
-export const PipelineBoard: FC<Props> = ({ companyHasName, leads }) => {
+export const PipelineBoard: FC<Props> = ({
+  companyHasName,
+  isMedewerker,
+  leads,
+}) => {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [dragOverStage, setDragOverStage] = useState<LeadStage | null>(null)
@@ -143,6 +147,7 @@ export const PipelineBoard: FC<Props> = ({ companyHasName, leads }) => {
       {selectedLead && (
         <PipelineDetailModal
           companyHasName={companyHasName}
+          isMedewerker={isMedewerker}
           lead={selectedLead}
           onClose={() => setSelectedId(null)}
         />

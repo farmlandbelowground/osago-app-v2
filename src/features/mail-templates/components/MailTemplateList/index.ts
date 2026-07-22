@@ -1,0 +1,1 @@
+export { MailTemplateList } from './MailTemplateList'

@@ -10,6 +10,8 @@ import {
   type RegenerateDocumentType,
 } from '../../types'
 import { GenerateDocumentModal } from '../GenerateDocumentModal'
+import { PresentationResetButtons } from '../medewerker/PresentationResetButtons'
+import { PresentationUnlockButton } from '../medewerker/PresentationUnlockButton'
 import { PresentationReviewActions } from '../PresentationReviewActions'
 import { RegenerateRequestModal } from '../RegenerateRequestModal'
 import { type Props } from './types'
@@ -55,6 +57,7 @@ const CheckIcon: FC = () => (
 // lives here so a generation continues if its modal is dismissed to background.
 export const PresentationGenerateActions: FC<Props> = ({
   anonDone,
+  isMedewerker,
   memoDone,
   reviewRequired,
   reviewStatus,
@@ -80,6 +83,9 @@ export const PresentationGenerateActions: FC<Props> = ({
     return (
       <div className="page-actions" style={{ flexWrap: 'wrap', gap: 8 }}>
         <PresentationReviewActions reviewRequired reviewStatus={reviewStatus} />
+        {isMedewerker && reviewStatus === 'submitted' && (
+          <PresentationUnlockButton />
+        )}
       </div>
     )
   }
@@ -131,6 +137,10 @@ export const PresentationGenerateActions: FC<Props> = ({
           </>
         )}
       </button>
+
+      {isMedewerker && (
+        <PresentationResetButtons anonDone={anonDone} memoDone={memoDone} />
+      )}
 
       {!reviewRequired && (
         <PresentationReviewActions

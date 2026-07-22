@@ -1,3 +1,4 @@
+export { approveLeadValidation } from './actions'
 export { AutoLeadsPanel } from './components/AutoLeadsPanel'
 export { BuyerMatchingTabs } from './components/BuyerMatchingTabs'
 export { ManualLeadsPanel } from './components/ManualLeadsPanel'

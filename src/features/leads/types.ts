@@ -99,3 +99,4 @@ export interface BuyerPipelineCounts {
   activeConversations: number
   identifiedBuyers: number
 }
+

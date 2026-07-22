@@ -1,0 +1,1 @@
+export { CustomerOverviewModal } from './CustomerOverviewModal'

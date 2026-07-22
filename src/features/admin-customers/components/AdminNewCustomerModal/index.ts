@@ -1,0 +1,1 @@
+export { AdminNewCustomerModal } from './AdminNewCustomerModal'

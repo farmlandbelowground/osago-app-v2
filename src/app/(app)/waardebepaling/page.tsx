@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 
+import { getCompany } from '@features/company/queries'
 import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import { getSubscription } from '@features/subscriptions/queries'
 import {
@@ -8,10 +9,13 @@ import {
   FINANCIELE_GEGEVENS_PATH,
   MIJN_BEDRIJF_PATH,
   VALUATION_BAND_DEFAULT_PCT,
+  ValuationControleCard,
+  ValuationControleDcfCard,
   ValuationLockGate,
   ValuationProgressTracker,
   ValuationResultCard,
   ValuationReviewStatusCard,
+  ValuationUnlockButton,
   computeIndicatieveOndernemingswaarde,
   computeValuationProgress,
   dcfNewCompute,
@@ -23,9 +27,11 @@ import {
   getValuationMultiples,
   getValuationRecord,
   recomputeHeuristicValuation,
+  resetValuationByAdmin,
   resolveDcfNewInputs,
   resolveDisplayCompanyData,
 } from '@features/valuation'
+import { AdminResetButton } from '@shared/admin-reset'
 import { requireSession } from '@shared/auth/session'
 
 export default async function WaardebepalingPage() {
@@ -106,21 +112,26 @@ export default async function WaardebepalingPage() {
   const ashLow = shareholderValue - valuationBand
   const ashHigh = shareholderValue + valuationBand
 
-  const dcfResult = resolved.dcfApplyEnabled
-    ? dcfNewCompute(
-        resolveDcfNewInputs(
-          resolved.dcfNewInputs,
-          dcfAdminDefaults,
-          indicativeResult.sectorMultipleRaw ??
-            DCF_SECTORCORRECTIE_BASE_MULTIPLE,
-        ),
-        resolved.financials,
-        resolved.normalizations,
+  const dcfInputs = resolved.dcfApplyEnabled
+    ? resolveDcfNewInputs(
+        resolved.dcfNewInputs,
+        dcfAdminDefaults,
+        indicativeResult.sectorMultipleRaw ?? DCF_SECTORCORRECTIE_BASE_MULTIPLE,
       )
+    : null
+
+  const dcfResult = dcfInputs
+    ? dcfNewCompute(dcfInputs, resolved.financials, resolved.normalizations)
     : null
 
   const requiresReview = subscription?.type === 'valuation-premium'
   const reviewStatus = liveFields?.valuationReview?.status ?? 'none'
+
+  // Employee-only ("medewerker") controls, rendered only while impersonating.
+  const isMedewerker = Boolean(session.impersonatedBy)
+  const companyForExport = isMedewerker
+    ? await getCompany(session.user.id)
+    : null
 
   return (
     <main className="main">
@@ -160,6 +171,43 @@ export default async function WaardebepalingPage() {
         requiresReview={requiresReview}
         reviewStatus={reviewStatus}
       />
+
+      {isMedewerker && (
+        <>
+          {dcfResult && dcfInputs ? (
+            <ValuationControleDcfCard
+              data={{
+                company: {
+                  bedrijfMarktOntwikkeling: null,
+                  dcfApplyEnabled: resolved.dcfApplyEnabled,
+                  kvkNummer: companyForExport?.kvkNummer ?? null,
+                  lastClosedYear: resolved.lastClosedYear,
+                  name: companyForExport?.name ?? '',
+                  sector: resolved.sector,
+                },
+                financials: resolved.financials,
+                inputs: dcfInputs,
+                result: dcfResult,
+              }}
+            />
+          ) : (
+            <ValuationControleCard result={indicativeResult} />
+          )}
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+            {requiresReview && reviewStatus === 'submitted' && (
+              <ValuationUnlockButton />
+            )}
+            {resolved.made && (
+              <AdminResetButton
+                label="Waardering resetten (medewerker)"
+                resetAction={resetValuationByAdmin}
+                resetType="valuation"
+              />
+            )}
+          </div>
+        </>
+      )}
     </main>
   )
 }

@@ -1,0 +1,1 @@
+export { SocialsInstagramPreview } from './SocialsInstagramPreview'

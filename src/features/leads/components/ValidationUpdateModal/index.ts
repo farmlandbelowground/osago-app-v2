@@ -1,0 +1,1 @@
+export { ValidationUpdateModal } from './ValidationUpdateModal'

@@ -5,17 +5,36 @@ import { z } from 'zod'
 
 import { DASHBOARD_PATH } from '@features/auth'
 import { getCompany } from '@features/company/queries'
+import { getSubscription } from '@features/subscriptions/queries'
+import {
+  ADMIN_RESET_CONFIG,
+  createAdminResetInvoice,
+} from '@shared/admin-reset'
 import { runAiCompose } from '@shared/ai-compose/lib/runAiCompose'
 import { type ApiResult } from '@shared/api/fetcher'
 import { legacyApiFetch } from '@shared/api/legacyApiFetch'
+import { requireImpersonation, requireRole } from '@shared/auth/guards'
 import { requireSession } from '@shared/auth/session'
+import { sendTemplatedEmail } from '@shared/email'
 import { getServerClient } from '@shared/supabase/server'
 
+import { APP_CONFIG_DCF_ADMIN_DEFAULTS_KEY } from './constants/dcf'
 import {
   FINANCIELE_GEGEVENS_PATH,
   WAARDEBEPALING_PATH,
   WAARDERINGSRAPPORT_PATH,
 } from './constants/routes'
+import {
+  APP_CONFIG_SMALL_EBITDA_DEDUCTIONS_KEY,
+  APP_CONFIG_SMALL_ORG_DEDUCTIONS_KEY,
+} from './constants/sectorMultiples'
+import {
+  ADMIN_VALUATION_INSTELLINGEN_PATH,
+  APP_CONFIG_VALUATION_MULTIPLES_KEY,
+  DCF_ADMIN_DECIMAL_MAX,
+  MULTIPLE_MAX,
+  MULTIPLE_MIN,
+} from './constants/valuationAdmin'
 import {
   VALUE_DRIVERS,
   VD_PERCENTAGE_SLIDER_STEP,
@@ -635,4 +654,353 @@ export const prepareValuationReportGamma = async (): Promise<
     },
     error: null,
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Admin valuation-instellingen (Slice 13). All four are is_full_admin writes
+// (RLS + requireRole('admin')). Blind last-write-wins upsert of the whole
+// jsonb value, exactly as legacy syncAppConfig (D-I) — two admins editing the
+// same key can clobber each other; not fixed, per replicate-legacy-exactly.
+// ─────────────────────────────────────────────────────────────────────────
+
+type AdminConfigResult = { error: null } | { error: string }
+
+const AdminMultiplesInputSchema = z.array(
+  z.object({
+    id: z.string().min(1),
+    label: z.string(),
+    value: z.number().min(MULTIPLE_MIN).max(MULTIPLE_MAX),
+  }),
+)
+
+export const saveValuationMultiples = async (
+  input: Array<{ id: string; label: string; value: number }>,
+): Promise<AdminConfigResult> => {
+  const parsed = AdminMultiplesInputSchema.safeParse(input)
+
+  if (!parsed.success) {
+    return { error: 'Controleer de ingevulde multiples.' }
+  }
+
+  await requireRole('admin')
+  const supabase = await getServerClient()
+
+  const { error } = await supabase
+    .from('app_config')
+    .upsert({ key: APP_CONFIG_VALUATION_MULTIPLES_KEY, value: parsed.data })
+
+  if (error) {
+    return { error: 'Opslaan is mislukt. Probeer het opnieuw.' }
+  }
+
+  revalidatePath(ADMIN_VALUATION_INSTELLINGEN_PATH)
+  return { error: null }
+}
+
+const AdminDcfDefaultsInputSchema = z.object({
+  liquiditeitspremie: z.number().min(0).max(DCF_ADMIN_DECIMAL_MAX),
+  mrp: z.number().min(0).max(DCF_ADMIN_DECIMAL_MAX),
+  rfr: z.number().min(0).max(DCF_ADMIN_DECIMAL_MAX),
+})
+
+export const saveDcfAdminDefaults = async (input: {
+  liquiditeitspremie: number
+  mrp: number
+  rfr: number
+}): Promise<AdminConfigResult> => {
+  const parsed = AdminDcfDefaultsInputSchema.safeParse(input)
+
+  if (!parsed.success) {
+    return {
+      error: 'Gebruik een percentage tussen 0 en 100 voor alle velden.',
+    }
+  }
+
+  await requireRole('admin')
+  const supabase = await getServerClient()
+
+  // Preserve any legacy `sectoropslag` key (the UI edits only rfr/mrp/liquidi-
+  // teitspremie); the sectorcorrectie itself is derived from the multiple.
+  const { data: existing } = await supabase
+    .from('app_config')
+    .select('value')
+    .eq('key', APP_CONFIG_DCF_ADMIN_DEFAULTS_KEY)
+    .maybeSingle()
+
+  const base =
+    existing?.value && typeof existing.value === 'object'
+      ? (existing.value as Record<string, unknown>)
+      : {}
+
+  const value = {
+    ...base,
+    liquiditeitspremie: parsed.data.liquiditeitspremie,
+    mrp: parsed.data.mrp,
+    rfr: parsed.data.rfr,
+  }
+
+  const { error } = await supabase
+    .from('app_config')
+    .upsert({ key: APP_CONFIG_DCF_ADMIN_DEFAULTS_KEY, value })
+
+  if (error) {
+    return { error: 'Opslaan is mislukt. Probeer het opnieuw.' }
+  }
+
+  revalidatePath(ADMIN_VALUATION_INSTELLINGEN_PATH)
+  return { error: null }
+}
+
+const AdminEbitdaDeductionsInputSchema = z.array(
+  z.object({
+    deduction: z.number(),
+    fromEbitda: z.number().nullable(),
+    toEbitda: z.number().nullable(),
+  }),
+)
+
+export const saveSmallEbitdaDeductions = async (
+  input: Array<{
+    deduction: number
+    fromEbitda: number | null
+    toEbitda: number | null
+  }>,
+): Promise<AdminConfigResult> => {
+  const parsed = AdminEbitdaDeductionsInputSchema.safeParse(input)
+
+  if (!parsed.success) {
+    return { error: 'Controleer de ingevulde aftrek-rijen.' }
+  }
+
+  // Drop fully-empty rows, exactly as legacy saveSmallEbitdaDeductions.
+  const value = parsed.data.filter(
+    row =>
+      row.fromEbitda !== null || row.toEbitda !== null || row.deduction !== 0,
+  )
+
+  await requireRole('admin')
+  const supabase = await getServerClient()
+
+  const { error } = await supabase
+    .from('app_config')
+    .upsert({ key: APP_CONFIG_SMALL_EBITDA_DEDUCTIONS_KEY, value })
+
+  if (error) {
+    return { error: 'Opslaan is mislukt. Probeer het opnieuw.' }
+  }
+
+  revalidatePath(ADMIN_VALUATION_INSTELLINGEN_PATH)
+  return { error: null }
+}
+
+const AdminOrgDeductionsInputSchema = z.array(
+  z.object({
+    deduction: z.number(),
+    fromFte: z.number().nullable(),
+    toFte: z.number().nullable(),
+  }),
+)
+
+export const saveSmallOrgDeductions = async (
+  input: Array<{
+    deduction: number
+    fromFte: number | null
+    toFte: number | null
+  }>,
+): Promise<AdminConfigResult> => {
+  const parsed = AdminOrgDeductionsInputSchema.safeParse(input)
+
+  if (!parsed.success) {
+    return { error: 'Controleer de ingevulde aftrek-rijen.' }
+  }
+
+  const value = parsed.data.filter(
+    row => row.fromFte !== null || row.toFte !== null || row.deduction !== 0,
+  )
+
+  await requireRole('admin')
+  const supabase = await getServerClient()
+
+  const { error } = await supabase
+    .from('app_config')
+    .upsert({ key: APP_CONFIG_SMALL_ORG_DEDUCTIONS_KEY, value })
+
+  if (error) {
+    return { error: 'Opslaan is mislukt. Probeer het opnieuw.' }
+  }
+
+  revalidatePath(ADMIN_VALUATION_INSTELLINGEN_PATH)
+  return { error: null }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Employee-only ("medewerker") valuation tools (Slice 13 Part C). All render
+// only while impersonating and re-check requireImpersonation() server-side —
+// the session IS the customer, so every read/write runs under the customer's
+// own RLS (no targetUserId / service-role).
+// ─────────────────────────────────────────────────────────────────────────
+
+const nlDateToday = (): string =>
+  new Date().toLocaleDateString('nl-NL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+// Ports approveValuationReviewByAdmin (osago-bundle.js:19240). Plan must be
+// valuation-premium; flips companies.extra.valuationReview submitted→approved
+// with approvedBy = the impersonating admin's id, then emails the customer.
+export const approveValuationReviewByAdmin =
+  async (): Promise<ActionResult> => {
+    const session = await requireImpersonation()
+    const subscription = await getSubscription(session.user.id)
+
+    if (subscription?.type !== 'valuation-premium') {
+      return { error: 'Alleen beschikbaar voor Waardebepaling Premium.' }
+    }
+
+    const extra = await getExistingExtra(session.user.id)
+
+    if (extra.valuationReview?.status !== 'submitted') {
+      return {
+        error: 'Er is geen waardebepaling ingediend ter controle.',
+      }
+    }
+
+    const supabase = await getServerClient()
+    const now = Date.now()
+
+    const { error } = await supabase.from('companies').upsert(
+      {
+        extra: {
+          ...extra,
+          valuationReview: {
+            approvedAt: now,
+            approvedBy: session.impersonatedBy ?? undefined,
+            status: 'approved',
+            submittedAt: extra.valuationReview.submittedAt || now,
+          },
+        },
+        user_id: session.user.id,
+      },
+      { onConflict: 'user_id' },
+    )
+
+    if (error) {
+      return { error: 'Vrijschakelen is mislukt. Probeer het opnieuw.' }
+    }
+
+    const company = await getCompany(session.user.id)
+    await sendTemplatedEmail('valuation_review_approved', session.user.email ?? '', {
+      achternaam: session.lastName ?? '',
+      bedrijfsnaam: company?.name ?? '',
+      voornaam: session.firstName ?? '',
+    })
+
+    revalidatePath(WAARDEBEPALING_PATH)
+    return { error: null }
+  }
+
+// Ports resetValuationByAdmin (ADMIN_RESET_CONFIG.valuation, osago-bundle.js:
+// 12517): clears the made valuation (madeAt + snapshotCompany live inside the
+// valuations.result jsonb) + admin_reset_notice email + optional €199 invoice.
+export const resetValuationByAdmin = async (
+  withInvoice: boolean,
+): Promise<{ invoiceError: string | null }> => {
+  const session = await requireImpersonation()
+  const supabase = await getServerClient()
+
+  const { data } = await supabase
+    .from('valuations')
+    .select('result')
+    .eq('user_id', session.user.id)
+    .maybeSingle()
+
+  const result =
+    data?.result && typeof data.result === 'object'
+      ? { ...(data.result as Record<string, unknown>) }
+      : {}
+  result.madeAt = null
+  result.snapshotCompany = null
+
+  await supabase
+    .from('valuations')
+    .upsert({ result, user_id: session.user.id }, { onConflict: 'user_id' })
+
+  await sendTemplatedEmail('admin_reset_notice', session.user.email ?? '', {
+    achternaam: session.lastName ?? '',
+    onderdeel: 'Indicatieve waardebepaling',
+    onderdeel_lc: 'de indicatieve waardebepaling',
+    reset_datum: nlDateToday(),
+    toelichting:
+      'De waardering is gereset zodat je opnieuw kunt starten — eventuele wijzigingen aan financiële gegevens, value drivers of het waarderingsrapport worden bij de volgende waardering meegenomen.',
+    voornaam: session.firstName ?? '',
+  })
+
+  let invoiceError: string | null = null
+  if (withInvoice) {
+    const invoice = await createAdminResetInvoice(
+      session.user.id,
+      ADMIN_RESET_CONFIG.valuation.invoiceLine,
+    )
+    invoiceError = invoice.error
+  }
+
+  revalidatePath(WAARDEBEPALING_PATH)
+  return { invoiceError }
+}
+
+// Ports resetValuationPdfByAdmin (ADMIN_RESET_CONFIG.valuationPdf): removes the
+// "Waarderingsrapport " vault documents (Storage + row) + email + optional
+// invoice. Runs under the impersonated customer's own RLS.
+export const resetValuationPdfByAdmin = async (
+  withInvoice: boolean,
+): Promise<{ invoiceError: string | null }> => {
+  const session = await requireImpersonation()
+  const supabase = await getServerClient()
+
+  const { data: docs } = await supabase
+    .from('documents')
+    .select('id, file_path')
+    .eq('user_id', session.user.id)
+    .ilike('file_name', 'Waarderingsrapport%')
+
+  if (docs && docs.length > 0) {
+    const paths = docs
+      .map(doc => doc.file_path)
+      .filter((path): path is string => Boolean(path))
+
+    if (paths.length > 0) {
+      await supabase.storage.from('osago-documents').remove(paths)
+    }
+    await supabase
+      .from('documents')
+      .delete()
+      .in(
+        'id',
+        docs.map(doc => doc.id),
+      )
+  }
+
+  await sendTemplatedEmail('admin_reset_notice', session.user.email ?? '', {
+    achternaam: session.lastName ?? '',
+    onderdeel: 'Waarderingsrapport (PDF)',
+    onderdeel_lc: 'het waarderingsrapport',
+    reset_datum: nlDateToday(),
+    toelichting:
+      'Het PDF-rapport is uit jouw Documentenkluis verwijderd. Je kunt op de Waardebepaling-pagina opnieuw "Maak waarderingsrapport" klikken om een nieuwe versie te genereren.',
+    voornaam: session.firstName ?? '',
+  })
+
+  let invoiceError: string | null = null
+  if (withInvoice) {
+    const invoice = await createAdminResetInvoice(
+      session.user.id,
+      ADMIN_RESET_CONFIG.valuationPdf.invoiceLine,
+    )
+    invoiceError = invoice.error
+  }
+
+  revalidatePath(WAARDERINGSRAPPORT_PATH)
+  return { invoiceError }
 }

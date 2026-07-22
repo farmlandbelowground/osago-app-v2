@@ -2,5 +2,6 @@ import { type Lead } from '../../types'
 
 export interface Props {
   companyHasName: boolean
+  isMedewerker: boolean
   leads: Lead[]
 }

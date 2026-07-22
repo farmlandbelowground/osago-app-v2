@@ -1,12 +1,19 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 import { getCompany } from '@features/company/queries'
-import { logSelfGeneratedDocument } from '@features/documents'
+import {
+  logSelfGeneratedDocument,
+  DOCUMENT_PREFIXES,
+} from '@features/documents'
+import { DOCS_BUCKET } from '@features/documents/constants/storage'
 import { type ApiResult } from '@shared/api/fetcher'
 import { legacyApiFetch } from '@shared/api/legacyApiFetch'
-import { requireSession } from '@shared/auth/session'
+import { requireImpersonation, requireRole } from '@shared/auth/guards'
+import { requireSession, type AuthSession } from '@shared/auth/session'
+import { sendTemplatedEmail } from '@shared/email'
 import { getServerClient } from '@shared/supabase/server'
 
 import {
@@ -14,17 +21,24 @@ import {
   IDENTIFIED_BUYER_DEFAULT_TYPE,
   MANUAL_LEAD_FIT_DEFAULT,
 } from './constants/leadTypes'
-import { KOPERMATCHING_PATH, VERKOOPPROCES_PATH } from './constants/routes'
+import {
+  ADMIN_PROJECTEN_PATH,
+  KOPERMATCHING_PATH,
+  VERKOOPPROCES_PATH,
+} from './constants/routes'
 import { SALES_DOCUMENT_FILE_TYPE } from './constants/salesDocuments'
+import { UPSELL_NONE_LINE, UPSELL_OPTIONS } from './constants/upsell'
 import {
   LEAD_VALIDATION_ENDPOINT,
   MANUAL_LEAD_VALIDATION_FEE,
 } from './constants/validation'
 import { buildIdentifyRequest } from './lib/buildIdentifyRequest'
+import { buyerDisplayName } from './lib/buyerDisplayName'
 import { buildContractHtml } from './lib/salesDocuments/buildContractHtml'
 import { buildLoiHtml } from './lib/salesDocuments/buildLoiHtml'
 import { buildNdaHtml } from './lib/salesDocuments/buildNdaHtml'
 import { safeFileName } from './lib/salesDocuments/shared'
+import { stageLabel } from './lib/stageMapping'
 import { getLeadById } from './queries'
 import {
   IdentifyErrorSchema,
@@ -34,6 +48,7 @@ import {
 } from './schema'
 import {
   type Lead,
+  type LeadStage,
   type ManualLeadInput,
   type ManualPromoteMode,
   type PipelineLeadInput,
@@ -51,6 +66,72 @@ const joinName = (first: string, last: string): string =>
 
 const joinLocation = (city: string, country: string): string =>
   [city, country].filter(Boolean).join(', ')
+
+// Fires the transactional pipeline emails after a stage change (best-effort —
+// never blocks/fails the move). Ports triggerDealAfwikkelenEmail
+// (osago-bundle.js:23516) + sendPipelineStageChangedEmail (:12245): a move INTO
+// 'closing' fires the deal-afwikkelen mail AND the stage-changed mail; any other
+// change fires only the stage-changed mail, skipped when moving into 'new' /
+// 'no_interest'. Recipient is the seller (the pipeline owner).
+const fireStageChangeEmails = async (
+  session: AuthSession,
+  companyName: string,
+  lead: Lead,
+  oldStage: LeadStage | null,
+  newStage: LeadStage,
+): Promise<void> => {
+  const to = session.user.email
+  if (!to || oldStage === newStage) {
+    return
+  }
+
+  const related = { leadId: lead.id, userId: session.user.id }
+  const voornaam = session.firstName ?? ''
+  const achternaam = session.lastName ?? ''
+
+  if (oldStage !== 'closing' && newStage === 'closing') {
+    await sendTemplatedEmail(
+      'pipeline_deal_afwikkelen',
+      to,
+      {
+        achternaam,
+        eigen_bedrijf: companyName,
+        koper_naam: lead.name || 'deze koper',
+        voornaam,
+      },
+      { related },
+    )
+  }
+
+  if (newStage !== 'new' && newStage !== 'no_interest') {
+    const matching = UPSELL_OPTIONS.filter(option =>
+      option.stages.includes(newStage),
+    )
+    const upgradesLijst =
+      matching.length > 0
+        ? matching
+            .map(
+              option =>
+                `    • ${option.title} — ${option.price} ${option.unit}`,
+            )
+            .join('\n')
+        : UPSELL_NONE_LINE
+
+    await sendTemplatedEmail(
+      'pipeline_stage_changed',
+      to,
+      {
+        achternaam,
+        koper_naam: buyerDisplayName(lead),
+        nieuwe_fase: stageLabel(newStage),
+        oude_fase: stageLabel(oldStage),
+        upgrades_lijst: upgradesLijst,
+        voornaam,
+      },
+      { related },
+    )
+  }
+}
 
 // Field bag shared by candidate→pipeline copies — mirrors legacy's `{...lead}`
 // spread that carries every contact/address field onto the pipeline row.
@@ -446,6 +527,15 @@ export const updatePipelineLead = async (
     return { error: 'Opslaan van de wijzigingen is mislukt.' }
   }
 
+  const company = await getCompany(userId)
+  await fireStageChangeEmails(
+    session,
+    company?.name ?? '',
+    lead,
+    lead.stage,
+    parsedStage.data,
+  )
+
   revalidatePath(VERKOOPPROCES_PATH)
   return { error: null }
 }
@@ -460,18 +550,34 @@ export const moveLeadStage = async (
   }
 
   const session = await requireSession()
+  const userId = session.user.id
+
+  const lead = await getLeadById(userId, id)
+  if (!lead || lead.leadType !== 'pipeline') {
+    return { error: 'Koper niet gevonden.' }
+  }
+
   const supabase = await getServerClient()
 
   const { error } = await supabase
     .from('leads')
     .update({ stage: parsedStage.data })
-    .eq('user_id', session.user.id)
+    .eq('user_id', userId)
     .eq('id', id)
     .eq('lead_type', 'pipeline')
 
   if (error) {
     return { error: 'Verplaatsen van de koper is mislukt.' }
   }
+
+  const company = await getCompany(userId)
+  await fireStageChangeEmails(
+    session,
+    company?.name ?? '',
+    lead,
+    lead.stage,
+    parsedStage.data,
+  )
 
   revalidatePath(VERKOOPPROCES_PATH)
   return { error: null }
@@ -592,4 +698,292 @@ export const generateSalesDocument = async (
   }
 
   return { data: { fileName: document.fileName }, error: null }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Slice 13 Part C — admin lead tools (admin app, is_admin RLS) + impersonation-
+// gated seller communications.
+// ─────────────────────────────────────────────────────────────────────────
+
+const ApproveValidationSchema = z.object({
+  leadId: z.string().min(1),
+  userId: z.string().min(1),
+})
+
+// Admin (NOT impersonation): mark a paid manual lead validated + promote a
+// pipeline copy + notify the seller. D-M: validated_by stores the admin UUID
+// (column is uuid); the {{gevalideerd_door}} email var carries the admin's
+// display name resolved from the session.
+export const approveLeadValidation = async (
+  userId: string,
+  leadId: string,
+): Promise<ActionResult> => {
+  const parsed = ApproveValidationSchema.safeParse({ leadId, userId })
+  if (!parsed.success) {
+    return { error: 'Ongeldige invoer.' }
+  }
+
+  const session = await requireRole('admin_user')
+  const lead = await getLeadById(userId, leadId)
+
+  if (!lead || lead.leadType !== 'manual') {
+    return { error: 'Lead niet gevonden.' }
+  }
+  if (lead.validationStatus !== 'pending_validation') {
+    return { error: 'Deze lead heeft geen openstaande validatie-aanvraag.' }
+  }
+
+  const now = nowIso()
+  const adminUuid = session.user.id
+  const adminName =
+    [session.firstName, session.lastName].filter(Boolean).join(' ') || 'Osago'
+
+  const supabase = await getServerClient()
+  const { error: updateError } = await supabase
+    .from('leads')
+    .update({
+      promoted_at: now,
+      promoted_to_pipeline: true,
+      validated_at: now,
+      validated_by: adminUuid,
+      validated_by_osago: true,
+      validation_status: 'validated',
+    })
+    .eq('user_id', userId)
+    .eq('id', leadId)
+
+  if (updateError) {
+    return { error: 'Valideren is mislukt. Probeer het opnieuw.' }
+  }
+
+  await insertPipelineCopy(userId, lead, {
+    promoted_from_manual_at: now,
+    validated_at: now,
+    validated_by: adminUuid,
+    validated_by_osago: true,
+  })
+
+  const { data: customer } = await supabase
+    .from('profiles')
+    .select('email, first_name')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (customer?.email) {
+    await sendTemplatedEmail(
+      'lead_validated',
+      customer.email,
+      {
+        gevalideerd_door: adminName,
+        lead_naam: buyerDisplayName(lead),
+        voornaam: customer.first_name ?? '',
+      },
+      { related: { leadId, userId } },
+    )
+  }
+
+  revalidatePath(ADMIN_PROJECTEN_PATH)
+  revalidatePath(KOPERMATCHING_PATH)
+  revalidatePath(VERKOOPPROCES_PATH)
+  return { error: null }
+}
+
+// Reads the impersonated customer's anonymous-profile document from Storage and
+// returns it base64-encoded for the teaser attachment (D-L). Server-side only.
+const fetchAnonProfileAttachment = async (
+  userId: string,
+): Promise<{ content: string; fileName: string } | null> => {
+  const supabase = await getServerClient()
+  const { data: docs } = await supabase
+    .from('documents')
+    .select('file_name, file_path')
+    .eq('user_id', userId)
+    .eq('source', 'self-generated')
+
+  const doc = (docs ?? []).find(
+    row =>
+      typeof row.file_name === 'string' &&
+      row.file_name.startsWith(DOCUMENT_PREFIXES.anonymousProfile),
+  )
+
+  if (!doc?.file_path) {
+    return null
+  }
+
+  const { data: blob, error } = await supabase.storage
+    .from(DOCS_BUCKET)
+    .download(doc.file_path)
+
+  if (error || !blob) {
+    return null
+  }
+
+  const buffer = Buffer.from(await blob.arrayBuffer())
+  return { content: buffer.toString('base64'), fileName: doc.file_name }
+}
+
+const nlTimestamp = (): string =>
+  new Date().toLocaleString('nl-NL', {
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+
+// Impersonation-gated: send the anonymous teaser (with the anon-profile PDF
+// attached) to the buyer contact. NOTE: the frozen /api/email/send-template
+// renders subject/body server-side from the stored template + vars, so the
+// legacy modal's editable subject/body cannot be transmitted — v2 passes the
+// template vars instead (documented deviation). Audit note prepended to notes.
+export const sendTeaser = async (leadId: string): Promise<ActionResult> => {
+  const session = await requireImpersonation()
+  const userId = session.user.id
+  const lead = await getLeadById(userId, leadId)
+
+  if (!lead) {
+    return { error: 'Koper niet gevonden.' }
+  }
+  if (!lead.contactEmail) {
+    return { error: 'Deze koper heeft geen e-mailadres.' }
+  }
+
+  const attachment = await fetchAnonProfileAttachment(userId)
+  if (!attachment) {
+    return { error: 'Teaser niet gevonden in Documentenkluis.' }
+  }
+
+  const supabase = await getServerClient()
+  const [company, adviseur] = await Promise.all([
+    getCompany(userId),
+    supabase
+      .from('profiles')
+      .select('first_name, last_name, email, phone')
+      .eq('id', session.impersonatedBy ?? '')
+      .maybeSingle(),
+  ])
+
+  const adviseurRow = adviseur.data
+  const adviseurNaam =
+    [adviseurRow?.first_name, adviseurRow?.last_name]
+      .filter(Boolean)
+      .join(' ') || 'Osago'
+
+  await sendTemplatedEmail(
+    'teaser_to_buyer',
+    lead.contactEmail,
+    {
+      adviseur_email: adviseurRow?.email ?? 'support@osago.nl',
+      adviseur_naam: adviseurNaam,
+      adviseur_telefoon: adviseurRow?.phone ?? '085 029 2894',
+      contactpersoon:
+        [lead.contactFirstName, lead.contactLastName]
+          .filter(Boolean)
+          .join(' ') ||
+        (lead.name ?? ''),
+      indicatieve_omzet: '—',
+      koper_bedrijf: lead.name ?? '',
+      locatie: company?.city ?? '—',
+      sector: company?.sector ?? '—',
+    },
+    {
+      attachments: [
+        { content: attachment.content, fileName: attachment.fileName },
+      ],
+      related: { leadId, userId },
+    },
+  )
+
+  const noteLine = `[${nlTimestamp()}] Teaser verstuurd door ${adviseurNaam} naar ${lead.contactEmail}.`
+  await supabase
+    .from('leads')
+    .update({ notes: lead.notes ? `${noteLine}\n${lead.notes}` : noteLine })
+    .eq('user_id', userId)
+    .eq('id', leadId)
+
+  revalidatePath(VERKOOPPROCES_PATH)
+  return { error: null }
+}
+
+const ValidationUpdateSchema = z.object({
+  leadId: z.string().min(1),
+  updateText: z
+    .string()
+    .trim()
+    .min(1, 'Schrijf eerst een update voor de klant.'),
+})
+
+// Impersonation-gated: send a free-text validation update to the seller.
+export const sendValidationUpdate = async (
+  leadId: string,
+  updateText: string,
+): Promise<ActionResult> => {
+  const parsed = ValidationUpdateSchema.safeParse({ leadId, updateText })
+  if (!parsed.success) {
+    return {
+      error:
+        parsed.error.issues[0]?.message ??
+        'Schrijf eerst een update voor de klant.',
+    }
+  }
+
+  const session = await requireImpersonation()
+  const userId = session.user.id
+  const lead = await getLeadById(userId, leadId)
+
+  if (!lead) {
+    return { error: 'Koper niet gevonden.' }
+  }
+
+  const to = session.user.email
+  if (!to) {
+    return { error: 'Klant heeft geen e-mailadres.' }
+  }
+
+  const supabase = await getServerClient()
+  const [company, adviseur] = await Promise.all([
+    getCompany(userId),
+    supabase
+      .from('profiles')
+      .select('first_name, last_name, email, phone')
+      .eq('id', session.impersonatedBy ?? '')
+      .maybeSingle(),
+  ])
+
+  const adviseurRow = adviseur.data
+  const adviseurNaam =
+    [adviseurRow?.first_name, adviseurRow?.last_name]
+      .filter(Boolean)
+      .join(' ') || 'Osago'
+  const koperType = (lead.type ?? '').trim()
+
+  await sendTemplatedEmail(
+    'lead_validation_update_to_customer',
+    to,
+    {
+      achternaam: session.lastName ?? '',
+      adviseur_email: adviseurRow?.email ?? 'support@osago.nl',
+      adviseur_naam: adviseurNaam,
+      adviseur_telefoon: adviseurRow?.phone ?? '085 029 2894',
+      bedrijfsnaam: company?.name ?? '',
+      koper_locatie: lead.location ?? lead.city ?? '—',
+      koper_naam: lead.name ?? 'deze koper',
+      koper_sector: '—',
+      koper_type: koperType,
+      koper_type_inline: koperType ? ` (${koperType})` : '',
+      update_tekst: parsed.data.updateText,
+      voornaam: session.firstName ?? '',
+    },
+    { related: { leadId, userId } },
+  )
+
+  const noteLine = `[${nlTimestamp()}] Validatie-update verstuurd door ${adviseurNaam} naar ${to}.`
+  await supabase
+    .from('leads')
+    .update({ notes: lead.notes ? `${noteLine}\n${lead.notes}` : noteLine })
+    .eq('user_id', userId)
+    .eq('id', leadId)
+
+  revalidatePath(VERKOOPPROCES_PATH)
+  return { error: null }
 }

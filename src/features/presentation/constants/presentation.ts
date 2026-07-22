@@ -59,3 +59,23 @@ export const REGEN_DOC_INFO: Record<RegenerateDocumentType, RegenerateDocInfo> =
 export const OPTIONAL_BADGE_LABEL = 'Optioneel'
 
 export const UNSPLASH_SEARCH_MIN_QUERY_LENGTH = 1
+
+// ── Slice 13 — medewerker (impersonation) presentation tools ──
+// Internal notifications go to the default Osago support inbox (legacy sends
+// internal templates to template.fromEmail || 'support@osago.nl').
+export const INTERNAL_NOTIFICATION_EMAIL = 'support@osago.nl'
+
+// admin_reset_notice email copy per reset type (osago-bundle.js ADMIN_RESET_CONFIG).
+export const MEMORANDUM_RESET_NOTICE = {
+  onderdeel: 'Verkoopmemorandum',
+  onderdeelLc: 'het verkoopmemorandum',
+  toelichting:
+    'Het memorandum is uit jouw Documentenkluis verwijderd. Op de Presentatie-pagina kun je een nieuwe versie genereren.',
+} as const
+
+export const ANONIEM_RESET_NOTICE = {
+  onderdeel: 'Anoniem verkoopprofiel',
+  onderdeelLc: 'het anonieme verkoopprofiel',
+  toelichting:
+    'Het anonieme profiel is uit jouw Documentenkluis verwijderd. Op de Presentatie-pagina kun je een nieuwe versie genereren.',
+} as const

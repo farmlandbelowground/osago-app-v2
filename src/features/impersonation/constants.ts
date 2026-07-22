@@ -1,0 +1,11 @@
+export const IMPERSONATE_ENDPOINT = '/api/admin/impersonate'
+export const ADMIN_SESSION_STORAGE_KEY = 'osago.admin.session'
+export const IMPERSONATE_BUTTON_LABEL = 'Inloggen als klant'
+export const BANNER_MODE_LABEL = 'Beheerder-modus · Ingelogd als klant'
+export const EXIT_IMPERSONATION_LABEL = 'Terug naar beheerpaneel'
+export const NO_ADMIN_SESSION_MESSAGE = 'Geen actieve beheerderssessie.'
+export const IMPERSONATION_FAILED_MESSAGE = 'Impersonatie mislukt.'
+export const EXIT_TO_ADMIN_MESSAGE = 'Terug naar beheerpaneel.'
+export const SESSION_EXPIRED_MESSAGE =
+  'Sessie verlopen — log opnieuw in als beheerder.'
+export const DEFAULT_OTP_TYPE = 'magiclink'
