@@ -5,11 +5,12 @@ import { redirect } from 'next/navigation'
 import { z, type ZodType } from 'zod'
 
 import { env } from '@/env'
-import { requireSession } from '@shared/auth/session'
+import { getSession, requireSession } from '@shared/auth/session'
 import { getServerClient, getServiceRoleClient } from '@shared/supabase/server'
 
 import {
   ACCOUNT_PATH,
+  ADMIN_ACCOUNT_PATH,
   DASHBOARD_PATH,
   LOGIN_PATH,
   PASSWORD_RESET_ENDPOINT,
@@ -261,7 +262,10 @@ export const verifyTwoFactorCode = async (
     return { error: message, status: 'error' }
   }
 
-  redirect(DASHBOARD_PATH)
+  const session = await getSession()
+  const isAdmin = session?.role === 'admin' || session?.role === 'admin_user'
+
+  redirect(isAdmin ? ADMIN_ACCOUNT_PATH : DASHBOARD_PATH)
 }
 
 export const updatePhoneAndResendCode = async (

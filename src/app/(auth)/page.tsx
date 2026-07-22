@@ -1,7 +1,7 @@
 import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { DASHBOARD_PATH, LoginForm } from '@features/auth'
+import { ADMIN_ACCOUNT_PATH, DASHBOARD_PATH, LoginForm } from '@features/auth'
 import { reconcileSubscriptionReturn } from '@features/subscriptions/actions'
 import { getSession } from '@shared/auth/session'
 
@@ -22,7 +22,8 @@ export default async function LoginPage({ searchParams }: Props) {
       await reconcileSubscriptionReturn()
     }
 
-    redirect(DASHBOARD_PATH)
+    const isAdmin = session.role === 'admin' || session.role === 'admin_user'
+    redirect(isAdmin ? ADMIN_ACCOUNT_PATH : DASHBOARD_PATH)
   }
 
   return <LoginForm />

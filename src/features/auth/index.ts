@@ -1,4 +1,4 @@
-export { ACCOUNT_PATH, DASHBOARD_PATH } from './constants'
+export { ACCOUNT_PATH, ADMIN_ACCOUNT_PATH, DASHBOARD_PATH } from './constants'
 export { AccountPasswordForm } from './components/AccountPasswordForm'
 export { AccountPersonalInfoForm } from './components/AccountPersonalInfoForm'
 export { AccountPhotoUpload } from './components/AccountPhotoUpload'

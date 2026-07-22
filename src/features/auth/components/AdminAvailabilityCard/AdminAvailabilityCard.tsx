@@ -2,17 +2,20 @@
 
 import { useState, type FC } from 'react'
 
-import { useToastStore } from '@shared/store/toast'
-
 import {
   APPT_DEFAULT_AVAILABILITY,
   APPT_WEEKDAYS,
   APPT_WEEKDAY_LABELS,
   AVAILABILITY_DEFAULT_SLOT_END,
   AVAILABILITY_DEFAULT_SLOT_START,
-} from '../../constants'
+} from '@shared/constants/availability'
+import { useToastStore } from '@shared/store/toast'
+import {
+  type Availability,
+  type AvailabilityWeekday,
+} from '@shared/types/availability'
+
 import { useAdminAvailabilityStore } from '../../store'
-import { type Availability, type AvailabilityWeekday } from '../../store/types'
 import { type Props } from './types'
 
 const addSlot = (
@@ -100,7 +103,12 @@ export const AdminAvailabilityCard: FC<Props> = ({ adminId }) => {
       </p>
 
       <div
-        style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          marginTop: 14,
+        }}
       >
         {APPT_WEEKDAYS.map(day => (
           <div

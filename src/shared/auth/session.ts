@@ -10,6 +10,7 @@ export interface AuthSession {
   firstName: string | null
   lastName: string | null
   onboardingSeen: boolean
+  photo: string | null
   role: ProfileRole
   user: User
 }
@@ -28,7 +29,7 @@ export const getSession = async (): Promise<AuthSession | null> => {
       supabase.auth.getSession(),
       supabase
         .from('profiles')
-        .select('role, first_name, last_name, onboarding_seen')
+        .select('role, first_name, last_name, onboarding_seen, photo')
         .eq('id', userData.user.id)
         .single(),
     ])
@@ -42,6 +43,7 @@ export const getSession = async (): Promise<AuthSession | null> => {
     firstName: profile.first_name,
     lastName: profile.last_name,
     onboardingSeen: profile.onboarding_seen,
+    photo: profile.photo,
     role: profile.role as ProfileRole,
     user: userData.user,
   }

@@ -1,5 +1,3 @@
-import { type Availability, type AvailabilityWeekday } from './store/types'
-
 export const PASSWORD_MIN_LENGTH = 9
 export const PASSWORD_REQUIREMENTS_TOOLTIP =
   'Minimaal 9 tekens, met ten minste 1 letter, 1 cijfer en 1 symbool (bv. ! @ # $ %).'
@@ -13,6 +11,10 @@ export const PASSWORD_RESET_ENDPOINT = '/api/auth/password-reset'
 
 export const ACCOUNT_PATH = '/account'
 export const DASHBOARD_PATH = '/dashboard'
+// Admins land in the admin environment after login. Legacy sent them to
+// /admin/dashboard, which is a Slice 13 page not built yet — /admin/account is
+// the admin-shell landing that exists today.
+export const ADMIN_ACCOUNT_PATH = '/admin/account'
 export const LOGIN_PATH = '/'
 export const RESET_PASSWORD_PATH = '/reset-password'
 
@@ -32,48 +34,3 @@ export const PASSWORD_RESET_SESSION_TIMEOUT_MS = 5_000
 export const PASSWORD_RESET_SESSION_POLL_INTERVAL_MS = 150
 
 export const ADMIN_AVAILABILITY_STORAGE_KEY = 'admin-availability'
-
-export const APPT_WEEKDAYS: readonly AvailabilityWeekday[] = [
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-]
-
-export const APPT_WEEKDAY_LABELS: Record<AvailabilityWeekday, string> = {
-  friday: 'Vrijdag',
-  monday: 'Maandag',
-  saturday: 'Zaterdag',
-  sunday: 'Zondag',
-  thursday: 'Donderdag',
-  tuesday: 'Dinsdag',
-  wednesday: 'Woensdag',
-}
-
-export const AVAILABILITY_TIMEZONE = 'Europe/Amsterdam'
-export const AVAILABILITY_DEFAULT_SLOT_START = '09:00'
-export const AVAILABILITY_DEFAULT_SLOT_END = '17:00'
-
-export const APPT_DEFAULT_AVAILABILITY: Availability = {
-  friday: [
-    { end: AVAILABILITY_DEFAULT_SLOT_END, start: AVAILABILITY_DEFAULT_SLOT_START },
-  ],
-  monday: [
-    { end: AVAILABILITY_DEFAULT_SLOT_END, start: AVAILABILITY_DEFAULT_SLOT_START },
-  ],
-  saturday: [],
-  sunday: [],
-  thursday: [
-    { end: AVAILABILITY_DEFAULT_SLOT_END, start: AVAILABILITY_DEFAULT_SLOT_START },
-  ],
-  timezone: AVAILABILITY_TIMEZONE,
-  tuesday: [
-    { end: AVAILABILITY_DEFAULT_SLOT_END, start: AVAILABILITY_DEFAULT_SLOT_START },
-  ],
-  wednesday: [
-    { end: AVAILABILITY_DEFAULT_SLOT_END, start: AVAILABILITY_DEFAULT_SLOT_START },
-  ],
-}

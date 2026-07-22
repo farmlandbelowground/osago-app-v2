@@ -1,5 +1,20 @@
 import Link from 'next/link'
+import { type ReactNode } from 'react'
 
+import { MyAppointmentsSection } from '@features/appointments'
+import {
+  ACTIVE_SUBSCRIPTION_STATUSES,
+  CTA_LABEL_PROEFADVIES,
+  CTA_LABEL_VOORTGANG,
+  CTA_SLUG_PROEFADVIES,
+  CTA_SLUG_VOORTGANG,
+} from '@features/appointments/constants'
+import {
+  getActiveTypeBySlug,
+  getMyBookings,
+  getSlotsForType,
+} from '@features/appointments/queries'
+import { type BookingPrefill } from '@features/appointments/types'
 import {
   AccountPasswordForm,
   AccountPersonalInfoForm,
@@ -14,6 +29,7 @@ import {
 } from '@features/subscriptions'
 import { reconcileSalesInvoiceActivations } from '@features/subscriptions/actions'
 import { lockStatus } from '@features/subscriptions/lib/lockStatus'
+import { subStatus } from '@features/subscriptions/lib/subStatus'
 import {
   getOwnInvoices,
   getSubscription,
@@ -36,6 +52,38 @@ export default async function AccountPage() {
   }
 
   const lockReason = lockStatus(subscription, invoices)
+
+  let appointmentsSection: ReactNode = null
+  if (session.role === 'customer') {
+    const hasActiveSub = ACTIVE_SUBSCRIPTION_STATUSES.includes(
+      subStatus(subscription).status,
+    )
+    const ctaSlug = hasActiveSub ? CTA_SLUG_VOORTGANG : CTA_SLUG_PROEFADVIES
+    const ctaLabel = hasActiveSub ? CTA_LABEL_VOORTGANG : CTA_LABEL_PROEFADVIES
+
+    const [appointments, ctaType] = await Promise.all([
+      getMyBookings(),
+      getActiveTypeBySlug(ctaSlug),
+    ])
+    const ctaSlots = ctaType ? await getSlotsForType(ctaType) : []
+    const prefill: BookingPrefill = {
+      email: profile.email,
+      firstName: profile.firstName ?? '',
+      lastName: profile.lastName ?? '',
+      phone: profile.phone ?? '',
+      userId: session.user.id,
+    }
+
+    appointmentsSection = (
+      <MyAppointmentsSection
+        appointments={appointments}
+        ctaLabel={ctaLabel}
+        ctaSlots={ctaSlots}
+        ctaType={ctaType}
+        prefill={prefill}
+      />
+    )
+  }
 
   return (
     <main className="main">
@@ -84,6 +132,7 @@ export default async function AccountPage() {
       />
       <AccountSubscriptionCard subscription={subscription} />
       <AccountInvoicesTable invoices={invoices} />
+      {appointmentsSection}
     </main>
   )
 }

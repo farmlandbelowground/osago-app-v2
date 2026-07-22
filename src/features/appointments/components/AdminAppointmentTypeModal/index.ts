@@ -1,0 +1,1 @@
+export { AdminAppointmentTypeModal } from './AdminAppointmentTypeModal'

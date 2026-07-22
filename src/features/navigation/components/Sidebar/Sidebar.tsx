@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { type FC } from 'react'
 
@@ -21,6 +22,7 @@ export const Sidebar: FC<Props> = ({
   email,
   firstName,
   lastName,
+  photo,
 }) => {
   // Hide nav links the customer's plan doesn't grant (ports
   // applyCustomerPlanVisibility, osago-bundle.js:2906-2932). `null` = full plan,
@@ -58,7 +60,16 @@ export const Sidebar: FC<Props> = ({
               width: USER_AVATAR_SIZE_PX,
             }}
           >
-            {buildInitials(firstName, lastName)}
+            {photo ? (
+              <Image
+                alt="Profielfoto"
+                height={USER_AVATAR_SIZE_PX}
+                src={photo}
+                width={USER_AVATAR_SIZE_PX}
+              />
+            ) : (
+              buildInitials(firstName, lastName)
+            )}
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <div className="user-name">

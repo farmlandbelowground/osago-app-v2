@@ -1,0 +1,1 @@
+export { AdminAppointmentTypesGrid } from './AdminAppointmentTypesGrid'

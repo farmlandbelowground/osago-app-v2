@@ -16,6 +16,7 @@ export default async function AdminLayout({ children }: Props) {
         email={session.user.email ?? ''}
         firstName={session.firstName}
         lastName={session.lastName}
+        photo={session.photo}
         role={session.role === 'admin' ? 'admin' : 'admin_user'}
       />
       {children}
