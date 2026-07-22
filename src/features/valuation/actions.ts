@@ -131,6 +131,11 @@ export const saveFinancials = async (
       extra: {
         ...currentExtra,
         nonLegalEntityValuation: input.nonLegalEntityValuation,
+        // Truthy marker the frozen daily-todo-digest cron reads to detect
+        // "financials entered" (it checks companies.extra.financials). v2 keeps
+        // the actual figures in the `financials` table, so without this the
+        // digest keeps nudging customers who already filled them in.
+        financials: true,
       },
       last_closed_year: input.lastClosedYear,
       user_id: session.user.id,
