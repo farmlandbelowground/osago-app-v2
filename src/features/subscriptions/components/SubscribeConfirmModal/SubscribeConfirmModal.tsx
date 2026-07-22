@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, type ChangeEvent, type FC } from 'react'
 
+import { ModalShell } from '@shared/components/ModalShell'
+
 import { createSubscriptionPayment } from '../../actions'
 import {
   ABONNEMENT_AFSLUITEN_PATH,
@@ -12,7 +14,6 @@ import {
 import { addMonths } from '../../lib/addMonths'
 import { formatDateNl } from '../../lib/formatDateNl'
 import { formatEuro } from '../../lib/formatEuro'
-import { ModalShell } from '../ModalShell'
 import { VoucherCodeField, type AppliedVoucher } from '../VoucherCodeField'
 import { type Props } from './types'
 
@@ -85,7 +86,11 @@ export const SubscribeConfirmModal: FC<Props> = ({
         </>
       }
       onClose={onClose}
-      title={stage === 'confirm' ? 'Abonnement bevestigen' : 'Betaling — abonnement activeren'}
+      title={
+        stage === 'confirm'
+          ? 'Abonnement bevestigen'
+          : 'Betaling — abonnement activeren'
+      }
     >
       {stage === 'confirm' ? (
         <>
@@ -130,7 +135,8 @@ export const SubscribeConfirmModal: FC<Props> = ({
                   Startdatum
                 </div>
                 <div>
-                  <strong>{formatDateNl(startDate.toISOString())}</strong> (vandaag)
+                  <strong>{formatDateNl(startDate.toISOString())}</strong>{' '}
+                  (vandaag)
                 </div>
               </div>
               <div>
@@ -232,7 +238,11 @@ export const SubscribeConfirmModal: FC<Props> = ({
             </div>
             <div
               className="serif"
-              style={{ fontSize: 20, fontWeight: 500, letterSpacing: '-0.01em' }}
+              style={{
+                fontSize: 20,
+                fontWeight: 500,
+                letterSpacing: '-0.01em',
+              }}
             >
               Osago {plan.label}
             </div>
@@ -260,7 +270,11 @@ export const SubscribeConfirmModal: FC<Props> = ({
                 </div>
                 <div
                   className="flex-between"
-                  style={{ color: 'var(--green-dark)', fontSize: 13, marginBottom: 8 }}
+                  style={{
+                    color: 'var(--green-dark)',
+                    fontSize: 13,
+                    marginBottom: 8,
+                  }}
                 >
                   <span>Vouchercode {voucher.code}</span>
                   <span style={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -276,7 +290,9 @@ export const SubscribeConfirmModal: FC<Props> = ({
                   }}
                 >
                   <strong>Te betalen</strong>
-                  <strong style={{ fontSize: 18, fontVariantNumeric: 'tabular-nums' }}>
+                  <strong
+                    style={{ fontSize: 18, fontVariantNumeric: 'tabular-nums' }}
+                  >
                     {formatEuro(netAfterDiscount)}
                   </strong>
                 </div>
@@ -284,7 +300,9 @@ export const SubscribeConfirmModal: FC<Props> = ({
             ) : (
               <div className="flex-between" style={{ marginBottom: 8 }}>
                 <span className="text-muted text-sm">Bedrag</span>
-                <strong style={{ fontSize: 18, fontVariantNumeric: 'tabular-nums' }}>
+                <strong
+                  style={{ fontSize: 18, fontVariantNumeric: 'tabular-nums' }}
+                >
                   {formatEuro(plan.price)}
                 </strong>
               </div>
@@ -298,7 +316,10 @@ export const SubscribeConfirmModal: FC<Props> = ({
             </div>
           </div>
 
-          <p className="text-muted text-xs" style={{ lineHeight: 1.5, marginTop: 18 }}>
+          <p
+            className="text-muted text-xs"
+            style={{ lineHeight: 1.5, marginTop: 18 }}
+          >
             Je wordt doorgestuurd naar de beveiligde betaalpagina. Jouw
             abonnement wordt automatisch geactiveerd zodra de betaling is
             bevestigd.

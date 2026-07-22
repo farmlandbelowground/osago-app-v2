@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { type FC } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 
+import { ModalShell } from '@shared/components/ModalShell'
 import { useToastStore } from '@shared/store/toast'
 
 import { adminCreateInvoice } from '../../actions'
@@ -19,7 +20,6 @@ import {
   AdminManualInvoiceFormSchema,
   type AdminManualInvoiceFormInput,
 } from '../../schema'
-import { ModalShell } from '../ModalShell'
 import { type Props } from './types'
 
 export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
@@ -62,7 +62,11 @@ export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
   }
 
   return (
-    <ModalShell maxWidthClassName="modal-lg" onClose={onClose} title="Nieuwe factuur">
+    <ModalShell
+      maxWidthClassName="modal-lg"
+      onClose={onClose}
+      title="Nieuwe factuur"
+    >
       <div className="alert alert-info" style={{ marginBottom: 16 }}>
         <strong>Mollie verstuurt de factuur.</strong> Factuurnummer, PDF en
         betaalpagina worden door Mollie aangemaakt en per mail naar de klant
@@ -99,7 +103,9 @@ export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
           </div>
           <div className="field">
             <label>Betaaltermijn *</label>
-            <select {...form.register('paymentTermDays', { valueAsNumber: true })}>
+            <select
+              {...form.register('paymentTermDays', { valueAsNumber: true })}
+            >
               {PAYMENT_TERM_DAYS_OPTIONS.map(days => (
                 <option key={days} value={days}>
                   {days} dagen
@@ -126,7 +132,13 @@ export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
         </div>
 
         <div className="field">
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <span>Factuurregels *</span>
           </label>
           <div
@@ -173,7 +185,9 @@ export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
                   style={{ flex: 1, minWidth: 0 }}
                   {...form.register(`lineItems.${index}.description`)}
                 />
-                <div style={{ position: 'relative', width: 140, flexShrink: 0 }}>
+                <div
+                  style={{ position: 'relative', width: 140, flexShrink: 0 }}
+                >
                   <span
                     style={{
                       position: 'absolute',
@@ -254,7 +268,15 @@ export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
             marginBottom: 16,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--muted)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              fontSize: 13,
+              color: 'var(--muted)',
+            }}
+          >
             <span style={{ flex: 1 }}>Subtotaal exclusief BTW</span>
             <span style={{ width: 140, textAlign: 'right', flexShrink: 0 }}>
               {formatEuro(subtotal)}
@@ -287,14 +309,24 @@ export const AdminInvoiceModal: FC<Props> = ({ customers, onClose }) => {
             }}
           >
             <span style={{ flex: 1 }}>Totaal te betalen</span>
-            <span style={{ width: 140, textAlign: 'right', flexShrink: 0, fontSize: 15 }}>
+            <span
+              style={{
+                width: 140,
+                textAlign: 'right',
+                flexShrink: 0,
+                fontSize: 15,
+              }}
+            >
               {formatEuro(total)}
             </span>
           </div>
         </div>
 
         {form.formState.errors.root && (
-          <p className="text-sm" style={{ color: 'var(--danger)', marginBottom: 16 }}>
+          <p
+            className="text-sm"
+            style={{ color: 'var(--danger)', marginBottom: 16 }}
+          >
             {form.formState.errors.root.message}
           </p>
         )}

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { type FC } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { ModalShell } from '@shared/components/ModalShell'
 import { useToastStore } from '@shared/store/toast'
 
 import { adminCancelSubscription, adminSaveSubscription } from '../../actions'
@@ -14,7 +15,6 @@ import {
   AdminSubscriptionFormSchema,
   type AdminSubscriptionFormInput,
 } from '../../schema'
-import { ModalShell } from '../ModalShell'
 import { type Props } from './types'
 
 export const AdminSubscriptionModal: FC<Props> = ({
@@ -150,7 +150,11 @@ export const AdminSubscriptionModal: FC<Props> = ({
 
           <div
             className="text-xs text-muted fw-600"
-            style={{ textTransform: 'uppercase', letterSpacing: '0.05em', margin: '8px 0 6px' }}
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              margin: '8px 0 6px',
+            }}
           >
             Volledige abonnementen
           </div>
@@ -196,7 +200,11 @@ export const AdminSubscriptionModal: FC<Props> = ({
 
           <div
             className="text-xs text-muted fw-600"
-            style={{ textTransform: 'uppercase', letterSpacing: '0.05em', margin: '8px 0 6px' }}
+            style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              margin: '8px 0 6px',
+            }}
           >
             Alleen Waardebepaling
           </div>
@@ -265,7 +273,10 @@ export const AdminSubscriptionModal: FC<Props> = ({
             <label>Einddatum (looptijd standaard 6 maanden)</label>
             <input type="date" {...form.register('endDate')} />
           </div>
-          <div className="field" style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div
+            className="field"
+            style={{ display: 'flex', alignItems: 'flex-end' }}
+          >
             <button
               className="btn btn-ghost btn-sm"
               onClick={onSetEndDateFromStart}
@@ -291,15 +302,15 @@ export const AdminSubscriptionModal: FC<Props> = ({
         </div>
 
         {form.formState.errors.root && (
-          <p className="text-sm" style={{ color: 'var(--danger)', marginTop: 14 }}>
+          <p
+            className="text-sm"
+            style={{ color: 'var(--danger)', marginTop: 14 }}
+          >
             {form.formState.errors.root.message}
           </p>
         )}
 
-        <div
-          className="flex-between"
-          style={{ marginTop: 18, gap: 8 }}
-        >
+        <div className="flex-between" style={{ marginTop: 18, gap: 8 }}>
           {hasExisting ? (
             <button
               className="btn btn-danger"
@@ -312,7 +323,11 @@ export const AdminSubscriptionModal: FC<Props> = ({
             <span />
           )}
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary" onClick={onClose} type="button">
+            <button
+              className="btn btn-secondary"
+              onClick={onClose}
+              type="button"
+            >
               Annuleren
             </button>
             <button
