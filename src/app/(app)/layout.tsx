@@ -73,6 +73,7 @@ export default async function AppLayout({ children }: Props) {
           email={session.user.email ?? ''}
           firstName={session.firstName}
           lastName={session.lastName}
+          photo={session.photo}
         />
         {session.role === 'customer' && (
           <CustomerAccessGuard

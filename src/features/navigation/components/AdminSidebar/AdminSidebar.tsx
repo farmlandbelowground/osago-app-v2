@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { type FC } from 'react'
 
@@ -17,7 +18,13 @@ import { buildDisplayName, buildInitials } from '../../lib/buildUserDisplay'
 import { NavItem } from '../NavItem'
 import { type Props } from './types'
 
-export const AdminSidebar: FC<Props> = ({ email, firstName, lastName, role }) => {
+export const AdminSidebar: FC<Props> = ({
+  email,
+  firstName,
+  lastName,
+  photo,
+  role,
+}) => {
   const sections = ADMIN_NAV_SECTIONS.filter(
     section => !section.requiresFullAdmin || role === 'admin',
   )
@@ -54,7 +61,16 @@ export const AdminSidebar: FC<Props> = ({ email, firstName, lastName, role }) =>
               width: USER_AVATAR_SIZE_PX,
             }}
           >
-            {buildInitials(firstName, lastName)}
+            {photo ? (
+              <Image
+                alt="Profielfoto"
+                height={USER_AVATAR_SIZE_PX}
+                src={photo}
+                width={USER_AVATAR_SIZE_PX}
+              />
+            ) : (
+              buildInitials(firstName, lastName)
+            )}
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <div className="user-name">

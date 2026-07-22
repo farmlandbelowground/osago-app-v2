@@ -1,0 +1,1 @@
+export { AdminBookingsTable } from './AdminBookingsTable'
