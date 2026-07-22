@@ -233,6 +233,11 @@ export const CompanyValuationExtraSchema = z
     manualMultipleEnabled: z.boolean().optional(),
     manualMultipleValue: z.number().nullable().optional(),
     nonLegalEntityValuation: NonLegalEntityValuationSchema.optional(),
+    // Presence marker written by saveFinancials for the frozen daily-todo-digest
+    // cron. Must stay z.unknown(): legacy rows may hold a year-keyed object here,
+    // and a strict type (e.g. z.literal(true)) would make safeParse reject the
+    // whole `extra`, wiping every other key on the next save.
+    financials: z.unknown().optional(),
     valuationReview: ValuationReviewSchema.optional(),
     valuationReport: ValuationReportSchema.optional(),
     kostprijsOmzetV2: z.number().nullable().optional(),
