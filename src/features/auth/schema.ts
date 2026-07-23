@@ -35,6 +35,7 @@ export const RegisterSchema = z.object({
   lastName: z.string().min(1, 'Vul je achternaam in.'),
   password: PasswordSchema,
   phone: PhoneSchema,
+  referralPartnerSlug: z.string().optional(),
   turnstileToken: z.string().min(1, 'Bevestig dat je geen robot bent.'),
 })
 
@@ -120,8 +121,10 @@ export const AccountProfileRowSchema = z.object({
   first_name: z.string().nullable(),
   id: z.uuid(),
   last_name: z.string().nullable(),
+  partner_voucher_code: z.string().nullable(),
   phone: z.string().nullable(),
   photo: z.string().nullable(),
+  referred_by_partner_id: z.string().nullable(),
 })
 
 export type AccountProfileRow = z.infer<typeof AccountProfileRowSchema>

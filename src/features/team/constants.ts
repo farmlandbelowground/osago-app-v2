@@ -4,6 +4,9 @@ import { type StaffRole } from './types'
 
 export const ADMIN_MEDEWERKER_PATH = '/admin/medewerker'
 
+export const CREATE_STAFF_ENDPOINT = '/api/admin/create-staff'
+export const UPDATE_USER_ENDPOINT = '/api/admin/update-user'
+
 export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
   admin: 'Admin',
   user: 'User',

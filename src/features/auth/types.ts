@@ -18,7 +18,8 @@ export type VerifyEmailState =
   | { status: 'idle' }
 
 export type UpdatePersonalInfoState =
-  { error: string; success: false } | { success: true }
+  | { error: string; success: false }
+  | { emailConfirmationSent?: boolean; success: true }
 
 export interface AccountProfile {
   createdAt: string
@@ -26,6 +27,8 @@ export interface AccountProfile {
   firstName: string | null
   id: string
   lastName: string | null
+  partnerVoucherCode: string | null
   phone: string | null
   photo: string | null
+  referredByPartnerId: string | null
 }

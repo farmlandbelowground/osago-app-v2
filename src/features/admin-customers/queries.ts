@@ -9,12 +9,16 @@ import {
 import { formatEuro } from '@features/subscriptions/lib/formatEuro'
 import { invoiceStatusBadge } from '@features/subscriptions/lib/invoiceStatusBadge'
 import { subStatus } from '@features/subscriptions/lib/subStatus'
-import { adminListInvoices, getSubscription } from '@features/subscriptions/queries'
+import {
+  adminListInvoices,
+  getSubscription,
+} from '@features/subscriptions/queries'
 import { SubscriptionRowSchema } from '@features/subscriptions/schema'
 import { type Subscription } from '@features/subscriptions/types'
 import { getServerClient } from '@shared/supabase/server'
 
 import { PROGRESS_PERCENT_MULTIPLIER, PROJECT_TYPE_LABELS } from './constants'
+import { ensureCustomerIds } from './lib/customerIds'
 import { buildRevenueByEmail } from './lib/customerRevenue'
 import {
   deriveProjectTypeForUser,
@@ -76,10 +80,14 @@ const buildSubscriptionMap = async (
 export const adminListCustomers = async (): Promise<AdminCustomerRow[]> => {
   const supabase = await getServerClient()
 
+  await ensureCustomerIds(supabase)
+
   const [{ data: profiles }, subscriptionMap, invoices] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, email, first_name, last_name, company, created_at')
+      .select(
+        'id, email, first_name, last_name, company, created_at, customer_id',
+      )
       .eq('role', 'customer')
       .order('created_at', { ascending: false }),
     buildSubscriptionMap(supabase),
@@ -96,6 +104,7 @@ export const adminListCustomers = async (): Promise<AdminCustomerRow[]> => {
     return {
       company: profile.company ?? '',
       createdAt: profile.created_at,
+      customerId: profile.customer_id,
       email: profile.email,
       id: profile.id,
       name:
@@ -158,7 +167,11 @@ export const getCustomerDetail = async (
       .select('name, sector, assigned_advisor, extra')
       .eq('user_id', userId)
       .maybeSingle(),
-    supabase.from('valuations').select('user_id').eq('user_id', userId).maybeSingle(),
+    supabase
+      .from('valuations')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle(),
     supabase.from('leads').select('*').eq('user_id', userId),
     supabase
       .from('documents')
@@ -178,8 +191,7 @@ export const getCustomerDetail = async (
   }
 
   const extra = (company?.extra ?? {}) as Record<string, unknown>
-  const employees =
-    typeof extra.employees === 'number' ? extra.employees : null
+  const employees = typeof extra.employees === 'number' ? extra.employees : null
 
   const pipeline: CustomerPipelineEntry[] = (leads ?? [])
     .filter(lead => lead.lead_type === 'pipeline')
@@ -233,26 +245,32 @@ export const getCustomerDetail = async (
 }
 
 // Read-only "Bekijken" overview data (openCustomerOverviewModal, D-A): identity
-// + contact + the customer's projects + invoices. v2 has no customerId (legacy's
-// K###### was localStorage-derived) → null. Omzet/invoices attributed by
+// + contact + the customer's projects + invoices. Omzet/invoices attributed by
 // recipientEmail (v2 invoices carry no user_id).
 export const getCustomerOverview = async (
   userId: string,
 ): Promise<CustomerOverview | null> => {
   const supabase = await getServerClient()
 
-  const [{ data: profile }, company, subscription, { data: projectRows }, invoices] =
-    await Promise.all([
-      supabase
-        .from('profiles')
-        .select('id, email, first_name, last_name, phone, company, created_at')
-        .eq('id', userId)
-        .maybeSingle(),
-      getCompany(userId),
-      getSubscription(userId),
-      supabase.from('projects').select('project_id, type').eq('user_id', userId),
-      adminListInvoices(),
-    ])
+  const [
+    { data: profile },
+    company,
+    subscription,
+    { data: projectRows },
+    invoices,
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select(
+        'id, email, first_name, last_name, phone, company, created_at, customer_id',
+      )
+      .eq('id', userId)
+      .maybeSingle(),
+    getCompany(userId),
+    getSubscription(userId),
+    supabase.from('projects').select('project_id, type').eq('user_id', userId),
+    adminListInvoices(),
+  ])
 
   if (!profile) {
     return null
@@ -306,7 +324,7 @@ export const getCustomerOverview = async (
     addressLines: [line1, line2].filter(Boolean),
     companyName,
     createdAt: profile.created_at,
-    customerId: null,
+    customerId: profile.customer_id,
     email: profile.email,
     firstName: profile.first_name ?? '',
     invoices: customerInvoices,
@@ -471,9 +489,8 @@ export const getAdminProjects = async (): Promise<ProjectCard[]> => {
       return {
         companyName: company?.name ?? profile?.company ?? '—',
         customerName:
-          [profile?.first_name, profile?.last_name]
-            .filter(Boolean)
-            .join(' ') || '—',
+          [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ||
+          '—',
         furthestStageLabel:
           furthestIndex >= 0 ? PROGRESSING_STAGES[furthestIndex].label : '—',
         isVerkoop: project.type === 'verkoop',

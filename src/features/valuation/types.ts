@@ -8,6 +8,9 @@ export interface FinancialYearInput {
   revenue: number | null
   taxesPaid: number | null
   year: number
+  // Per-year EBITDA weighting override (0–5) persisted on financials.history_weight.
+  // Optional: rows constructed before this field existed simply omit it.
+  historyWeight?: number | null
 }
 
 export interface FinancialYearDerived extends FinancialYearInput {

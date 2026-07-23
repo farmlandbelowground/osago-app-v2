@@ -10,6 +10,8 @@ export const PROGRESS_PERCENT_MULTIPLIER = 100
 
 export const PROJECT_ID_PREFIX = 'P'
 export const PROJECT_ID_PAD = 6
+export const CUSTOMER_ID_PREFIX = 'K'
+export const CUSTOMER_ID_PAD = 6
 export const PROJECT_TYPE_VERKOOP = 'verkoop'
 export const PROJECT_TYPE_WAARDEBEPALING = 'waardebepaling'
 
@@ -20,4 +22,8 @@ export const PROJECT_TYPE_LABELS = {
 
 // The project-card "verst gevorderd" summary reuses @features/leads LEAD_STAGES
 // (DB enum order, excluding no_interest) — see lib/projectCard.
-export const SOURCE_OPTIONS = ['Brookz', 'Bedrijventekoop.nl', 'MKBase'] as const
+export const SOURCE_OPTIONS = [
+  'Brookz',
+  'Bedrijventekoop.nl',
+  'MKBase',
+] as const

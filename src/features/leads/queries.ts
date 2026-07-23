@@ -7,6 +7,7 @@ import { type BuyerPipelineCounts, type Lead, type LeadType } from './types'
 const rowToLead = (row: LeadRow): Lead => ({
   addedAt: row.added_at,
   addedManually: row.added_manually,
+  autoSourceWebsite: row.auto_source_website,
   city: row.city,
   contactEmail: row.contact_email,
   contactFirstName: row.contact_first_name,
@@ -27,6 +28,7 @@ const rowToLead = (row: LeadRow): Lead => ({
   promotedFromManualAt: row.promoted_from_manual_at,
   promotedFromOsagoLeadAt: row.promoted_from_osago_lead_at,
   promotedToPipeline: row.promoted_to_pipeline,
+  sector: row.sector,
   source: row.source,
   stage: row.stage,
   street: row.street,

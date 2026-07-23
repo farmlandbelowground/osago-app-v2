@@ -14,6 +14,7 @@ import {
   DOWNLOAD_URL_TTL_SECONDS,
   SIGNUP_ENDPOINT,
 } from './constants'
+import { ensureCustomerIds } from './lib/customerIds'
 import { getCustomerDetail, getCustomerOverview } from './queries'
 import {
   AddBuyerSchema,
@@ -109,6 +110,10 @@ export const createCustomer = async (
   if (result.error !== null || !result.data.ok || !result.data.userId) {
     return { error: result.data?.error ?? 'Aanmaken klant mislukt.' }
   }
+
+  // Assign the new customer a K-code (and backfill any that lack one).
+  const supabase = await getServerClient()
+  await ensureCustomerIds(supabase)
 
   revalidatePath(ADMIN_KLANTEN_PATH)
   return { error: null }

@@ -1,12 +1,17 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, type FC } from 'react'
 
-import { useAdminAvailabilityStore } from '@features/auth/store'
 import { APPT_DEFAULT_AVAILABILITY } from '@shared/constants/availability'
 import { useToastStore } from '@shared/store/toast'
 
-import { changeStaffRole } from '../../actions'
+import {
+  createStaff,
+  removeStaff,
+  setStaffActive,
+  updateStaff,
+} from '../../actions'
 import { type StaffMember, type StaffMemberFormData } from '../../types'
 import { TeamMemberCard } from '../TeamMemberCard'
 import { TeamMemberModal } from '../TeamMemberModal'
@@ -14,82 +19,74 @@ import { TeamScheduleModal } from '../TeamScheduleModal'
 import { type Props } from './types'
 
 type ModalState =
-  | { member: StaffMember; type: 'edit' | 'schedule' }
-  | { type: 'add' }
-  | null
+  { member: StaffMember; type: 'edit' | 'schedule' } | { type: 'add' } | null
 
-// Client orchestrator: only a role change on an existing member persists (via
-// changeStaffRole). Create / deactivate / edit-name / remove are session-only
-// local state — legacy kept db.admins in localStorage and never synced them;
-// v2 has no admin-create-Auth-user endpoint (D-B). The rooster lives in the
-// (localStorage) admin-availability store, exactly as legacy (D-H).
+// Client orchestrator over the persisting staff server actions (createStaff,
+// updateStaff, setStaffActive, removeStaff, setStaffAvailability). After each
+// mutation the action revalidates the medewerker route and the grid calls
+// router.refresh() to pull the fresh server data. Self / hoofd-admin protection
+// is enforced server-side; the client checks here are advisory (they hide the
+// controls, but the action re-checks).
 export const TeamGrid: FC<Props> = ({ currentUserId, staff }) => {
+  const router = useRouter()
   const showToast = useToastStore(state => state.showToast)
-  const availabilityByAdminId = useAdminAvailabilityStore(
-    state => state.availabilityByAdminId,
-  )
-  const [members, setMembers] = useState<StaffMember[]>(staff)
   const [modal, setModal] = useState<ModalState>(null)
 
   // No v2 sentinel for legacy's 'a1' hoofd-admin; the earliest-created admin
-  // acts as it (protected from role change / deactivate / delete).
+  // acts as it (protected from role change / deactivate / delete). staff is
+  // ordered created_at ascending, so the first admin is the earliest.
   const hoofdAdminId = staff.find(member => member.role === 'admin')?.id ?? null
 
-  const onAddSave = (data: StaffMemberFormData): void => {
-    setMembers(current => [
-      ...current,
-      { ...data, createdAt: null, id: crypto.randomUUID() },
-    ])
+  const onAddSave = async (data: StaffMemberFormData): Promise<void> => {
+    const result = await createStaff(data)
+    if (result.error) {
+      showToast(result.error, 'error')
+      return
+    }
     setModal(null)
     showToast('Medewerker toegevoegd.')
+    router.refresh()
   }
 
   const onEditSave = async (
     target: StaffMember,
     data: StaffMemberFormData,
   ): Promise<void> => {
-    setMembers(current =>
-      current.map(member =>
-        member.id === target.id ? { ...member, ...data } : member,
-      ),
-    )
-    setModal(null)
-
-    const isRealProfile = staff.some(member => member.id === target.id)
-    const isRoleChanged = data.role !== target.role
-    const isProtected =
-      target.id === currentUserId || target.id === hoofdAdminId
-
-    if (isRealProfile && isRoleChanged && !isProtected) {
-      const result = await changeStaffRole(target.id, data.role)
-      if (result.error) {
-        showToast(result.error, 'error')
-        return
-      }
+    const result = await updateStaff(target.id, data)
+    if (result.error) {
+      showToast(result.error, 'error')
+      return
     }
-
+    setModal(null)
     showToast('Medewerker bijgewerkt.')
+    router.refresh()
   }
 
-  const onToggleActive = (member: StaffMember): void => {
-    setMembers(current =>
-      current.map(item =>
-        item.id === member.id ? { ...item, active: !item.active } : item,
-      ),
-    )
+  const onToggleActive = async (member: StaffMember): Promise<void> => {
+    const result = await setStaffActive(member.id, !member.active)
+    if (result.error) {
+      showToast(result.error, 'error')
+      return
+    }
     showToast(
       member.active ? 'Medewerker gedeactiveerd.' : 'Medewerker geactiveerd.',
     )
+    router.refresh()
   }
 
-  const onRemove = (member: StaffMember): void => {
+  const onRemove = async (member: StaffMember): Promise<void> => {
     if (
       !window.confirm('Weet je zeker dat je deze medewerker wilt verwijderen?')
     ) {
       return
     }
-    setMembers(current => current.filter(item => item.id !== member.id))
+    const result = await removeStaff(member.id)
+    if (result.error) {
+      showToast(result.error, 'error')
+      return
+    }
     showToast('Medewerker verwijderd.')
+    router.refresh()
   }
 
   return (
@@ -110,20 +107,18 @@ export const TeamGrid: FC<Props> = ({ currentUserId, staff }) => {
       </div>
 
       <div className="grid-2 grid" style={{ gap: 16 }}>
-        {members.map(member => (
+        {staff.map(member => (
           <TeamMemberCard
-            availability={
-              availabilityByAdminId[member.id] ?? APPT_DEFAULT_AVAILABILITY
-            }
+            availability={member.availability ?? APPT_DEFAULT_AVAILABILITY}
             isHoofdAdmin={member.id === hoofdAdminId}
             isSelf={member.id === currentUserId}
             key={member.id}
             linkedTypesCount={0}
             member={member}
             onEdit={() => setModal({ member, type: 'edit' })}
-            onRemove={() => onRemove(member)}
+            onRemove={() => void onRemove(member)}
             onSchedule={() => setModal({ member, type: 'schedule' })}
-            onToggleActive={() => onToggleActive(member)}
+            onToggleActive={() => void onToggleActive(member)}
           />
         ))}
       </div>
@@ -144,7 +139,7 @@ export const TeamGrid: FC<Props> = ({ currentUserId, staff }) => {
           isHoofdAdmin={false}
           isSelf={false}
           onClose={() => setModal(null)}
-          onSave={onAddSave}
+          onSave={data => void onAddSave(data)}
         />
       )}
       {modal?.type === 'edit' && (
@@ -159,6 +154,7 @@ export const TeamGrid: FC<Props> = ({ currentUserId, staff }) => {
       {modal?.type === 'schedule' && (
         <TeamScheduleModal
           adminId={modal.member.id}
+          availability={modal.member.availability}
           memberName={`${modal.member.firstName} ${modal.member.lastName}`}
           onClose={() => setModal(null)}
         />

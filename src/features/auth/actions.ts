@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z, type ZodType } from 'zod'
 
 import { env } from '@/env'
+import { getActivePartnerBySlug } from '@features/partners/queries'
 import { getSession, requireSession } from '@shared/auth/session'
 import { getServerClient, getServiceRoleClient } from '@shared/supabase/server'
 
@@ -201,9 +202,39 @@ export const register = async (
     }
   }
 
+  const patch: {
+    first_name: string
+    last_name: string
+    partner_voucher_code?: string
+    phone: string
+    referred_by_partner_id?: string
+  } = { first_name: firstName, last_name: lastName, phone }
+
+  if (parsed.data.referralPartnerSlug) {
+    const partner = await getActivePartnerBySlug(
+      parsed.data.referralPartnerSlug,
+    )
+
+    if (partner) {
+      patch.referred_by_partner_id = partner.id
+
+      if (partner.voucherId) {
+        const { data: voucherRow } = await serviceRoleClient
+          .from('vouchers')
+          .select('code')
+          .eq('id', partner.voucherId)
+          .maybeSingle()
+
+        if (voucherRow?.code) {
+          patch.partner_voucher_code = voucherRow.code
+        }
+      }
+    }
+  }
+
   await serviceRoleClient
     .from('profiles')
-    .update({ first_name: firstName, last_name: lastName, phone })
+    .update(patch)
     .eq('id', signupData.user.id)
 
   const supabase = await getServerClient()
@@ -393,6 +424,16 @@ export const updatePersonalInfo = async (
     }
   }
 
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', session.user.id)
+    .maybeSingle()
+
+  const previousEmail =
+    typeof currentProfile?.email === 'string' ? currentProfile.email : ''
+  const emailChanged = previousEmail.toLowerCase() !== email
+
   const { error } = await supabase
     .from('profiles')
     .update({
@@ -407,8 +448,19 @@ export const updatePersonalInfo = async (
     return { error: 'Opslaan is mislukt. Probeer het opnieuw.', success: false }
   }
 
+  if (emailChanged) {
+    const { error: authError } = await supabase.auth.updateUser({ email })
+
+    if (authError) {
+      return {
+        error: 'E-mailadres wijzigen is mislukt: ' + authError.message,
+        success: false,
+      }
+    }
+  }
+
   revalidatePath(ACCOUNT_PATH)
-  return { success: true }
+  return { emailConfirmationSent: emailChanged, success: true }
 }
 
 const AccountPhotoDataUrlSchema = z.string().min(1)

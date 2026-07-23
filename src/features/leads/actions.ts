@@ -136,6 +136,7 @@ const fireStageChangeEmails = async (
 // Field bag shared by candidate→pipeline copies — mirrors legacy's `{...lead}`
 // spread that carries every contact/address field onto the pipeline row.
 const copyLeadFields = (lead: Lead): Record<string, unknown> => ({
+  auto_source_website: lead.autoSourceWebsite,
   city: lead.city,
   contact_email: lead.contactEmail,
   contact_first_name: lead.contactFirstName,
@@ -150,6 +151,7 @@ const copyLeadFields = (lead: Lead): Record<string, unknown> => ({
   name: lead.name,
   notes: lead.notes,
   postal_code: lead.postalCode,
+  sector: lead.sector,
   street: lead.street,
   type: lead.type,
   website: lead.website,
@@ -451,6 +453,7 @@ export const promoteAutoLead = async (id: string): Promise<ActionResult> => {
   if (!isDuplicate) {
     const { error: insertError } = await supabase.from('leads').insert({
       added_manually: true,
+      auto_source_website: lead.website,
       fit_score: lead.fitScore ?? AUTO_LEAD_FIT_DEFAULT,
       lead_type: 'manual',
       location: lead.location,
@@ -458,6 +461,7 @@ export const promoteAutoLead = async (id: string): Promise<ActionResult> => {
       notes: lead.notes
         ? `Automatisch geïdentificeerd. ${lead.notes}`
         : 'Automatisch geïdentificeerde koper.',
+      sector: lead.sector,
       stage: 'new',
       type: lead.type,
       user_id: userId,

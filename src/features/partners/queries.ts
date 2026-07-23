@@ -46,3 +46,30 @@ export const adminListPartners = async (): Promise<Partner[]> => {
     return parsed.success ? [rowToPartner(parsed.data)] : []
   })
 }
+
+// Live per-partner referral counts, keyed by partner id. Reads every profile
+// carrying a partner attribution (profiles.referred_by_partner_id) and tallies
+// them; admin RLS grants the read.
+export const adminCountReferralsByPartner = async (): Promise<
+  Record<string, number>
+> => {
+  const supabase = await getServerClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('referred_by_partner_id')
+    .not('referred_by_partner_id', 'is', null)
+
+  if (error || !data) {
+    return {}
+  }
+
+  return data.reduce<Record<string, number>>((counts, row) => {
+    const partnerId = row.referred_by_partner_id
+
+    if (typeof partnerId === 'string') {
+      counts[partnerId] = (counts[partnerId] ?? 0) + 1
+    }
+
+    return counts
+  }, {})
+}

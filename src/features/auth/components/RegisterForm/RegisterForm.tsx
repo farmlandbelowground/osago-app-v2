@@ -16,6 +16,7 @@ import { PasswordChecklist } from '../PasswordChecklist'
 import { PhoneRequiredStep } from '../PhoneRequiredStep'
 import { TurnstileWidget } from '../TurnstileWidget'
 import { TwoFactorStep } from '../TwoFactorStep'
+import { type Props } from './types'
 
 interface RegisterFormValues {
   email: string
@@ -31,7 +32,7 @@ const initialFormValues: RegisterFormValues = {
   phone: '',
 }
 
-export const RegisterForm: FC = () => {
+export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
   const [state, formAction, isPending] = useActionState(register, {
     status: 'idle',
   })
@@ -46,7 +47,7 @@ export const RegisterForm: FC = () => {
   const onFieldChange =
     (field: keyof RegisterFormValues) =>
     (event: ChangeEvent<HTMLInputElement>): void => {
-      setFormValues((previous) => ({
+      setFormValues(previous => ({
         ...previous,
         [field]: event.target.value,
       }))
@@ -160,6 +161,14 @@ export const RegisterForm: FC = () => {
           name="turnstileToken"
           resetSignal={state.status === 'error' ? state : undefined}
         />
+
+        {referralPartnerSlug && (
+          <input
+            name="referralPartnerSlug"
+            type="hidden"
+            value={referralPartnerSlug}
+          />
+        )}
 
         <AuthSubmitButton isDisabled={isPending}>
           {isPending ? 'Bezig…' : 'Account aanmaken'}

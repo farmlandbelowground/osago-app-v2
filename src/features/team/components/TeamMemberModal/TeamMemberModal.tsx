@@ -83,6 +83,7 @@ export const TeamMemberModal: FC<Props> = ({
       email: email.trim().toLowerCase(),
       firstName: firstName.trim(),
       lastName: lastName.trim(),
+      password,
       phone: phone.trim(),
       photo,
       role,
@@ -143,7 +144,8 @@ export const TeamMemberModal: FC<Props> = ({
           value={role}
         >
           <option value="user">
-            User — toegang tot operationele onderdelen, geen Vouchers/Medewerkers
+            User — toegang tot operationele onderdelen, geen
+            Vouchers/Medewerkers
           </option>
           <option value="admin">
             Admin — volledige toegang tot het beheerpaneel
@@ -330,14 +332,6 @@ export const TeamMemberModal: FC<Props> = ({
             value={password}
           />
           {password && <PasswordChecklist password={password} />}
-        </div>
-      )}
-
-      {!isEdit && (
-        <div className="alert alert-info" style={{ fontSize: 13, marginTop: 4 }}>
-          Let op: het aanmaken van een medewerker is nog niet gekoppeld aan de
-          backend — de nieuwe medewerker verschijnt in deze sessie maar wordt
-          nog niet permanent opgeslagen.
         </div>
       )}
     </ModalShell>

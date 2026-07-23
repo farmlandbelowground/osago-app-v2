@@ -20,6 +20,7 @@ export type SalesDocumentKind = 'contract' | 'loi' | 'nda'
 export interface Lead {
   addedAt: string
   addedManually: boolean
+  autoSourceWebsite: string | null
   city: string | null
   contactEmail: string | null
   contactFirstName: string | null
@@ -40,6 +41,7 @@ export interface Lead {
   promotedFromManualAt: string | null
   promotedFromOsagoLeadAt: string | null
   promotedToPipeline: boolean
+  sector: string | null
   source: string | null
   stage: LeadStage | null
   street: string | null
@@ -99,4 +101,3 @@ export interface BuyerPipelineCounts {
   activeConversations: number
   identifiedBuyers: number
 }
-

@@ -2,10 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FC } from 'react'
 
-import {
-  saveDcfNewInputs,
-  saveFinancials,
-} from '@features/valuation/actions'
+import { saveDcfNewInputs, saveFinancials } from '@features/valuation/actions'
 import { DCF_SECTORCORRECTIE_BASE_MULTIPLE } from '@features/valuation/constants/dcf'
 import {
   FIN_CURRENT_YEAR,
@@ -80,7 +77,15 @@ export const FinancialsGrid: FC<Props> = ({
   const [autoForecast, setAutoForecast] = useState(autoForecastDefault)
   const [weightOverrides, setWeightOverrides] = useState<
     Record<number, number>
-  >({})
+  >(() => {
+    const seed: Record<number, number> = {}
+    for (const row of initialYears) {
+      if (row.historyWeight != null) {
+        seed[row.year] = row.historyWeight
+      }
+    }
+    return seed
+  })
   const [showExtended, setShowExtended] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const lastAppliedTokenRef = useRef<number | null>(null)
@@ -347,7 +352,10 @@ export const FinancialsGrid: FC<Props> = ({
       autoForecast,
       lastClosedYear,
       nonLegalEntityValuation: nonLegalEntity,
-      years: Object.values(finForSave),
+      years: Object.values(finForSave).map(year => ({
+        ...year,
+        historyWeight: weightOverrides[year.year] ?? year.historyWeight ?? null,
+      })),
     })
 
     // Investeringen/Aflossingen edited in the scenario grid live on
@@ -431,7 +439,10 @@ export const FinancialsGrid: FC<Props> = ({
         </div>
 
         <div
-          className={cn('fin-table-wrap', dcfApplyEnabled && 'fin-scenario-mode')}
+          className={cn(
+            'fin-table-wrap',
+            dcfApplyEnabled && 'fin-scenario-mode',
+          )}
         >
           <table className="fin-table">
             <thead>
@@ -524,7 +535,9 @@ export const FinancialsGrid: FC<Props> = ({
                           const raw =
                             dcfBerekening?.data[year]?.[row.key] ?? null
                           const numeric =
-                            typeof raw === 'number' && isFinite(raw) ? raw : null
+                            typeof raw === 'number' && isFinite(raw)
+                              ? raw
+                              : null
                           return (
                             <td
                               className={cn(

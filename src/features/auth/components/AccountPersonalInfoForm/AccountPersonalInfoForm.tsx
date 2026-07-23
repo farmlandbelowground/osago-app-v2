@@ -23,6 +23,13 @@ export const AccountPersonalInfoForm: FC<Props> = ({ profile }) => {
   useEffect(() => {
     if (state.success) {
       showToast('Persoonlijke gegevens opgeslagen.')
+
+      if (state.emailConfirmationSent) {
+        showToast(
+          'Bevestig je nieuwe e-mailadres via de link die we zojuist hebben gestuurd — je login-adres wijzigt na bevestiging.',
+        )
+      }
+
       return
     }
 
@@ -36,8 +43,8 @@ export const AccountPersonalInfoForm: FC<Props> = ({ profile }) => {
       <div className="form-section">
         <h3 className="form-section-title">Persoonlijke gegevens</h3>
         <p className="form-section-desc">
-          Deze gegevens worden gebruikt voor jouw account en in documenten
-          zoals het verkoopmemorandum.
+          Deze gegevens worden gebruikt voor jouw account en in documenten zoals
+          het verkoopmemorandum.
         </p>
         <div className="form-row">
           <AuthField label="Voornaam">

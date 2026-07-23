@@ -4,11 +4,11 @@
 
 This file is the single source of truth for AI-assisted development conventions on this stack. It, together with `rules/`, `patterns/`, and `.claude/skills/`, travels with the project so conventions are defined once and reused across sessions instead of re-explained every time.
 
-## Temporary Styling Exception (Active Through Migration Slice 14)
+## Styling Exception: Legacy CSS Classes Instead of Tailwind
 
-**Overrides [Styling](rules/styling.md) and [Styling with Tailwind](patterns/styling-tailwind.md) below.** While the `osago-app` → `osago-app-v2` migration is in progress (see `../docs/migration-plan.md`), UI components use the plain CSS classes ported verbatim from the legacy app's `styles.css` into `src/app/globals.css` (e.g. `.btn`, `.field`, `.card`, `.main`) — **not** Tailwind utility classes — even though the Tailwind packages, `cn()` helper, and lint plugin remain installed. This is a deliberate, temporary speed tradeoff to finish the migration faster; it is not a reversal of the project's styling direction. See `../docs/migration-plan.md` §1.3 for the full rationale and exit condition.
+**Overrides [Styling](rules/styling.md) and [Styling with Tailwind](patterns/styling-tailwind.md) below, for migrated code.** UI components ported during the `osago-app` → `osago-app-v2` migration (see `../docs/migration-plan.md`) use the plain CSS classes ported verbatim from the legacy app's `styles.css` into `src/app/globals.css` (e.g. `.btn`, `.field`, `.card`, `.main`) — **not** Tailwind utility classes — even though the Tailwind packages, `cn()` helper, and lint plugin remain installed.
 
-This exception applies only to code written as part of migration slices. Once the migration's final Tailwind-conversion slice ships, this section is deleted and `rules/styling.md` / `patterns/styling-tailwind.md` apply to all code without exception, including the migrated components.
+This began as a temporary migration-speed tradeoff whose exit was a final Tailwind-conversion pass (Slice 15). **Slice 15 was cancelled (2026-07-23):** the migrated code keeps its legacy `styles.css` classes permanently, and Tailwind (`rules/styling.md` / `patterns/styling-tailwind.md`) applies to **net-new UI features only**. The `better-tailwindcss/no-unregistered-classes` lint override stays in place. See `../docs/migration-plan.md` §1.3 for the full rationale.
 
 ## Stack
 

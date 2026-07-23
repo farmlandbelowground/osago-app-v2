@@ -71,7 +71,7 @@ export const FinancialsExtractionReviewPanel: FC<Props> = ({
                 <td className="fin-row-label">{row.year}</td>
                 {EXTRACTION_COLUMNS.map(column => (
                   <td className="fin-cell" key={column.field}>
-                    {formatAmount(row[column.field])}
+                    {formatAmount(row[column.field] ?? null)}
                   </td>
                 ))}
               </tr>

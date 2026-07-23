@@ -16,6 +16,7 @@ import {
   ValuationResultCard,
   ValuationReviewStatusCard,
   ValuationUnlockButton,
+  buildHistoryWeightOverrides,
   computeIndicatieveOndernemingswaarde,
   computeValuationProgress,
   dcfNewCompute,
@@ -83,7 +84,7 @@ export default async function WaardebepalingPage() {
   const indicativeResult = computeIndicatieveOndernemingswaarde({
     employees: resolved.employees,
     fin: resolved.financials,
-    historyWeightOverrides: {},
+    historyWeightOverrides: buildHistoryWeightOverrides(resolved.financials),
     lastClosedYear: resolved.lastClosedYear,
     nonLegalEntityConfig: resolved.nonLegalEntityConfig,
     normalizations: resolved.normalizations,
@@ -194,7 +195,9 @@ export default async function WaardebepalingPage() {
             <ValuationControleCard result={indicativeResult} />
           )}
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+          <div
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}
+          >
             {requiresReview && reviewStatus === 'submitted' && (
               <ValuationUnlockButton />
             )}

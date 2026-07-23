@@ -17,6 +17,7 @@ import {
   APP_CONFIG_SMALL_ORG_DEDUCTIONS_KEY,
   VALUATION_BAND_DEFAULT_PCT,
 } from './constants/sectorMultiples'
+import { buildHistoryWeightOverrides } from './lib/buildHistoryWeightOverrides'
 import { type ValuationReportGammaData } from './lib/buildValuationGammaPrompt'
 import { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
 import { computeIndicatieveOndernemingswaarde } from './lib/computeIndicatieveOndernemingswaarde'
@@ -60,7 +61,7 @@ export const getFinancials = async (
   const { data, error } = await supabase
     .from('financials')
     .select(
-      'year, revenue, cogs, operating_expenses, depreciation, interest, taxes_paid',
+      'year, revenue, cogs, operating_expenses, depreciation, interest, taxes_paid, history_weight',
     )
     .eq('user_id', userId)
 
@@ -79,6 +80,7 @@ export const getFinancials = async (
       depreciation: result.data.depreciation,
       interest: result.data.interest,
       taxesPaid: result.data.taxes_paid,
+      historyWeight: result.data.history_weight,
     }))
 }
 
@@ -415,7 +417,7 @@ export const getEstimatedValue = async (
   const indicative = computeIndicatieveOndernemingswaarde({
     employees: company.employees,
     fin,
-    historyWeightOverrides: {},
+    historyWeightOverrides: buildHistoryWeightOverrides(fin),
     lastClosedYear,
     nonLegalEntityConfig: fields.nonLegalEntityConfig,
     normalizations: fields.normalizations,
@@ -473,7 +475,7 @@ export const getValuationReportGammaInput = async (
   const indicative = computeIndicatieveOndernemingswaarde({
     employees: resolved.employees,
     fin: resolved.financials,
-    historyWeightOverrides: {},
+    historyWeightOverrides: buildHistoryWeightOverrides(resolved.financials),
     lastClosedYear: resolved.lastClosedYear,
     nonLegalEntityConfig: resolved.nonLegalEntityConfig,
     normalizations: resolved.normalizations,

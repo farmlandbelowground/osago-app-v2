@@ -170,7 +170,7 @@ export const PartnerRegistration: FC<Props> = ({ partner, voucher }) => {
 
       <div className="auth-form">
         <div className="auth-form-inner">
-          <RegisterForm />
+          <RegisterForm referralPartnerSlug={partner.slug} />
         </div>
       </div>
     </div>

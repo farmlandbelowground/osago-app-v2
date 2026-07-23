@@ -113,6 +113,7 @@ export const saveFinancials = async (
     depreciation: year.depreciation,
     interest: year.interest,
     taxes_paid: year.taxesPaid,
+    history_weight: year.historyWeight ?? null,
   }))
 
   const { error: finError } = await supabase
@@ -896,11 +897,15 @@ export const approveValuationReviewByAdmin =
     }
 
     const company = await getCompany(session.user.id)
-    await sendTemplatedEmail('valuation_review_approved', session.user.email ?? '', {
-      achternaam: session.lastName ?? '',
-      bedrijfsnaam: company?.name ?? '',
-      voornaam: session.firstName ?? '',
-    })
+    await sendTemplatedEmail(
+      'valuation_review_approved',
+      session.user.email ?? '',
+      {
+        achternaam: session.lastName ?? '',
+        bedrijfsnaam: company?.name ?? '',
+        voornaam: session.firstName ?? '',
+      },
+    )
 
     revalidatePath(WAARDEBEPALING_PATH)
     return { error: null }

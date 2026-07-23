@@ -5,6 +5,7 @@ export type ProjectType = 'verkoop' | 'waardebepaling'
 export interface AdminCustomerRow {
   company: string
   createdAt: string | null
+  customerId: string | null
   email: string
   id: string
   name: string

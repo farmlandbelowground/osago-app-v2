@@ -9,6 +9,7 @@ import {
   ValuationReportEditor,
   ValuationReportEmployeeTools,
   ValuationReportPrereqGate,
+  buildHistoryWeightOverrides,
   computeIndicatieveOndernemingswaarde,
   computeValuationProgress,
   getCompanyValuationFields,
@@ -53,8 +54,7 @@ export default async function WaarderingsrapportPage() {
   // they may check the report text before the customer can proceed
   // (osago-bundle.js:15735).
   const gated =
-    (!progress.valueDriversComplete || !progress.valuationMade) &&
-    !isMedewerker
+    (!progress.valueDriversComplete || !progress.valuationMade) && !isMedewerker
 
   // Build the Take 5 deck data only for an impersonating employee.
   let deckData: T5DeckData | null = null
@@ -79,7 +79,9 @@ export default async function WaarderingsrapportPage() {
       const indicative = computeIndicatieveOndernemingswaarde({
         employees: resolved.employees,
         fin: resolved.financials,
-        historyWeightOverrides: {},
+        historyWeightOverrides: buildHistoryWeightOverrides(
+          resolved.financials,
+        ),
         lastClosedYear: resolved.lastClosedYear,
         nonLegalEntityConfig: resolved.nonLegalEntityConfig,
         normalizations: resolved.normalizations,

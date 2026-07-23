@@ -7,12 +7,15 @@ import { type Voucher } from '@features/subscriptions/types'
 import { KpiTile } from '@shared/components/KpiTile'
 import { useToastStore } from '@shared/store/toast'
 
-import { PARTNER_REFERRAL_COUNT_PLACEHOLDER } from '../../constants'
 import { buildPartnerRegistrationUrl } from '../../lib/partnerRegistrationUrl'
 import { AdminPartnerModal } from '../AdminPartnerModal'
 import { type Props } from './types'
 
-export const AdminPartnersTable: FC<Props> = ({ partners, vouchers }) => {
+export const AdminPartnersTable: FC<Props> = ({
+  partners,
+  referralCounts,
+  vouchers,
+}) => {
   const showToast = useToastStore(state => state.showToast)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -30,6 +33,10 @@ export const AdminPartnersTable: FC<Props> = ({ partners, vouchers }) => {
   const withVoucherCount = partners.filter(
     partner => resolveVoucher(partner) !== null,
   ).length
+  const totalReferralCount = Object.values(referralCounts).reduce(
+    (sum, count) => sum + count,
+    0,
+  )
 
   const origin = typeof window === 'undefined' ? '' : window.location.origin
 
@@ -100,7 +107,7 @@ export const AdminPartnersTable: FC<Props> = ({ partners, vouchers }) => {
         <KpiTile
           label="Geregistreerd via partner"
           meta="Klanten met partner-referral"
-          value={String(PARTNER_REFERRAL_COUNT_PLACEHOLDER)}
+          value={String(totalReferralCount)}
         />
       </div>
 
@@ -269,7 +276,7 @@ export const AdminPartnersTable: FC<Props> = ({ partners, vouchers }) => {
                           <span className="text-muted">—</span>
                         )}
                       </td>
-                      <td>{PARTNER_REFERRAL_COUNT_PLACEHOLDER}</td>
+                      <td>{referralCounts[partner.id] ?? 0}</td>
                       <td>
                         {partner.active ? (
                           <span className="badge badge-green">Actief</span>

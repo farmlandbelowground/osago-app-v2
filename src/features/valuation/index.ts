@@ -34,6 +34,7 @@ export {
 
 export { computeValuationProgress } from './lib/computeValuationProgress'
 export { computeIndicatieveOndernemingswaarde } from './lib/computeIndicatieveOndernemingswaarde'
+export { buildHistoryWeightOverrides } from './lib/buildHistoryWeightOverrides'
 export { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
 export {
   dcfNewCompute,
@@ -67,7 +68,10 @@ export {
   resetValuationByAdmin,
   resetValuationPdfByAdmin,
 } from './actions'
-export { buildValuationPptxT5, type T5DeckData } from './lib/buildValuationPptxT5'
+export {
+  buildValuationPptxT5,
+  type T5DeckData,
+} from './lib/buildValuationPptxT5'
 export {
   type DcfExportCompany,
   type DcfExportData,

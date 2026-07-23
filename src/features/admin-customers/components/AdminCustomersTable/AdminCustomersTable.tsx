@@ -25,7 +25,7 @@ export const AdminCustomersTable: FC<Props> = ({ customers }) => {
   const query = search.trim().toLowerCase()
   const visible = query
     ? customers.filter(customer =>
-        [customer.name, customer.email, customer.company]
+        [customer.name, customer.email, customer.company, customer.customerId]
           .filter(Boolean)
           .join(' ')
           .toLowerCase()

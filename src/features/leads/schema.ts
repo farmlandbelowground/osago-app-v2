@@ -40,6 +40,8 @@ export const LeadRowSchema = z.object({
   notes: z.string().nullable(),
   website: z.string().nullable(),
   source: z.string().nullable(),
+  auto_source_website: z.string().nullable(),
+  sector: z.string().nullable(),
   added_at: z.string(),
   validated_by_osago: z.boolean(),
   validated_by: z.uuid().nullable(),

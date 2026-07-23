@@ -9,7 +9,9 @@ export const adminListStaff = async (): Promise<StaffMember[]> => {
   const supabase = await getServerClient()
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, first_name, last_name, phone, photo, role, created_at')
+    .select(
+      'id, email, first_name, last_name, phone, photo, role, created_at, active, availability',
+    )
     .in('role', ['admin', 'admin_user'])
     .order('created_at', { ascending: true })
 
@@ -24,7 +26,8 @@ export const adminListStaff = async (): Promise<StaffMember[]> => {
       const row = result.data
 
       return {
-        active: true,
+        active: row.active !== false,
+        availability: row.availability,
         createdAt: row.created_at ? Date.parse(row.created_at) : null,
         email: row.email,
         firstName: row.first_name ?? '',

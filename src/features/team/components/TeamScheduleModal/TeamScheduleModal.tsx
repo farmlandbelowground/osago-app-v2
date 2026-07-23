@@ -1,8 +1,8 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, type FC } from 'react'
 
-import { useAdminAvailabilityStore } from '@features/auth/store'
 import { ModalShell } from '@shared/components/ModalShell'
 import {
   APPT_DEFAULT_AVAILABILITY,
@@ -15,6 +15,7 @@ import {
 import { useToastStore } from '@shared/store/toast'
 import { type Availability } from '@shared/types/availability'
 
+import { setStaffAvailability } from '../../actions'
 import { type Props } from './types'
 
 interface DayRow {
@@ -25,19 +26,15 @@ interface DayRow {
 
 export const TeamScheduleModal: FC<Props> = ({
   adminId,
+  availability,
   memberName,
   onClose,
 }) => {
+  const router = useRouter()
   const showToast = useToastStore(state => state.showToast)
-  const availabilityByAdminId = useAdminAvailabilityStore(
-    state => state.availabilityByAdminId,
-  )
-  const setAvailability = useAdminAvailabilityStore(
-    state => state.setAvailability,
-  )
 
   const [rows, setRows] = useState<Record<string, DayRow>>(() => {
-    const current = availabilityByAdminId[adminId] ?? APPT_DEFAULT_AVAILABILITY
+    const current = availability ?? APPT_DEFAULT_AVAILABILITY
     const initial: Record<string, DayRow> = {}
 
     for (const day of APPT_WEEKDAYS) {
@@ -56,15 +53,14 @@ export const TeamScheduleModal: FC<Props> = ({
     setRows(current => ({ ...current, [day]: { ...current[day], ...patch } }))
   }
 
-  const onSave = (): void => {
+  const onSave = async (): Promise<void> => {
     const next: Availability = {
       friday: [],
       monday: [],
       saturday: [],
       sunday: [],
       thursday: [],
-      timezone:
-        availabilityByAdminId[adminId]?.timezone ?? AVAILABILITY_TIMEZONE,
+      timezone: availability?.timezone ?? AVAILABILITY_TIMEZONE,
       tuesday: [],
       wednesday: [],
     }
@@ -83,8 +79,14 @@ export const TeamScheduleModal: FC<Props> = ({
       }
     }
 
-    setAvailability(adminId, next)
+    const result = await setStaffAvailability(adminId, next)
+    if (result.error) {
+      showToast(result.error, 'error')
+      return
+    }
+
     showToast('Rooster opgeslagen.')
+    router.refresh()
     onClose()
   }
 
@@ -93,14 +95,22 @@ export const TeamScheduleModal: FC<Props> = ({
       <button className="btn btn-secondary" onClick={onClose} type="button">
         Annuleren
       </button>
-      <button className="btn btn-primary" onClick={onSave} type="button">
+      <button
+        className="btn btn-primary"
+        onClick={() => void onSave()}
+        type="button"
+      >
         Rooster opslaan
       </button>
     </>
   )
 
   return (
-    <ModalShell footer={footer} onClose={onClose} title={`Rooster — ${memberName}`}>
+    <ModalShell
+      footer={footer}
+      onClose={onClose}
+      title={`Rooster — ${memberName}`}
+    >
       <p className="desc">
         Bepaal per dag de begin- en eindtijd waarop deze medewerker via de
         afspraken-boekingslink beschikbaar is. Vink een dag uit om die volledig
@@ -142,10 +152,6 @@ export const TeamScheduleModal: FC<Props> = ({
           </div>
         ))}
       </div>
-      <p className="text-xs text-muted" style={{ marginTop: 14 }}>
-        Het rooster wordt lokaal in deze browser bewaard (net als in de oude
-        app); een centrale opslag is toekomstig werk.
-      </p>
     </ModalShell>
   )
 }

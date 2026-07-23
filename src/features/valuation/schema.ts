@@ -10,6 +10,7 @@ export const FinancialsRowSchema = z.object({
   depreciation: z.number().nullable(),
   interest: z.number().nullable(),
   taxes_paid: z.number().nullable(),
+  history_weight: z.number().nullable(),
 })
 
 export type FinancialsRow = z.infer<typeof FinancialsRowSchema>
