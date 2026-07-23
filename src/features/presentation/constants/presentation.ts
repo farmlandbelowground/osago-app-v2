@@ -56,8 +56,6 @@ export const REGEN_DOC_INFO: Record<RegenerateDocumentType, RegenerateDocInfo> =
     },
   }
 
-export const OPTIONAL_BADGE_LABEL = 'Optioneel'
-
 export const UNSPLASH_SEARCH_MIN_QUERY_LENGTH = 1
 
 // ── Slice 13 — medewerker (impersonation) presentation tools ──

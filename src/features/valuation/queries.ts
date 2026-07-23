@@ -18,13 +18,22 @@ import {
   VALUATION_BAND_DEFAULT_PCT,
 } from './constants/sectorMultiples'
 import { buildHistoryWeightOverrides } from './lib/buildHistoryWeightOverrides'
+import {
+  buildMethodeToelichtingMarkdown,
+  type MethodeToelichtingDcf,
+} from './lib/buildMethodeToelichtingMarkdown'
 import { type ValuationReportGammaData } from './lib/buildValuationGammaPrompt'
-import { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
+import {
+  computeAandeelhouderswaardeVerrekening,
+  computeAandeelhouderswaardeVerrekeningBreakdown,
+} from './lib/computeAandeelhouderswaardeVerrekening'
 import { computeIndicatieveOndernemingswaarde } from './lib/computeIndicatieveOndernemingswaarde'
+import { computeValueDriverSectionScores } from './lib/computeValueDriverSectionScores'
 import {
   computeSectorcorrectieFromMultiple,
   dcfNewCompute,
 } from './lib/dcfCompute'
+import { isNonLegalEntityForm } from './lib/isNonLegalEntityForm'
 import {
   AppConfigDcfAdminDefaultsSchema,
   AppConfigSmallEbitdaDeductionsSchema,
@@ -513,5 +522,169 @@ export const getValuationReportGammaInput = async (
     usp: company.usp,
     valuationBand,
     valuationReport: fields.valuationReport,
+  }
+}
+
+// DCF assumptions + WACC components for the "Uitgangspunten DCF-waardering" and
+// "Bepaling WACC-waarde" slides (Slice D only, when DCF is enabled).
+export interface GammaDcfDetail {
+  discRows: { df: number; year: number }[]
+  groeiRest: number
+  ip: number
+  kostenvoet: number
+  mrp: number
+  rfr: number
+  scenarioStartYear: number
+  scenarioYearCount: number
+  sectoropslag: number
+  vermogensvoetRest: number
+}
+
+// Everything the fixed-template valuation documents need — the report itself and
+// the IM valuation addendum. Derived exactly as /waardebepaling and the T5 deck
+// derive their figures. Uses the valuation-time snapshot when a valuation is made
+// (resolveDisplayCompanyData). Returns null when the company/valuation data is
+// missing (matches getValuationReportGammaInput).
+export interface GammaValuationData {
+  ashBreakdown: { dcfree: number; positieWerkkap: number; total: number }
+  band: number
+  companyName: string
+  dcfApplyEnabled: boolean
+  description: string
+  employees: number | null
+  enterpriseValue: number
+  financials: Record<number, FinancialYearInput>
+  lastClosedYear: number
+  methodeMarkdown: string
+  normalizations: Normalization[]
+  sector: string
+  shareholderValue: number
+  showAsh: boolean
+  usp: string
+  valuationReport: ValuationReportContent
+  valueDriverScores: { score: number; title: string }[]
+  dcfDetail?: GammaDcfDetail | null
+}
+
+export const getGammaValuationData = async (
+  userId: string,
+): Promise<GammaValuationData | null> => {
+  const [
+    resolved,
+    company,
+    fields,
+    valuationMultiples,
+    smallEbitdaDeductions,
+    smallOrgDeductions,
+  ] = await Promise.all([
+    resolveDisplayCompanyData(userId),
+    getCompany(userId),
+    getCompanyValuationFields(userId),
+    getValuationMultiples(),
+    getSmallEbitdaDeductions(),
+    getSmallOrgDeductions(),
+  ])
+
+  if (!resolved || !company || !fields) {
+    return null
+  }
+
+  const indicative = computeIndicatieveOndernemingswaarde({
+    employees: resolved.employees,
+    fin: resolved.financials,
+    historyWeightOverrides: buildHistoryWeightOverrides(resolved.financials),
+    lastClosedYear: resolved.lastClosedYear,
+    nonLegalEntityConfig: resolved.nonLegalEntityConfig,
+    normalizations: resolved.normalizations,
+    sector: resolved.sector,
+    smallEbitdaDeductions,
+    smallOrgDeductions,
+    valuationMultiples,
+    valuationSettings: resolved.valuationSettings,
+  })
+
+  const { result } = await getValuationRecord(userId)
+  const enterpriseValue =
+    indicative.value !== null
+      ? indicative.value
+      : Math.round(result?.dcfValue ?? 0)
+
+  const ashBreakdown = computeAandeelhouderswaardeVerrekeningBreakdown({
+    financials: resolved.financials,
+    lastClosedYear: resolved.lastClosedYear,
+    shareholderValue: fields.shareholderValue,
+  })
+  const shareholderValue = enterpriseValue + ashBreakdown.total
+  const band =
+    resolved.valuationBand ??
+    Math.ceil(enterpriseValue * VALUATION_BAND_DEFAULT_PCT)
+
+  // DCF detail only when the DCF methodiek is enabled — mirrors getEstimatedValue.
+  let dcfDetail: GammaDcfDetail | null = null
+  let dcfMethode: MethodeToelichtingDcf | null = null
+  if (resolved.dcfApplyEnabled) {
+    const adminDefaults = await getDcfAdminDefaults()
+    const sectorMultiple =
+      indicative.sectorMultipleRaw ?? DCF_SECTORCORRECTIE_BASE_MULTIPLE
+    const resolvedDcf = resolveDcfNewInputs(
+      resolved.dcfNewInputs,
+      adminDefaults,
+      sectorMultiple,
+    )
+    const dcfResult = dcfNewCompute(
+      resolvedDcf,
+      resolved.financials,
+      resolved.normalizations,
+    )
+    dcfDetail = {
+      discRows: dcfResult.discRows.map(r => ({ df: r.df, year: r.year })),
+      groeiRest: resolved.dcfNewInputs.uitgangspunten.groeiRest,
+      ip: resolvedDcf.ip,
+      kostenvoet: dcfResult.kostenvoet,
+      mrp: resolvedDcf.mrp,
+      rfr: resolvedDcf.rfr,
+      scenarioStartYear: resolved.dcfNewInputs.scenarioStartYear,
+      scenarioYearCount: resolved.dcfNewInputs.scenarioYearCount,
+      sectoropslag: resolvedDcf.sectoropslag,
+      vermogensvoetRest: resolved.dcfNewInputs.uitgangspunten.vermogensvoetRest,
+    }
+    dcfMethode = {
+      groeiRest: resolved.dcfNewInputs.uitgangspunten.groeiRest,
+      kostenvoet: dcfResult.kostenvoet,
+      scenarioStartYear: resolved.dcfNewInputs.scenarioStartYear,
+      scenarioYearCount: resolved.dcfNewInputs.scenarioYearCount,
+      vermogensvoetRest: resolved.dcfNewInputs.uitgangspunten.vermogensvoetRest,
+    }
+  }
+
+  const methodeMarkdown = buildMethodeToelichtingMarkdown({
+    dcf: dcfMethode,
+    dcfApplyEnabled: resolved.dcfApplyEnabled,
+    indicative,
+    normalizations: resolved.normalizations,
+    sector: company.sector,
+  })
+
+  return {
+    ashBreakdown,
+    band,
+    companyName: company.name,
+    dcfApplyEnabled: resolved.dcfApplyEnabled,
+    dcfDetail,
+    description: company.description,
+    employees: company.employees,
+    enterpriseValue,
+    financials: resolved.financials,
+    lastClosedYear: resolved.lastClosedYear,
+    methodeMarkdown,
+    normalizations: resolved.normalizations,
+    sector: company.sector,
+    shareholderValue,
+    showAsh: !isNonLegalEntityForm(resolved.legalForm),
+    usp: company.usp,
+    valuationReport: fields.valuationReport,
+    valueDriverScores: computeValueDriverSectionScores(
+      resolved.valueDriverAnswers,
+    ).map(s => ({ score: s.score ?? 0, title: s.title })),
   }
 }

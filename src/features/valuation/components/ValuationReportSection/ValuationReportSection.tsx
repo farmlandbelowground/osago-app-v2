@@ -6,26 +6,10 @@ import {
   composeReportText,
   saveValuationReportField,
 } from '@features/valuation/actions'
-import { OPTIONAL_BADGE_LABEL } from '@features/valuation/constants/valuationReport'
 import { AiPillGroup } from '@shared/ai-compose'
 import { useToastStore } from '@shared/store/toast'
 
 import { type Props } from './types'
-
-const badgeStyle: CSSProperties = {
-  border: '1px solid var(--green)',
-  borderRadius: 3,
-  color: 'var(--green-dark)',
-  display: 'inline-block',
-  fontFamily: 'Helvetica,Arial,sans-serif',
-  fontSize: '10.5px',
-  fontWeight: 500,
-  letterSpacing: '0.06em',
-  marginLeft: 8,
-  padding: '1px 7px',
-  textTransform: 'uppercase',
-  verticalAlign: 'middle',
-}
 
 const textareaStyle: CSSProperties = {
   background: '#fff',
@@ -66,10 +50,9 @@ export const ValuationReportSection: FC<Props> = ({
   return (
     <div className="card" style={isFirst ? undefined : { marginTop: 24 }}>
       <div className="form-section">
-        <h3 className="form-section-title">
-          {section.title}
-          <span style={badgeStyle}>{OPTIONAL_BADGE_LABEL}</span>
-        </h3>
+        {/* "Optioneel" badge removed (#65, spec §13.1): a filled field appears
+            in the report, an empty one is omitted, so the badge is redundant. */}
+        <h3 className="form-section-title">{section.title}</h3>
         <p className="form-section-desc">{section.description}</p>
 
         <div className="field" style={{ marginBottom: 0, marginTop: 14 }}>

@@ -11,7 +11,11 @@ import {
 } from '@features/documents'
 import { DOCS_BUCKET } from '@features/documents/constants/storage'
 import { getSubscription } from '@features/subscriptions/queries'
-import { getCompanyValuationFields, getFinancials } from '@features/valuation'
+import {
+  getCompanyValuationFields,
+  getFinancials,
+  getGammaValuationData,
+} from '@features/valuation'
 import { type FinancialYearInput } from '@features/valuation/types'
 import {
   ADMIN_RESET_CONFIG,
@@ -25,12 +29,15 @@ import { legacyApiFetch } from '@shared/api/legacyApiFetch'
 import { requireImpersonation } from '@shared/auth/guards'
 import { requireSession } from '@shared/auth/session'
 import { sendTemplatedEmail } from '@shared/email'
+import {
+  PDF_MIME,
+  type GammaGenerateOptions,
+  type GammaPlacementPlan,
+} from '@shared/gamma'
 import { getServerClient } from '@shared/supabase/server'
 
 import {
   ANONIEM_RESET_NOTICE,
-  GAMMA_DOC_DESCRIPTION,
-  GAMMA_DOC_TITLE_NOUN,
   INTERNAL_NOTIFICATION_EMAIL,
   MEMORANDUM_RESET_NOTICE,
   PRESENTATION_AI_DOC_TYPE,
@@ -42,13 +49,15 @@ import {
   UNSPLASH_SEARCH_ENDPOINT,
   VERKOOPPRESENTATIE_PATH,
 } from './constants/routes'
-import { buildPresentationGammaPrompt } from './lib/buildPresentationGammaPrompt'
+import { buildMemorandumGammaDoc } from './lib/buildMemorandumGammaDoc'
+import { buildTeaserGammaDoc } from './lib/buildTeaserGammaDoc'
 import {
   findPresentationFieldTab,
+  getVisiblePresentationTabs,
   isPresentationFieldKey,
   resolvePresentationFieldPattern,
 } from './lib/presentationTabs'
-import { getMemorandumValuationFigures, getPresentationData } from './queries'
+import { getPresentationData } from './queries'
 import {
   PresentationExtraSchema,
   PresentationPhotoSchema,
@@ -363,39 +372,62 @@ const formatDateStamp = (): string =>
 export interface PreparedGammaInput {
   description: string
   fileName: string
+  fileType: string
   inputText: string
   numCards: number
+  options: GammaGenerateOptions
+  placementPlan: GammaPlacementPlan
 }
 
-// Builds the memorandum/teaser dossier prompt from fresh DB state at click time
-// (mirrors legacy generateViaGamma rebuilding the prompt on demand), plus the
-// one-time-action guard the confirm modal enforces (osago-bundle.js:19487).
+// Both fixed-template documents (teaser + IM) render as PDF with our own photos
+// injected in the reserved right column (osago-bundle.js #65/#70).
+const FIXED_TEMPLATE_OPTIONS: GammaGenerateOptions = {
+  cardSplit: 'inputTextBreaks',
+  exportAs: 'pdf',
+  fixedTemplate: true,
+  imageSource: 'noImages',
+  reserveRightHalf: true,
+}
+
+const readContactPhone = async (userId: string): Promise<string> => {
+  const supabase = await getServerClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('phone')
+    .eq('id', userId)
+    .maybeSingle()
+  return typeof data?.phone === 'string' ? data.phone : ''
+}
+
+// Builds the memorandum/teaser fixed-template PDF doc from fresh DB state at
+// click time, plus the injection plan (photos + IM valuation gauges) the
+// finalize step needs, and the one-time-action guard the confirm modal enforces.
+// Ports generateViaGamma's build step (osago-bundle.js #65/#70).
 export const preparePresentationGamma = async (
   variant: PresentationGenerateVariant,
 ): Promise<ApiResult<PreparedGammaInput>> => {
   const session = await requireSession()
   const userId = session.user.id
 
-  const prefix =
+  const prefixes =
     variant === 'memorandum'
-      ? DOCUMENT_PREFIXES.memorandum
-      : DOCUMENT_PREFIXES.anonymousProfile
+      ? [DOCUMENT_PREFIXES.memorandum, DOCUMENT_PREFIXES.informationMemorandum]
+      : [DOCUMENT_PREFIXES.anonymousProfile]
 
-  if (await documentExistsByPrefix(userId, [prefix])) {
+  if (await documentExistsByPrefix(userId, prefixes)) {
     return {
       data: null,
       error:
         variant === 'memorandum'
-          ? 'Het verkoopmemorandum staat al in jouw Documentenkluis.'
+          ? 'Het informatiememorandum staat al in jouw Documentenkluis.'
           : 'Het anoniem verkoopprofiel staat al in jouw Documentenkluis.',
     }
   }
 
-  const [company, presentation, financialsList, valuation] = await Promise.all([
+  const [company, presentation, financialsList] = await Promise.all([
     getCompany(userId),
     getPresentationData(userId),
     getFinancials(userId),
-    getMemorandumValuationFigures(userId),
   ])
 
   if (!company) {
@@ -408,33 +440,81 @@ export const preparePresentationGamma = async (
   const financials: Record<number, FinancialYearInput> = Object.fromEntries(
     financialsList.map(row => [row.year, row]),
   )
+  const currentYear = new Date().getFullYear()
+  const stamp = formatDateStamp()
 
-  const built = buildPresentationGammaPrompt(variant, {
-    city: company.city,
-    companyName: company.name,
-    description: company.description,
-    employees: company.employees,
-    fields: presentation.fields,
-    financials,
-    founded: company.founded,
-    legalForm: company.legalForm,
-    reasonForSale: company.reasonForSale,
-    recurringRevenue: company.recurringRevenue,
-    sector: company.sector,
-    usp: company.usp,
-    valuation,
-  })
+  try {
+    if (variant === 'teaser') {
+      const built = buildTeaserGammaDoc({
+        city: company.city,
+        companyDescription: company.description,
+        contact: {
+          email: session.user.email ?? '',
+          name: [session.firstName, session.lastName].filter(Boolean).join(' '),
+          phone: await readContactPhone(userId),
+        },
+        currentYear,
+        fields: presentation.fields,
+        financials,
+        reasonForSale: company.reasonForSale,
+        sector: company.sector,
+      })
+      const nameSuffix = company.sector ? ' ' + company.sector.trim() : ''
+      return {
+        data: {
+          description:
+            'Anoniem verkoopprofiel — PDF. Controleer de inhoud; wil je iets wijzigen, pas dan de velden in de app aan en genereer opnieuw.',
+          fileName: `Anoniem verkoopprofiel${nameSuffix} ${stamp}.pdf`,
+          fileType: PDF_MIME,
+          inputText: built.inputText,
+          numCards: built.numCards,
+          options: FIXED_TEMPLATE_OPTIONS,
+          placementPlan: { components: built.components, photos: built.photos },
+        },
+        error: null,
+      }
+    }
 
-  const fileName = `${GAMMA_DOC_TITLE_NOUN[variant]} ${formatDateStamp()}.pptx`
-
-  return {
-    data: {
-      description: GAMMA_DOC_DESCRIPTION,
-      fileName,
-      inputText: built.text,
-      numCards: built.slideCount,
-    },
-    error: null,
+    const tabs = getVisiblePresentationTabs(presentation.hiddenTabs).filter(
+      tab => tab.id !== 'inhoud',
+    )
+    const valuation = presentation.includeValuation
+      ? await getGammaValuationData(userId)
+      : null
+    const built = buildMemorandumGammaDoc({
+      company,
+      currentYear,
+      fields: presentation.fields,
+      includeValuation: presentation.includeValuation,
+      tabs,
+      valuation,
+    })
+    const nameSuffix = company.name ? ' ' + company.name.trim() : ''
+    return {
+      data: {
+        description:
+          'Informatiememorandum — PDF. Controleer de inhoud; wil je iets wijzigen, pas dan de velden in de app aan en genereer opnieuw.',
+        fileName: `Informatiememorandum${nameSuffix} ${stamp}.pdf`,
+        fileType: PDF_MIME,
+        inputText: built.inputText,
+        numCards: built.numCards,
+        options: FIXED_TEMPLATE_OPTIONS,
+        placementPlan: { components: built.components, photos: built.photos },
+      },
+      error: null,
+    }
+  } catch (err) {
+    // A build failure must never look like a dead button (spec §13.7).
+    console.error('[Presentatie] opbouwen mislukt:', err)
+    return {
+      data: null,
+      error:
+        (variant === 'memorandum'
+          ? 'Informatiememorandum'
+          : 'Anoniem verkoopprofiel') +
+        ' opstellen mislukt: ' +
+        (err instanceof Error ? err.message : 'onbekende fout'),
+    }
   }
 }
 
@@ -468,15 +548,17 @@ export const searchUnsplash = async (
 // (osago-bundle.js:19384-19419, 12514-12652).
 // ─────────────────────────────────────────────────────────────────────────
 
-type ResetResult = { invoiceError: string | null }
+type ResetResult = { invoiceError: string | null; nothingRemoved?: boolean }
 
 // Vault removal done inline (features/documents has no delete-by-prefix helper
 // and is concurrently edited elsewhere). Under impersonation the session is the
 // customer, so deleting their own documents + storage objects is RLS-allowed.
+// Returns the number of vault documents actually removed, so callers can skip
+// the "verwijderd" email + invoice when nothing matched (#65 no-op guard).
 const removeVaultDocsByPrefix = async (
   userId: string,
   prefixes: string[],
-): Promise<void> => {
+): Promise<number> => {
   const supabase = await getServerClient()
   const { data } = await supabase
     .from('documents')
@@ -490,7 +572,7 @@ const removeVaultDocsByPrefix = async (
   )
 
   if (matches.length === 0) {
-    return
+    return 0
   }
 
   const paths = matches
@@ -510,6 +592,7 @@ const removeVaultDocsByPrefix = async (
     )
 
   revalidatePath(DOCUMENTENKLUIS_PATH)
+  return matches.length
 }
 
 const resetDateStamp = (): string =>
@@ -594,7 +677,16 @@ export const resetMemorandumByAdmin = async (
 ): Promise<ResetResult> => {
   const session = await requireImpersonation()
 
-  await removeVaultDocsByPrefix(session.user.id, [DOCUMENT_PREFIXES.memorandum])
+  // Catches both the old "Verkoopmemorandum …" and the new "Informatiememorandum
+  // …" (fixed-template PDF) names (#65).
+  const removed = await removeVaultDocsByPrefix(session.user.id, [
+    DOCUMENT_PREFIXES.memorandum,
+    DOCUMENT_PREFIXES.informationMemorandum,
+  ])
+  if (removed === 0) {
+    return { invoiceError: null, nothingRemoved: true }
+  }
+
   await sendAdminResetNotice(session, MEMORANDUM_RESET_NOTICE)
 
   let invoiceError: string | null = null
@@ -615,9 +707,13 @@ export const resetAnonymousProfileByAdmin = async (
 ): Promise<ResetResult> => {
   const session = await requireImpersonation()
 
-  await removeVaultDocsByPrefix(session.user.id, [
+  const removed = await removeVaultDocsByPrefix(session.user.id, [
     DOCUMENT_PREFIXES.anonymousProfile,
   ])
+  if (removed === 0) {
+    return { invoiceError: null, nothingRemoved: true }
+  }
+
   await sendAdminResetNotice(session, ANONIEM_RESET_NOTICE)
 
   let invoiceError: string | null = null

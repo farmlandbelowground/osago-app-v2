@@ -2,6 +2,8 @@
 
 import { useRef, type FC } from 'react'
 
+import { ALLOWED_IMAGE_ACCEPT } from '@shared/upload'
+
 import {
   OPACITY_DISABLED_SOFT,
   SOCIALS_ANGLE_OPTIONS,
@@ -156,9 +158,7 @@ export const SocialsInputForm: FC<Props> = ({ socials }) => {
         </select>
       </div>
 
-      <div
-        style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}
-      >
+      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
         <div>
           <label style={LABEL_STYLE}>Toon</label>
           <select
@@ -300,7 +300,7 @@ export const SocialsInputForm: FC<Props> = ({ socials }) => {
             SVG, PNG, JPG · automatisch geknipt per platform
           </div>
           <input
-            accept="image/*"
+            accept={ALLOWED_IMAGE_ACCEPT}
             multiple
             onChange={event => {
               socials.addIllustrations(event.target.files)
@@ -451,7 +451,8 @@ export const SocialsInputForm: FC<Props> = ({ socials }) => {
             fontWeight: 600,
             gap: 8,
             justifyContent: 'center',
-            opacity: socials.isExporting || anyLoading ? OPACITY_DISABLED_SOFT : 1,
+            opacity:
+              socials.isExporting || anyLoading ? OPACITY_DISABLED_SOFT : 1,
             padding: '13px 18px',
             width: '100%',
           }}

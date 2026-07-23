@@ -17,6 +17,10 @@ export const GAMMA_STATUS_QUERY_KEY = 'gamma-status'
 export const PPTX_MIME =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 
+// PDF MIME — the vault write's fileType for the fixed-template flow (#65: all
+// documents become non-editable PDF, injected with the app's own photos/charts).
+export const PDF_MIME = 'application/pdf'
+
 // Fixed colofon/disclaimer embedded in every generated document
 // (osago-bundle.js OSAGO_COLOFON_TEKST :19566-19570). Lives here (not in a
 // feature) because both prompt builders use it — a feature-to-feature import

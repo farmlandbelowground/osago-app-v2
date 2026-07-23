@@ -78,6 +78,15 @@ const eslintConfig = defineConfig([
       'padding-line-between-statements': 'off',
     },
   },
+  {
+    // The server-side Gamma PDF-injection pipeline: low-level SVG geometry and
+    // pdf.js/pdf-lib measurement math where inline numeric layout literals are
+    // intrinsic (like a constants file, and ported verbatim from legacy #65/#70).
+    files: ['src/shared/gamma/inject/**/*.ts'],
+    rules: {
+      'no-magic-numbers': 'off',
+    },
+  },
   // Disable ESLint rules that conflict with Prettier. Keep this last.
   prettier,
   // Override default ignores of eslint-config-next.

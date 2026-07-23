@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { DASHBOARD_PATH } from '@features/auth'
 import { getCompany } from '@features/company/queries'
+import { DOCUMENT_PREFIXES } from '@features/documents'
 import { getSubscription } from '@features/subscriptions/queries'
 import {
   ADMIN_RESET_CONFIG,
@@ -16,6 +17,11 @@ import { legacyApiFetch } from '@shared/api/legacyApiFetch'
 import { requireImpersonation, requireRole } from '@shared/auth/guards'
 import { requireSession } from '@shared/auth/session'
 import { sendTemplatedEmail } from '@shared/email'
+import {
+  PDF_MIME,
+  type GammaGenerateOptions,
+  type GammaPlacementPlan,
+} from '@shared/gamma'
 import { getServerClient } from '@shared/supabase/server'
 
 import { APP_CONFIG_DCF_ADMIN_DEFAULTS_KEY } from './constants/dcf'
@@ -35,12 +41,16 @@ import {
   MULTIPLE_MAX,
   MULTIPLE_MIN,
 } from './constants/valuationAdmin'
+import { TAKE5_THEME_ID } from './constants/valuationDoc'
 import {
   VALUE_DRIVERS,
   VD_PERCENTAGE_SLIDER_STEP,
 } from './constants/valueDrivers'
 import { buildReportAiPrompt } from './lib/buildReportAiPrompt'
-import { buildValuationGammaPrompt } from './lib/buildValuationGammaPrompt'
+import {
+  buildValuationGammaDoc,
+  type ValuationGammaOpts,
+} from './lib/buildValuationGammaDoc'
 import { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
 import {
   computeHeuristicValuation,
@@ -50,7 +60,7 @@ import {
 import {
   getCompanyValuationFields,
   getFinancials,
-  getValuationReportGammaInput,
+  getGammaValuationData,
   getValuationRecord,
   isValuationMade,
   resolveDisplayCompanyData,
@@ -612,18 +622,46 @@ export const composeReportText = async (
   return runAiCompose({ maxTokens, model, prompt })
 }
 
-// Ports the pre-flight + prompt build of generateValuationViaGamma
-// (osago-bundle.js:19913-19938). The valuation must be made first; the shared
-// Gamma flow (client) then runs the generation with variant 'valuation'.
-export const prepareValuationReportGamma = async (): Promise<
-  ApiResult<{
-    description: string
-    fileName: string
-    inputText: string
-    numCards: number
-  }>
-> => {
-  const session = await requireSession()
+// The customer report (osago, DCF follows the toggle) + the two medewerker Take 5
+// variants ("Rapport T5" = beknopt, "Rapport T5 uitgebreid" = full).
+export type ValuationReportVariant =
+  'osago' | 'take5-beknopt' | 'take5-uitgebreid'
+
+export interface PreparedValuationGamma {
+  description: string
+  fileName: string
+  fileType: string
+  inputText: string
+  numCards: number
+  options: GammaGenerateOptions
+  placementPlan: GammaPlacementPlan
+}
+
+const VALUATION_REPORT_OPTS: Record<
+  ValuationReportVariant,
+  ValuationGammaOpts
+> = {
+  osago: { beknopt: false, merk: 'osago' },
+  'take5-beknopt': { beknopt: true, merk: 'take5' },
+  'take5-uitgebreid': { beknopt: false, merk: 'take5' },
+}
+
+const VALUATION_REPORT_NOUN: Record<ValuationReportVariant, string> = {
+  osago: 'Waarderingsrapport',
+  'take5-beknopt': 'Indicatief waarderingsrapport',
+  'take5-uitgebreid': 'Uitgebreid waarderingsrapport',
+}
+
+// Ports the pre-flight + build of generateValuationViaGamma (osago-bundle.js
+// #65/#70). The valuation must be made first; the shared Gamma flow (client) then
+// runs the generation with variant 'valuation', exportAs 'pdf', and our gauges +
+// report photo injected server-side. Take 5 variants are medewerker-only.
+export const prepareValuationReportGamma = async (
+  variant: ValuationReportVariant = 'osago',
+): Promise<ApiResult<PreparedValuationGamma>> => {
+  // Take 5 reports are only for an impersonating Osago employee.
+  const session =
+    variant === 'osago' ? await requireSession() : await requireImpersonation()
   const userId = session.user.id
 
   const { result } = await getValuationRecord(userId)
@@ -635,28 +673,56 @@ export const prepareValuationReportGamma = async (): Promise<
     }
   }
 
-  const input = await getValuationReportGammaInput(userId)
-  if (!input) {
+  const data = await getGammaValuationData(userId)
+  if (!data) {
     return {
       data: null,
       error: 'Onvoldoende gegevens om het rapport te genereren.',
     }
   }
 
-  const built = buildValuationGammaPrompt(input)
+  const opts = VALUATION_REPORT_OPTS[variant]
+  let built
+  try {
+    built = buildValuationGammaDoc(data, opts, new Date().getFullYear())
+  } catch (err) {
+    // A build failure must never look like a dead button (spec §13.7).
+    console.error('[Waarderingsrapport] opbouwen mislukt:', err)
+    return {
+      data: null,
+      error:
+        'Rapport opstellen mislukt: ' +
+        (err instanceof Error ? err.message : 'onbekende fout'),
+    }
+  }
+
   const stamp = new Date().toLocaleDateString('nl-NL', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
   })
+  const noun = VALUATION_REPORT_NOUN[variant]
+  const nameSuffix = data.companyName ? ' ' + data.companyName.trim() : ''
 
   return {
     data: {
-      description:
-        'Indicatief waarderingsrapport — bewerkbaar PowerPoint-bestand, controleer en pas aan waar nodig.',
-      fileName: `Waarderingsrapport ${stamp}.pptx`,
-      inputText: built.text,
-      numCards: built.slideCount,
+      description: `${noun} — PDF. Wijzigen? Pas de velden in de app aan en genereer opnieuw.`,
+      fileName: `${noun}${nameSuffix} ${stamp}.pdf`,
+      fileType: PDF_MIME,
+      inputText: built.inputText,
+      numCards: built.numCards,
+      options: {
+        cardSplit: 'inputTextBreaks',
+        exportAs: 'pdf',
+        fixedTemplate: true,
+        imageSource: 'noImages',
+        ...(opts.merk === 'take5' ? { themeId: TAKE5_THEME_ID } : {}),
+      },
+      placementPlan: {
+        components: built.components,
+        photos: built.photos,
+        ...(built.pageBg ? { pageBg: built.pageBg } : {}),
+      },
     },
     error: null,
   }
@@ -961,36 +1027,50 @@ export const resetValuationByAdmin = async (
 }
 
 // Ports resetValuationPdfByAdmin (ADMIN_RESET_CONFIG.valuationPdf): removes the
-// "Waarderingsrapport " vault documents (Storage + row) + email + optional
-// invoice. Runs under the impersonated customer's own RLS.
+// valuation-report vault documents (Storage + row) + email + optional invoice.
+// Catches the Osago report ("Waarderingsrapport …") and the Take 5 variants
+// ("Indicatief/Uitgebreid waarderingsrapport …") (#65). Skips the email + charge
+// when nothing matched (#65 no-op guard). Runs under the impersonated customer.
 export const resetValuationPdfByAdmin = async (
   withInvoice: boolean,
-): Promise<{ invoiceError: string | null }> => {
+): Promise<{ invoiceError: string | null; nothingRemoved?: boolean }> => {
   const session = await requireImpersonation()
   const supabase = await getServerClient()
 
   const { data: docs } = await supabase
     .from('documents')
-    .select('id, file_path')
+    .select('id, file_name, file_path')
     .eq('user_id', session.user.id)
-    .ilike('file_name', 'Waarderingsrapport%')
 
-  if (docs && docs.length > 0) {
-    const paths = docs
-      .map(doc => doc.file_path)
-      .filter((path): path is string => Boolean(path))
+  const prefixes = [
+    DOCUMENT_PREFIXES.valuationReport,
+    DOCUMENT_PREFIXES.valuationReportTake5Beknopt,
+    DOCUMENT_PREFIXES.valuationReportTake5Uitgebreid,
+  ]
+  const matches = (docs ?? []).filter(
+    (doc: { file_name: string | null }) =>
+      typeof doc.file_name === 'string' &&
+      prefixes.some(prefix => doc.file_name?.startsWith(prefix)),
+  )
 
-    if (paths.length > 0) {
-      await supabase.storage.from('osago-documents').remove(paths)
-    }
-    await supabase
-      .from('documents')
-      .delete()
-      .in(
-        'id',
-        docs.map(doc => doc.id),
-      )
+  if (matches.length === 0) {
+    return { invoiceError: null, nothingRemoved: true }
   }
+
+  const paths = matches
+    .map((doc: { file_path: string | null }) => doc.file_path)
+    .filter((path): path is string => Boolean(path))
+
+  if (paths.length > 0) {
+    await supabase.storage.from('osago-documents').remove(paths)
+  }
+  await supabase
+    .from('documents')
+    .delete()
+    .in(
+      'id',
+      matches.map((doc: { id: string }) => doc.id),
+    )
 
   await sendTemplatedEmail('admin_reset_notice', session.user.email ?? '', {
     achternaam: session.lastName ?? '',

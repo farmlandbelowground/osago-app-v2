@@ -70,7 +70,9 @@ export const useGammaGeneration: UseGammaGeneration = () => {
     const result = await finalizeGammaDocument({
       description: input.description,
       fileName: input.fileName,
+      fileType: input.fileType,
       generationId,
+      placementPlan: input.placementPlan,
     })
     if (result.error !== null) {
       setFinalizeError(result.error)
@@ -121,6 +123,7 @@ export const useGammaGeneration: UseGammaGeneration = () => {
     const result = await startGammaGeneration({
       inputText: input.inputText,
       numCards: input.numCards,
+      options: input.options,
       variant: input.variant,
     })
 

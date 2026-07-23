@@ -25,7 +25,18 @@ export const AdminResetButton: FC<Props> = ({
     setIsPending(true)
 
     try {
-      const { invoiceError } = await resetAction(withInvoice)
+      const { invoiceError, nothingRemoved } = await resetAction(withInvoice)
+
+      // No-op guard (#65): nothing matched → nothing was emailed or charged.
+      if (nothingRemoved) {
+        showToast(
+          'Er stond geen bijbehorend bestand in de Documentenkluis. Er is niets verwijderd en niets gefactureerd.',
+          'error',
+        )
+        setIsOpen(false)
+        router.refresh()
+        return
+      }
 
       if (withInvoice && invoiceError) {
         showToast(

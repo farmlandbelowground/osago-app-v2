@@ -3,13 +3,18 @@
 import Image from 'next/image'
 import { useState, type ChangeEvent, type FC } from 'react'
 
+import {
+  ALLOWED_IMAGE_ACCEPT,
+  ALLOWED_IMAGE_LABEL,
+  isAllowedImageFile,
+} from '@shared/upload'
+
 import { removeAccountPhoto, updateAccountPhoto } from '../../actions'
 import {
   ACCOUNT_AVATAR_INITIALS_FONT_SIZE_PX,
   ACCOUNT_PHOTO_MAX_SIZE_BYTES,
   ACCOUNT_PHOTO_MAX_SIZE_MB,
   ACCOUNT_PHOTO_PREVIEW_SIZE_PX,
-  ALLOWED_ACCOUNT_PHOTO_MIME_TYPES,
 } from '../../constants'
 import { formatMemberSince } from '../../lib/formatMemberSince'
 import { type Props } from './types'
@@ -18,9 +23,6 @@ const buildInitials = (
   firstName: string | null,
   lastName: string | null,
 ): string => `${firstName?.[0] ?? '?'}${lastName?.[0] ?? '?'}`.toUpperCase()
-
-const isAllowedPhotoMimeType = (mimeType: string): boolean =>
-  (ALLOWED_ACCOUNT_PHOTO_MIME_TYPES as readonly string[]).includes(mimeType)
 
 const readAsDataUrl = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -52,8 +54,8 @@ export const AccountPhotoUpload: FC<Props> = ({
       return
     }
 
-    if (!isAllowedPhotoMimeType(file.type)) {
-      setError('Selecteer een afbeelding (PNG, JPG of WebP).')
+    if (!isAllowedImageFile(file)) {
+      setError(`Selecteer een afbeelding (${ALLOWED_IMAGE_LABEL}).`)
       return
     }
 
@@ -134,7 +136,7 @@ export const AccountPhotoUpload: FC<Props> = ({
         </div>
       </label>
       <input
-        accept={ALLOWED_ACCOUNT_PHOTO_MIME_TYPES.join(',')}
+        accept={ALLOWED_IMAGE_ACCEPT}
         disabled={isPending}
         id="account-photo-input"
         onChange={event => void onFileChange(event)}
@@ -142,7 +144,10 @@ export const AccountPhotoUpload: FC<Props> = ({
         type="file"
       />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="serif" style={{ fontSize: 22, fontWeight: 500, letterSpacing: '-0.01em' }}>
+        <div
+          className="serif"
+          style={{ fontSize: 22, fontWeight: 500, letterSpacing: '-0.01em' }}
+        >
           {firstName} {lastName}
         </div>
         <div className="text-sm text-muted">{email}</div>
@@ -172,7 +177,10 @@ export const AccountPhotoUpload: FC<Props> = ({
           )}
         </div>
         {error && (
-          <p className="text-xs" style={{ color: 'var(--danger)', marginTop: 4 }}>
+          <p
+            className="text-xs"
+            style={{ color: 'var(--danger)', marginTop: 4 }}
+          >
             {error}
           </p>
         )}

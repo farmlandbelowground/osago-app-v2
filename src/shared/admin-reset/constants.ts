@@ -33,8 +33,7 @@ export const ADMIN_RESET_CONFIG: Record<AdminResetType, AdminResetConfigEntry> =
       invoiceLine: 'Nieuwe versie waarderingsrapport',
       message:
         'Het waarderingsrapport-PDF wordt uit de Documentenkluis verwijderd. De klant kan vervolgens opnieuw "Maak waarderingsrapport" klikken.',
-      successToast:
-        'Waarderingsrapport-PDF verwijderd uit de Documentenkluis.',
+      successToast: 'Waarderingsrapport-PDF verwijderd uit de Documentenkluis.',
       title: 'Waarderingsrapport-PDF resetten',
     },
     verbeterrapport: {

@@ -7,8 +7,6 @@ export interface ReportSectionDefinition {
   title: string
 }
 
-export const OPTIONAL_BADGE_LABEL = 'Optioneel'
-
 export const REPORT_SECTIONS: readonly ReportSectionDefinition[] = [
   {
     field: 'foreword',

@@ -4,6 +4,7 @@ export {
   GAMMA_GENERIC_ERROR,
   GAMMA_TIMEOUT_ERROR,
   OSAGO_COLOFON_TEKST,
+  PDF_MIME,
   PPTX_MIME,
 } from './constants'
 export { finalizeGammaDocument, startGammaGeneration } from './actions'
@@ -20,8 +21,17 @@ export {
   type Result as GammaGenerationState,
 } from './useGammaGeneration'
 export {
+  type GammaComponentPlacement,
+  type GammaComponentSpec,
+  type GammaGaugeSpec,
+  type GammaGenerateOptions,
   type GammaPhase,
+  type GammaPhotoPlacement,
+  type GammaPhotoSource,
+  type GammaPlacementPlan,
+  type GammaRect,
   type GammaRunInput,
   type GammaStatus,
+  type GammaValueDriversSpec,
   type GammaVariant,
 } from './types'

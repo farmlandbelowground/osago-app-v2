@@ -72,8 +72,11 @@ export const ValuationReportGenerateActions: FC<Props> = ({ made }) => {
     await gamma.run({
       description: prepared.data.description,
       fileName: prepared.data.fileName,
+      fileType: prepared.data.fileType,
       inputText: prepared.data.inputText,
       numCards: prepared.data.numCards,
+      options: prepared.data.options,
+      placementPlan: prepared.data.placementPlan,
       variant: 'valuation',
     })
   }
@@ -109,11 +112,11 @@ export const ValuationReportGenerateActions: FC<Props> = ({ made }) => {
           busyOverride={isPreparing}
           doneDescription={
             <>
-              Het rapport staat als{' '}
-              <strong>bewerkbaar PowerPoint-bestand</strong> (.pptx) in jouw{' '}
-              <strong>Documentenkluis</strong>. Download het, controleer de
-              inhoud en pas het aan waar nodig — jij bent zelf verantwoordelijk
-              voor het gebruik ervan.
+              Het rapport staat als <strong>PDF</strong> in jouw{' '}
+              <strong>Documentenkluis</strong>. Controleer de inhoud; wil je
+              iets wijzigen, pas dan de velden in de app aan en genereer het
+              rapport opnieuw — jij bent zelf verantwoordelijk voor het gebruik
+              ervan.
             </>
           }
           gamma={gamma}

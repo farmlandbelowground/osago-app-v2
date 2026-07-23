@@ -6,6 +6,11 @@ import { PasswordChecklist } from '@features/auth/components/PasswordChecklist'
 import { formatFileSize } from '@features/documents/lib/formatFileSize'
 import { ModalShell } from '@shared/components/ModalShell'
 import { useToastStore } from '@shared/store/toast'
+import {
+  ALLOWED_IMAGE_ACCEPT,
+  ALLOWED_IMAGE_LABEL,
+  isAllowedImageFile,
+} from '@shared/upload'
 
 import {
   PASSWORD_MIN_LENGTH,
@@ -48,8 +53,11 @@ export const TeamMemberModal: FC<Props> = ({
     if (!file) {
       return
     }
-    if (!file.type.startsWith('image/')) {
-      showToast('Selecteer een afbeelding.', 'error')
+    if (!isAllowedImageFile(file)) {
+      showToast(
+        `Niet-ondersteund formaat. Gebruik ${ALLOWED_IMAGE_LABEL}.`,
+        'error',
+      )
       event.target.value = ''
       return
     }
@@ -119,7 +127,11 @@ export const TeamMemberModal: FC<Props> = ({
           )}
         </div>
         <div className="photo-upload-actions">
-          <input accept="image/*" onChange={onPhotoChange} type="file" />
+          <input
+            accept={ALLOWED_IMAGE_ACCEPT}
+            onChange={onPhotoChange}
+            type="file"
+          />
           {photo && (
             <button
               className="btn btn-ghost btn-sm"
