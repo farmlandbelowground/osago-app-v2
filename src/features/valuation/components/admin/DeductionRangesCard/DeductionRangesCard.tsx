@@ -15,7 +15,8 @@ interface EditableRow {
   to: number | null
 }
 
-const toDeductionText = (value: number): string => String(value).replace('.', ',')
+const toDeductionText = (value: number): string =>
+  String(value).replace('.', ',')
 
 const parseInteger = (value: string): number | null => {
   const trimmed = value.trim()
@@ -183,8 +184,8 @@ export const DeductionRangesCard: FC<Props> = ({
               padding: '14px 0',
             }}
           >
-            Nog geen aftrek-rijen toegevoegd. Klik op &quot;+ Rij toevoegen&quot;
-            om te beginnen.
+            Nog geen aftrek-rijen toegevoegd. Klik op &quot;+ Rij
+            toevoegen&quot; om te beginnen.
           </div>
         )}
         {rows.map((row, index) => (

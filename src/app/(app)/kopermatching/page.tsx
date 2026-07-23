@@ -77,7 +77,10 @@ export default async function KopermatchingPage() {
       getCandidateLeads(userId, 'auto_identified'),
       getCandidateLeads(userId, 'osago_validated'),
       getCandidateLeads(userId, 'manual'),
-      documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.memorandum]),
+      documentExistsByPrefix(userId, [
+        DOCUMENT_PREFIXES.memorandum,
+        DOCUMENT_PREFIXES.informationMemorandum,
+      ]),
       documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
     ])
 

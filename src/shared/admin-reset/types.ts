@@ -1,9 +1,5 @@
 export type AdminResetType =
-  | 'anoniem'
-  | 'memorandum'
-  | 'valuation'
-  | 'valuationPdf'
-  | 'verbeterrapport'
+  'anoniem' | 'memorandum' | 'valuation' | 'valuationPdf' | 'verbeterrapport'
 
 export interface AdminResetConfigEntry {
   invoiceLine: string
@@ -14,9 +10,13 @@ export interface AdminResetConfigEntry {
 
 export type CreateInvoiceResult = { error: string | null }
 
-// A reset always "succeeds" (legacy swallows apply errors); the only reportable
-// outcome is whether the optional €199 invoice failed.
-export type AdminResetResult = { invoiceError: string | null }
+// A reset always "succeeds" (legacy swallows apply errors). Reportable outcomes:
+// whether the optional €199 invoice failed, and — for document resets — whether
+// nothing matched (then no email is sent and nothing is charged; #65 no-op guard).
+export type AdminResetResult = {
+  invoiceError: string | null
+  nothingRemoved?: boolean
+}
 
 export type AdminResetAction = (
   withInvoice: boolean,

@@ -30,7 +30,10 @@ export default async function VerkoopprocesPage() {
   const [leads, company, memoDone, anonDone] = await Promise.all([
     getPipelineLeads(userId),
     getCompany(userId),
-    documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.memorandum]),
+    documentExistsByPrefix(userId, [
+      DOCUMENT_PREFIXES.memorandum,
+      DOCUMENT_PREFIXES.informationMemorandum,
+    ]),
     documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
   ])
 

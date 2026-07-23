@@ -70,8 +70,11 @@ export const GenerateDocumentModal: FC<Props> = ({
     await gamma.run({
       description: prepared.data.description,
       fileName: prepared.data.fileName,
+      fileType: prepared.data.fileType,
       inputText: prepared.data.inputText,
       numCards: prepared.data.numCards,
+      options: prepared.data.options,
+      placementPlan: prepared.data.placementPlan,
       variant,
     })
   }
@@ -82,11 +85,10 @@ export const GenerateDocumentModal: FC<Props> = ({
         busyOverride={isPreparing}
         doneDescription={
           <>
-            Het document staat als{' '}
-            <strong>bewerkbaar PowerPoint-bestand</strong> (.pptx) in jouw{' '}
-            <strong>Documentenkluis</strong>. Download het, controleer de inhoud
-            en pas het aan waar nodig — jij voert de verkoop zelf en bepaalt wat
-            je deelt.
+            Het document staat als <strong>PDF</strong> in jouw{' '}
+            <strong>Documentenkluis</strong>. Controleer de inhoud; wil je iets
+            wijzigen, pas dan de velden in de app aan en genereer het document
+            opnieuw.
           </>
         }
         gamma={gamma}

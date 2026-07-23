@@ -344,7 +344,10 @@ export const DcfAssumptionsCard: FC<Props> = ({
     if (!window.confirm('Reset Uitgangspunten naar defaults?')) {
       return
     }
-    onChange({ ...dcfInputs, uitgangspunten: { ...DCF_UITGANGSPUNTEN_DEFAULT } })
+    onChange({
+      ...dcfInputs,
+      uitgangspunten: { ...DCF_UITGANGSPUNTEN_DEFAULT },
+    })
   }
 
   const resetWacc = (): void => {
@@ -483,7 +486,9 @@ export const DcfAssumptionsCard: FC<Props> = ({
                 value={formatDcfPct2(computeResult.kostenvoet)}
               />
             </div>
-            <div style={DEC_STYLE}>{formatDcfDec4(computeResult.kostenvoet)}</div>
+            <div style={DEC_STYLE}>
+              {formatDcfDec4(computeResult.kostenvoet)}
+            </div>
           </div>
 
           <div style={GRID_ROW}>
@@ -625,7 +630,10 @@ export const DcfAssumptionsCard: FC<Props> = ({
                       }}
                     >
                       {row.label}{' '}
-                      <InfoTip label="Marktconforme parameter" tip={MARKT_TIP} />
+                      <InfoTip
+                        label="Marktconforme parameter"
+                        tip={MARKT_TIP}
+                      />
                     </span>
                   </td>
                   <td style={PILL_TD}>

@@ -19,7 +19,10 @@ const toPercentString = (decimal: number): string =>
     : ''
 
 const parsePercentToDecimal = (raw: string): number | null => {
-  const normalized = raw.replace(',', '.').replace(/[^\d.-]/g, '').trim()
+  const normalized = raw
+    .replace(',', '.')
+    .replace(/[^\d.-]/g, '')
+    .trim()
   const value = parseFloat(normalized)
 
   if (normalized === '' || !Number.isFinite(value)) {

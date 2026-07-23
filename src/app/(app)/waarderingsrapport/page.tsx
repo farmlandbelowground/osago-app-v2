@@ -1,4 +1,3 @@
-import { getCompany } from '@features/company/queries'
 import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import {
   PhotoSection,
@@ -9,21 +8,12 @@ import {
   ValuationReportEditor,
   ValuationReportEmployeeTools,
   ValuationReportPrereqGate,
-  buildHistoryWeightOverrides,
-  computeIndicatieveOndernemingswaarde,
   computeValuationProgress,
   getCompanyValuationFields,
   getFinancials,
-  getShareholderValueAdjustment,
-  getSmallEbitdaDeductions,
-  getSmallOrgDeductions,
-  getValuationMultiples,
   getValuationRecord,
   isValuationMade,
-  resolveDisplayCompanyData,
-  type T5DeckData,
 } from '@features/valuation'
-import { computeValueDriverSectionScores } from '@features/valuation/lib/computeValueDriverSectionScores'
 import { requireSession } from '@shared/auth/session'
 
 const REPORT_PHOTO_TAB_ID = 'waarderingsrapport'
@@ -33,14 +23,27 @@ export default async function WaarderingsrapportPage() {
   const userId = session.user.id
   const isMedewerker = Boolean(session.impersonatedBy)
 
-  const [fields, { result }, financials, presentation, hasValuationPdfInVault] =
-    await Promise.all([
-      getCompanyValuationFields(userId),
-      getValuationRecord(userId),
-      getFinancials(userId),
-      getPresentationData(userId),
-      documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.valuationReport]),
-    ])
+  const [
+    fields,
+    { result },
+    financials,
+    presentation,
+    hasValuationPdfInVault,
+    hasAnyReportPdfInVault,
+  ] = await Promise.all([
+    getCompanyValuationFields(userId),
+    getValuationRecord(userId),
+    getFinancials(userId),
+    getPresentationData(userId),
+    // Customer report ("Waarderingsrapport …") drives the customer button state…
+    documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.valuationReport]),
+    // …while the medewerker reset also covers the Take 5 variants (#65).
+    documentExistsByPrefix(userId, [
+      DOCUMENT_PREFIXES.valuationReport,
+      DOCUMENT_PREFIXES.valuationReportTake5Beknopt,
+      DOCUMENT_PREFIXES.valuationReportTake5Uitgebreid,
+    ]),
+  ])
 
   const progress = computeValuationProgress({
     financials,
@@ -55,76 +58,6 @@ export default async function WaarderingsrapportPage() {
   // (osago-bundle.js:15735).
   const gated =
     (!progress.valueDriversComplete || !progress.valuationMade) && !isMedewerker
-
-  // Build the Take 5 deck data only for an impersonating employee.
-  let deckData: T5DeckData | null = null
-  if (isMedewerker && fields) {
-    const resolved = await resolveDisplayCompanyData(userId)
-
-    if (resolved) {
-      const [
-        valuationMultiples,
-        smallEbitdaDeductions,
-        smallOrgDeductions,
-        company,
-        verrekening,
-      ] = await Promise.all([
-        getValuationMultiples(),
-        getSmallEbitdaDeductions(),
-        getSmallOrgDeductions(),
-        getCompany(userId),
-        getShareholderValueAdjustment(userId),
-      ])
-
-      const indicative = computeIndicatieveOndernemingswaarde({
-        employees: resolved.employees,
-        fin: resolved.financials,
-        historyWeightOverrides: buildHistoryWeightOverrides(
-          resolved.financials,
-        ),
-        lastClosedYear: resolved.lastClosedYear,
-        nonLegalEntityConfig: resolved.nonLegalEntityConfig,
-        normalizations: resolved.normalizations,
-        sector: resolved.sector,
-        smallEbitdaDeductions,
-        smallOrgDeductions,
-        valuationMultiples,
-        valuationSettings: resolved.valuationSettings,
-      })
-
-      const enterprise = indicative.value ?? 0
-      const shareholder = enterprise + verrekening
-
-      deckData = {
-        companyName: company?.name ?? '',
-        // NOTE: the shareholder breakdown split (werkkapitaal vs debt/cash-free)
-        // is approximated here — only the total adjustment is exposed by
-        // getShareholderValueAdjustment; the per-component split needs the
-        // breakdown helper. The total (and thus the deck's aandeelhouderswaarde)
-        // is exact; the split line is indicative. Flagged for follow-up.
-        dcfree: 0,
-        enterprise,
-        financials: resolved.financials,
-        report: {
-          closing: fields.valuationReport?.closing ?? '',
-          financialsNote: fields.valuationReport?.financialsNote ?? '',
-          foreword: fields.valuationReport?.foreword ?? '',
-          valueDriversNote: fields.valuationReport?.valueDriversNote ?? '',
-        },
-        sector: resolved.sector ?? '',
-        shareholder,
-        useShareholder: shareholder >= enterprise,
-        userName: [session.firstName, session.lastName]
-          .filter(Boolean)
-          .join(' '),
-        valuationBand: resolved.valuationBand,
-        valueDriverScores: computeValueDriverSectionScores(
-          resolved.valueDriverAnswers,
-        ),
-        werkkap: verrekening,
-      }
-    }
-  }
 
   return (
     <main className="main">
@@ -147,10 +80,9 @@ export default async function WaarderingsrapportPage() {
           headerActions={
             <>
               <ValuationReportGenerateActions made={hasValuationPdfInVault} />
-              {isMedewerker && deckData && progress.valuationMade && (
+              {isMedewerker && progress.valuationMade && (
                 <ValuationReportEmployeeTools
-                  deckData={deckData}
-                  hasPdfInVault={hasValuationPdfInVault}
+                  hasPdfInVault={hasAnyReportPdfInVault}
                 />
               )}
             </>

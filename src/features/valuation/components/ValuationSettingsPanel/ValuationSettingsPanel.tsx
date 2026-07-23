@@ -86,9 +86,9 @@ export const ValuationSettingsPanel: FC<Props> = ({ initialSettings }) => {
             padding: '14px 16px',
           }}
         >
-          <strong style={{ color: '#92400E' }}>Let op:</strong> Door onderstaande
-          instellingen aan te passen, pas je ook de manier waarop de
-          waardebepaling gemaakt wordt aan. Standaard passen we de juiste
+          <strong style={{ color: '#92400E' }}>Let op:</strong> Door
+          onderstaande instellingen aan te passen, pas je ook de manier waarop
+          de waardebepaling gemaakt wordt aan. Standaard passen we de juiste
           instellingen voor jouw bedrijf toe. Wanneer je hier aanpassingen maakt
           die voor jouw situatie niet passend zijn, kan de waardering foutief
           zijn.
@@ -140,7 +140,9 @@ export const ValuationSettingsPanel: FC<Props> = ({ initialSettings }) => {
             <label className="toggle-switch" style={{ margin: 0 }}>
               <input
                 checked={settings.dcfApplyEnabled}
-                onChange={event => onDcfApplyEnabledChange(event.target.checked)}
+                onChange={event =>
+                  onDcfApplyEnabledChange(event.target.checked)
+                }
                 type="checkbox"
               />
               <span className="toggle-track" />

@@ -120,15 +120,15 @@ export const ValuationReviewUpsellModal: FC<Props> = ({ isOpen, onClose }) => {
             <strong style={{ color: '#92400E' }}>
               Waardebepaling Premium-feature:
             </strong>{' '}
-            bij het Waardebepaling Premium-pakket controleert een Osago-medewerker
-            jouw indicatieve waardebepaling vóór &apos;ie wordt vastgelegd. Dat
-            geeft extra zekerheid dat de uitkomst goed onderbouwd is voor gebruik
-            in je verkooptraject.
+            bij het Waardebepaling Premium-pakket controleert een
+            Osago-medewerker jouw indicatieve waardebepaling vóór &apos;ie wordt
+            vastgelegd. Dat geeft extra zekerheid dat de uitkomst goed
+            onderbouwd is voor gebruik in je verkooptraject.
           </div>
           <p style={{ fontSize: '14px', lineHeight: 1.6, margin: '0 0 12px' }}>
             In jouw huidige pakket kun je deze losse controle alsnog aanvragen —
-            een Osago-medewerker neemt binnen één werkdag contact op om het tarief
-            en de planning te bespreken.
+            een Osago-medewerker neemt binnen één werkdag contact op om het
+            tarief en de planning te bespreken.
           </p>
           <p className="text-sm text-muted" style={{ margin: 0 }}>
             Je kunt overigens nu al direct de waardering vastleggen via

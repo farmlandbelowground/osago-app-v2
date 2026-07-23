@@ -16,6 +16,7 @@ export {
   getDcfAdminDefaults,
   getEstimatedValue,
   getFinancials,
+  getGammaValuationData,
   getSmallEbitdaDeductions,
   getSmallOrgDeductions,
   getValuationMultiples,
@@ -23,8 +24,12 @@ export {
   isValuationMade,
   resolveDcfNewInputs,
   resolveDisplayCompanyData,
+  type GammaDcfDetail,
+  type GammaValuationData,
   type ResolvedCompanyData,
 } from './queries'
+
+export { buildFinancialsTableMd } from './lib/buildFinancialsTableMd'
 
 export {
   getShareholderValueAdjustment,

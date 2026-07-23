@@ -40,7 +40,10 @@ export const getDashboardTodos = async (
     getCompanyValuationFields(userId),
     getValuationRecord(userId),
     documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.valuationReport]),
-    documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.memorandum]),
+    documentExistsByPrefix(userId, [
+      DOCUMENT_PREFIXES.memorandum,
+      DOCUMENT_PREFIXES.informationMemorandum,
+    ]),
     documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
     getPresentationData(userId),
     getCandidateLeads(userId, 'auto_identified'),

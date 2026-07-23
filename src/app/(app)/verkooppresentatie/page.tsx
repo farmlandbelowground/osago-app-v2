@@ -44,7 +44,10 @@ export default async function VerkooppresentatiePage() {
       getCompany(userId),
       getFinancials(userId),
       getPresentationData(userId),
-      documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.memorandum]),
+      documentExistsByPrefix(userId, [
+        DOCUMENT_PREFIXES.memorandum,
+        DOCUMENT_PREFIXES.informationMemorandum,
+      ]),
       documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
     ])
 

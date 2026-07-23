@@ -3,17 +3,16 @@
 import Image from 'next/image'
 import { useState, type ChangeEvent, type FC } from 'react'
 
+import {
+  ALLOWED_IMAGE_ACCEPT,
+  ALLOWED_IMAGE_LABEL,
+  isAllowedImageFile,
+} from '@shared/upload'
+
 import { removeCompanyLogo, updateCompanyLogo } from '../../actions'
 import { ImagePlaceholderIcon } from '../../assets/icons'
-import {
-  ALLOWED_LOGO_MIME_TYPES,
-  LOGO_PREVIEW_HEIGHT_PX,
-  LOGO_PREVIEW_WIDTH_PX,
-} from '../../constants'
+import { LOGO_PREVIEW_HEIGHT_PX, LOGO_PREVIEW_WIDTH_PX } from '../../constants'
 import { type Props } from './types'
-
-const isAllowedLogoMimeType = (mimeType: string): boolean =>
-  (ALLOWED_LOGO_MIME_TYPES as readonly string[]).includes(mimeType)
 
 const readAsDataUrl = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -37,8 +36,8 @@ export const CompanyLogoUpload: FC<Props> = ({ logo }) => {
       return
     }
 
-    if (!isAllowedLogoMimeType(file.type)) {
-      setError('Selecteer een afbeelding (PNG, JPG, SVG of WebP).')
+    if (!isAllowedImageFile(file)) {
+      setError(`Selecteer een afbeelding (${ALLOWED_IMAGE_LABEL}).`)
       return
     }
 
@@ -55,9 +54,7 @@ export const CompanyLogoUpload: FC<Props> = ({ logo }) => {
 
   const onRemove = async (): Promise<void> => {
     if (
-      !window.confirm(
-        'Weet je zeker dat je het bedrijfslogo wilt verwijderen?',
-      )
+      !window.confirm('Weet je zeker dat je het bedrijfslogo wilt verwijderen?')
     ) {
       return
     }
@@ -92,7 +89,7 @@ export const CompanyLogoUpload: FC<Props> = ({ logo }) => {
 
       <div className="logo-upload-actions">
         <input
-          accept={ALLOWED_LOGO_MIME_TYPES.join(',')}
+          accept={ALLOWED_IMAGE_ACCEPT}
           disabled={isPending}
           onChange={event => void onFileChange(event)}
           type="file"

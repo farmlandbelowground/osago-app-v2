@@ -110,9 +110,9 @@ export const ValuationMultiplesCard: FC<Props> = ({ multiples }) => {
             EBITDA-multiples per sector, gebruikt bij de waardebepaling. Pas een
             waarde aan en klik op <strong>Wijzigingen opslaan</strong>. De{' '}
             <strong>Sectorcorrectie</strong> wordt automatisch afgeleid van de
-            multiple: bij {baseText}x is de correctie 0&nbsp;%; elk multiple-punt
-            eronder geeft +{stepText}&nbsp;%, elk multiple-punt erboven −
-            {stepText}&nbsp;%.
+            multiple: bij {baseText}x is de correctie 0&nbsp;%; elk
+            multiple-punt eronder geeft +{stepText}&nbsp;%, elk multiple-punt
+            erboven −{stepText}&nbsp;%.
           </p>
         </div>
         <button

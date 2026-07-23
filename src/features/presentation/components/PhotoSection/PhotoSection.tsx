@@ -3,6 +3,11 @@
 import { useRef, useState, type CSSProperties, type FC } from 'react'
 
 import { useToastStore } from '@shared/store/toast'
+import {
+  ALLOWED_IMAGE_ACCEPT,
+  ALLOWED_IMAGE_LABEL,
+  isAllowedImageFile,
+} from '@shared/upload'
 
 import { savePresentationPhotos } from '../../actions'
 import {
@@ -72,8 +77,11 @@ export const PhotoSection: FC<Props> = ({ initialPhotos, tabId }) => {
     }
 
     const accepted = files.slice(0, slotsLeft).filter(file => {
-      if (!file.type.startsWith('image/')) {
-        showToast(`"${file.name}" is geen afbeelding.`, 'error')
+      if (!isAllowedImageFile(file)) {
+        showToast(
+          `"${file.name}" heeft een niet-ondersteund formaat. Gebruik ${ALLOWED_IMAGE_LABEL}.`,
+          'error',
+        )
         return false
       }
       if (file.size > PRES_MAX_UPLOAD_BYTES) {
@@ -248,11 +256,11 @@ export const PhotoSection: FC<Props> = ({ initialPhotos, tabId }) => {
 
       <div className="text-xs" style={{ color: 'var(--muted)', marginTop: 8 }}>
         Voeg minimaal één foto toe (verplicht) — een eigen upload of een
-        stockfoto.
+        stockfoto. Toegestane formaten: {ALLOWED_IMAGE_LABEL}.
       </div>
 
       <input
-        accept="image/*"
+        accept={ALLOWED_IMAGE_ACCEPT}
         multiple
         onChange={event => {
           void handleFiles(event.target.files)
