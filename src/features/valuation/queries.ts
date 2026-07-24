@@ -395,9 +395,16 @@ export const resolveDisplayCompanyData = async (
   }
 }
 
-export const getEstimatedValue = async (
+export interface DashboardValuation {
+  high: number
+  low: number
+  useShareholder: boolean
+  value: number
+}
+
+export const getDashboardValuation = async (
   userId: string,
-): Promise<number | null> => {
+): Promise<DashboardValuation | null> => {
   const [
     company,
     fields,
@@ -405,6 +412,7 @@ export const getEstimatedValue = async (
     valuationMultiples,
     smallEbitdaDeductions,
     smallOrgDeductions,
+    { result },
   ] = await Promise.all([
     getCompany(userId),
     getCompanyValuationFields(userId),
@@ -412,9 +420,10 @@ export const getEstimatedValue = async (
     getValuationMultiples(),
     getSmallEbitdaDeductions(),
     getSmallOrgDeductions(),
+    getValuationRecord(userId),
   ])
 
-  if (!company || !fields) {
+  if (!company || !fields || !result) {
     return null
   }
 
@@ -437,21 +446,36 @@ export const getEstimatedValue = async (
     valuationSettings: fields.valuationSettings,
   })
 
-  if (!fields.dcfApplyEnabled) {
-    return indicative.value
+  // The dashboard KPI always uses the sector-multiple enterprise value and
+  // ignores dcfApplyEnabled — unlike /waardebepaling, which swaps to the DCF
+  // card when the toggle is on. The stored dcfValue is only a fallback for a
+  // missing sector match. Adding the DCF branch here would reintroduce the
+  // €mrd-vs-€mln mismatch with legacy's renderDashboard.
+  const enterprise =
+    indicative.value !== null
+      ? indicative.value
+      : Math.round(result.dcfValue ?? 0)
+
+  const adjustment = computeAandeelhouderswaardeVerrekening({
+    financials: fin,
+    lastClosedYear,
+    shareholderValue: fields.shareholderValue,
+  })
+  const shareholder = enterprise + adjustment
+  const useShareholder = shareholder >= enterprise
+  const value = useShareholder ? shareholder : enterprise
+
+  // Band is a ± offset around the value: the customer's saved valuationBand, or
+  // 3,71% of the enterprise value by default (legacy defaultValuationBand).
+  const band =
+    fields.valuationBand ?? Math.ceil(enterprise * VALUATION_BAND_DEFAULT_PCT)
+
+  return {
+    high: value + band,
+    low: value - band,
+    useShareholder,
+    value,
   }
-
-  const adminDefaults = await getDcfAdminDefaults()
-  const sectorMultiple =
-    indicative.sectorMultipleRaw ?? DCF_SECTORCORRECTIE_BASE_MULTIPLE
-  const resolved = resolveDcfNewInputs(
-    fields.dcfNewInputs,
-    adminDefaults,
-    sectorMultiple,
-  )
-  const dcfResult = dcfNewCompute(resolved, fin, fields.normalizations)
-
-  return Math.round(dcfResult.berekening.totalen.totaal)
 }
 
 // Gathers the valuation-report Gamma prompt input the same way /waardebepaling
@@ -619,7 +643,7 @@ export const getGammaValuationData = async (
     resolved.valuationBand ??
     Math.ceil(enterpriseValue * VALUATION_BAND_DEFAULT_PCT)
 
-  // DCF detail only when the DCF methodiek is enabled — mirrors getEstimatedValue.
+  // DCF detail only when the DCF methodiek is enabled (the /waardebepaling card).
   let dcfDetail: GammaDcfDetail | null = null
   let dcfMethode: MethodeToelichtingDcf | null = null
   if (resolved.dcfApplyEnabled) {

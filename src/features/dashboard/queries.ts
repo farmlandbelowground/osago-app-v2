@@ -7,8 +7,9 @@ import { hasWerkruimteAccess } from '@features/subscriptions/lib/hasWerkruimteAc
 import { getSubscription } from '@features/subscriptions/queries'
 import { computeValuationProgress } from '@features/valuation/lib/computeValuationProgress'
 import {
+  type DashboardValuation,
   getCompanyValuationFields,
-  getEstimatedValue as getValuationEstimatedValue,
+  getDashboardValuation as getValuationDashboardValuation,
   getFinancials,
   getValuationRecord,
   isValuationMade,
@@ -93,6 +94,6 @@ export const getDashboardTodos = async (
   })
 }
 
-export const getEstimatedValue = async (
+export const getDashboardValuation = async (
   userId: string,
-): Promise<number | null> => getValuationEstimatedValue(userId)
+): Promise<DashboardValuation | null> => getValuationDashboardValuation(userId)
