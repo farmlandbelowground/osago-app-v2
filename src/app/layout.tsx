@@ -3,6 +3,7 @@ import { Fraunces, Inter } from 'next/font/google'
 import { type ReactNode } from 'react'
 
 import { env } from '@/env'
+import { AppCopyright } from '@shared/components/AppCopyright'
 import { ToastViewport } from '@shared/components/ToastViewport'
 
 import './globals.css'
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: Props) {
       <body>
         {children}
         <ToastViewport />
+        <AppCopyright />
       </body>
     </html>
   )
