@@ -39,7 +39,7 @@ Common MCP-availability failure modes to recognize and report accurately:
 
 ### Stay project-blind during extraction
 
-While extracting, do **not** read the project's Tailwind theme tokens (the `@theme` block in `globals.css`), `src/shared/components/`, `src/shared/assets/icons/`, `src/env.ts`, or any other project source. Loading project-side files during extraction pulls this step into making project-specific decisions (mapping to existing tokens, recommending component reuse) that belong to implementation time, once this document exists as a neutral reference. The only project-side thing to check is that the output directory exists.
+While extracting, do **not** read the project's theme tokens (the CSS custom properties in `globals.css`), `src/shared/components/`, `src/shared/assets/icons/`, `src/env.ts`, or any other project source. Loading project-side files during extraction pulls this step into making project-specific decisions (mapping to existing tokens, recommending component reuse) that belong to implementation time, once this document exists as a neutral reference. The only project-side thing to check is that the output directory exists.
 
 ## Workflow
 

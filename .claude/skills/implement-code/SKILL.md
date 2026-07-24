@@ -1,6 +1,6 @@
 ---
 name: implement-code
-description: Implementation mechanics for writing or changing code in this Next.js / TypeScript codebase — greenfield creation, refactoring, and Figma-derived pages alike. Encodes the non-negotiable stack conventions (RSC vs client, Server Actions, Tailwind via cn(), state, typing, imports) so every change is consistent with the rest of the codebase.
+description: Implementation mechanics for writing or changing code in this Next.js / TypeScript codebase — greenfield creation, refactoring, and Figma-derived pages alike. Encodes the non-negotiable stack conventions (RSC vs client, Server Actions, styling, state, typing, imports) so every change is consistent with the rest of the codebase.
 ---
 
 # Implement Code Skill
@@ -24,7 +24,7 @@ Handles all kinds of work the same way, because the conventions below apply rega
 Every file you write or modify in this stack must satisfy each of these. The referenced rule/pattern is the source of truth; this list is a recognition aid.
 
 1. **`'use client'` boundary decision per component.** Server Component by default; add `'use client'` only when required (hooks, event handlers, browser APIs), and push the boundary as far down the tree as possible. Refs: [rsc-vs-client](../../../rules/rsc-vs-client.md), [page-and-layout](../../../patterns/page-and-layout.md), [component-decomposition](../../../patterns/component-decomposition.md).
-2. **Tailwind via `cn()` — sole styling mechanism.** `cn()` (`clsx` + `tailwind-merge`) for all utility class composition. Inline `style={{}}` only for genuinely dynamic CSS custom property values. Never `useStyles` or `StyleSheet.create` — those are React Native, not this stack. Refs: [styling](../../../rules/styling.md), [styling-tailwind](../../../patterns/styling-tailwind.md).
+2. **Styling.** Inline `style={{}}` only for genuinely dynamic values. Never `useStyles` or `StyleSheet.create` — those are React Native, not this stack.
 3. **Server Actions for mutations.** All mutations go through `'use server'` functions in `features/<name>/actions.ts` — Zod input validation, discriminated-union returns, `revalidatePath()` / `revalidateTag()` after mutations, `redirect()` on success. Refs: [server-actions rule](../../../rules/server-actions.md), [server-actions pattern](../../../patterns/server-actions.md).
 4. **Native `fetch` + Zod for the API boundary.** No Axios, anywhere. Refs: [api](../../../rules/api.md), [queries-in-rsc](../../../patterns/queries-in-rsc.md).
 5. **Per-feature raw Zustand for state.** No wrapper library; `persist` middleware is opt-in only. Ref: [state](../../../rules/state.md).
@@ -41,7 +41,7 @@ Every file you write or modify in this stack must satisfy each of these. The ref
 
 When a change spans multiple files, this ordering avoids referencing things that don't exist yet:
 
-1. Tailwind theme additions (if any) — `globals.css` `@theme` block, before consumers reference the tokens
+1. Global CSS additions (if any) — `globals.css`, before consumers reference the classes
 2. Types (`types.ts` files, including per-hook `types.ts`)
 3. Server Actions (`actions.ts`)
 4. Server-side data-fetching (`queries.ts`)
@@ -79,7 +79,7 @@ Before considering the work done:
 
 Small gaps between what was asked and what you encounter while implementing are normal:
 
-- **Tiny gap** (resolvable from this codebase's own documented patterns) — fill with the most consistent value and mention the decision in your summary. Examples: a missing responsive breakpoint when siblings use `md:` — match it; an unspecified `fetch` cache strategy when context clearly implies ISR/static/dynamic — apply the contextually-correct one; a spacing value that should round to the nearest Tailwind scale step.
+- **Tiny gap** (resolvable from this codebase's own documented patterns) — fill with the most consistent value and mention the decision in your summary. Examples: a missing responsive breakpoint — match what sibling components use; an unspecified `fetch` cache strategy when context clearly implies ISR/static/dynamic — apply the contextually-correct one; a spacing value that should match the surrounding CSS.
 - **Substantial gap** (needs a new design decision, contradicts what was asked, or leaves behavior genuinely undefined) — stop and ask the user rather than guessing. Don't silently invent new architecture, new components, or new theme tokens.
 
 ## Constraints

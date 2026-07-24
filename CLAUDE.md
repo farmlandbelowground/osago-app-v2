@@ -4,15 +4,9 @@
 
 This file is the single source of truth for AI-assisted development conventions on this stack. It, together with `rules/`, `patterns/`, and `.claude/skills/`, travels with the project so conventions are defined once and reused across sessions instead of re-explained every time.
 
-## Styling Exception: Legacy CSS Classes Instead of Tailwind
-
-**Overrides [Styling](rules/styling.md) and [Styling with Tailwind](patterns/styling-tailwind.md) below, for migrated code.** UI components ported during the `osago-app` → `osago-app-v2` migration (see `../docs/migration-plan.md`) use the plain CSS classes ported verbatim from the legacy app's `styles.css` into `src/app/globals.css` (e.g. `.btn`, `.field`, `.card`, `.main`) — **not** Tailwind utility classes — even though the Tailwind packages, `cn()` helper, and lint plugin remain installed.
-
-This began as a temporary migration-speed tradeoff whose exit was a final Tailwind-conversion pass (Slice 15). **Slice 15 was cancelled (2026-07-23):** the migrated code keeps its legacy `styles.css` classes permanently, and Tailwind (`rules/styling.md` / `patterns/styling-tailwind.md`) applies to **net-new UI features only**. The `better-tailwindcss/no-unregistered-classes` lint override stays in place. See `../docs/migration-plan.md` §1.3 for the full rationale.
-
 ## Stack
 
-Next.js App Router, TypeScript (strict mode), React Server Components by default with `'use client'` opt-in, Server Actions for mutations, native `fetch` + Zod for validation at every boundary, per-feature raw Zustand for client state, Tailwind CSS via a `cn()` helper (clsx + tailwind-merge) for styling, `@t3-oss/env-nextjs` for environment validation, React Hook Form + Zod resolver for complex forms, path aliases (`@/*`, `@features/*`, `@shared/*`). Adapt the specifics to your own project's actual choices — the structure and discipline below are what matters, not any single library.
+Next.js App Router, TypeScript (strict mode), React Server Components by default with `'use client'` opt-in, Server Actions for mutations, native `fetch` + Zod for validation at every boundary, per-feature raw Zustand for client state, `@t3-oss/env-nextjs` for environment validation, React Hook Form + Zod resolver for complex forms, path aliases (`@/*`, `@features/*`, `@shared/*`). Adapt the specifics to your own project's actual choices — the structure and discipline below are what matters, not any single library.
 
 ## Development Principles
 
@@ -50,10 +44,10 @@ Cross-cutting conventions, several with `paths:` frontmatter naming the files th
 - [Constants](rules/constants.md) — no module-level literals in component/helper files; `constants.ts` placement and typing
 - [Data Fetching](rules/data-fetching.md) — the three-way decision matrix: RSC fetch vs Server Actions vs TanStack Query
 - [Forms](rules/forms.md) — simple (`useActionState`) vs complex (React Hook Form + Zod resolver) decision matrix
+- [Git Workflow](rules/git-workflow.md) — branch/commit/sync/push conventions, shared-file hotspots, conflict resolution (keep both intents), Windows line-ending trap; points to the `commit-changes` skill for mechanics
 - [RSC vs Client Components](rules/rsc-vs-client.md) — Server Components by default; the `'use client'` trigger list; boundary discipline
 - [Server Actions](rules/server-actions.md) — `'use server'`, Zod input validation, discriminated-union returns, cache invalidation
 - [State Management](rules/state.md) — per-feature raw Zustand; persist middleware opt-in; selector discipline
-- [Styling](rules/styling.md) — Tailwind as the sole styling mechanism, theme tokens, no hardcoded hex, no inline styles except dynamic values
 
 ## Patterns
 
@@ -69,7 +63,6 @@ Reusable implementation patterns with worked examples:
 - [Loading](patterns/loading.md) — `loading.tsx` auto-`<Suspense>`, explicit streaming boundaries, skeleton vs spinner
 - [Error Boundary](patterns/error-boundary.md) — `error.tsx` per segment, `global-error.tsx` at root, `notFound()` / `not-found.tsx`
 - [Metadata and SEO](patterns/metadata-and-seo.md) — static `metadata` export, `generateMetadata`, Open Graph/Twitter cards
-- [Styling with Tailwind](patterns/styling-tailwind.md) — CSS-first `@theme` tokens, `cn()`, dark mode, class-proliferation strategy
 - [Environment Validation](patterns/environment-validation.md) — `src/env.ts`, `createEnv` schema shape, `NEXT_PUBLIC_` prefix convention
 - [Utils and Environment](patterns/utils-and-environment.md) — pure helpers never live inside hooks; scope decision table; barrel discipline
 - [Assets and Icons](patterns/assets-and-icons.md) — SVG-as-component icons, `next/image` for raster assets, `public/` vs bundled assets

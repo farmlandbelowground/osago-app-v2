@@ -13,7 +13,6 @@ project-root/
     env.ts                # validated env (e.g. via @t3-oss/env-nextjs)
   public/                 # static assets (favicon, OG images, robots.txt)
   next.config.ts
-  tailwind.config.ts        # legacy v3 only — Tailwind v4 keeps theme tokens in src/app/globals.css @theme block
   tsconfig.json
   package.json
 ```

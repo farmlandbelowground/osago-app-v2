@@ -84,9 +84,9 @@ export { default as ChevronDownIcon } from './chevron-down.svg'
 
 ## Icon Color Convention
 
-Icons accept `className` for sizing (`h-6 w-6`) and color (`text-foreground`, `text-brand-500`). Coloring through Tailwind's `text-*` utilities works because the SVG fills and strokes resolve to `currentColor`.
+Icons accept `className` for sizing and color. Coloring works because the SVG fills and strokes resolve to `currentColor`, so any CSS `color` applied to the icon (or inherited from a parent) sets the icon's color.
 
-When an exported SVG has explicit `fill="..."` or `stroke="..."` attributes hard-coded on its paths, configure SVGR (commonly via the included `svgo` step) to replace them with `currentColor` so consumers can theme the icon via Tailwind. Otherwise the icon ignores `text-*` classes and stays whatever color the source file set.
+When an exported SVG has explicit `fill="..."` or `stroke="..."` attributes hard-coded on its paths, configure SVGR (commonly via the included `svgo` step) to replace them with `currentColor` so consumers can theme the icon via CSS `color`. Otherwise the icon ignores the inherited `color` and stays whatever color the source file set.
 
 ```tsx
 import { SearchIcon } from '@shared/assets/icons'
@@ -163,4 +163,4 @@ The "never reconstruct" rule is about static icons. It does not cover every vect
 
 - **Animated or runtime-interactive vectors** (progress rings, paths animated by state, charts whose shape derives from data) may require hand-written SVG primitives — there is no static source file to import.
 - **Procedurally-generated charts** are not icons. They belong in a charting library or a custom chart component, not in an icon directory.
-- **Decorative shapes** built from a few CSS-only elements (a tinted circle, a chevron made from borders) are usually better as Tailwind classes than as imported SVGs.
+- **Decorative shapes** built from a few CSS-only elements (a tinted circle, a chevron made from borders) are usually better as plain CSS than as imported SVGs.

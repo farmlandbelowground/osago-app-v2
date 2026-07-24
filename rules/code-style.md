@@ -1,6 +1,6 @@
 # Code Style Rules
 
-Formatting, naming, and structural conventions for a TypeScript / Next.js (App Router) codebase, enforced by ESLint (Next.js core-web-vitals + perfectionist + better-tailwindcss + unused-imports + typescript) and Prettier. Adapt the tool-specific bits (ESLint plugin names) if your project uses a different toolchain — the underlying conventions still apply.
+Formatting, naming, and structural conventions for a TypeScript / Next.js (App Router) codebase, enforced by ESLint (Next.js core-web-vitals + perfectionist + unused-imports + typescript) and Prettier. Adapt the tool-specific bits (ESLint plugin names) if your project uses a different toolchain — the underlying conventions still apply.
 
 ## Formatting (Prettier)
 
@@ -312,14 +312,14 @@ return <MemoizedList onSelect={onSelect} />
 
 ### No Inline Styles
 
-Inline `style={{ ... }}` is forbidden except for genuinely dynamic values (computed transforms, animation interpolations) that cannot be expressed as utility classes. The full pattern, the `cn()` helper, and the dynamic-only escape hatch live in [Styling Rules](./styling.md).
+Inline `style={{ ... }}` is forbidden except for genuinely dynamic values (computed transforms, animation interpolations) that cannot be expressed in a static CSS class.
 
 ```tsx
 // ❌ FORBIDDEN — static spacing inline
 <div style={{ padding: '8px' }}>
 
-// ✅ CORRECT — Tailwind utility
-<div className="p-2">
+// ✅ CORRECT — CSS class
+<div className="card">
 ```
 
 ## Next.js-Specific

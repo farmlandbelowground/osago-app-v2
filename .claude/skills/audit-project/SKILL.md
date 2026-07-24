@@ -50,7 +50,7 @@ Check all `.ts` and `.tsx` files against:
 - [Code Style](../../../rules/code-style.md) — the file is the source of truth for braces, naming, spacing, and formatting; don't restate it, enforce it
 - [Code Comments](../../../rules/code-comments.md) — flag essay comments, comments restating code, and decision-rationale narration
 - [Typing](../../../rules/typing.md) — `strict` discipline; interface vs type; no inline nested object types
-- [Styling](../../../rules/styling.md) + [Styling Tailwind Pattern](../../../patterns/styling-tailwind.md) — Tailwind via `cn()`; inline `style={{}}` only for genuinely dynamic values; no `useStyles` / `StyleSheet.create` (those are React Native patterns and have no place here)
+- Styling — inline `style={{}}` only for genuinely dynamic values; no `useStyles` / `StyleSheet.create` (those are React Native patterns and have no place here)
 - [Imports](../../../rules/imports.md) — path aliases used consistently; no relative `../../` when an alias covers the path; no nested barrel imports
 - [Constants](../../../rules/constants.md) — logic-facing values extracted appropriately
 - [State Management](../../../rules/state.md) — per-feature raw Zustand; `persist` opt-in only; no `AsyncStorage` (that's a React Native API)
@@ -62,7 +62,6 @@ Check all `.ts` and `.tsx` files against:
 
 - Missing `'use client'` on components using hooks, event handlers, or browser APIs
 - Raw `process.env.X` access instead of `src/env.ts`
-- Tailwind class-ordering violations
 - Server Actions accepting input without Zod validation
 - Any `axios` import anywhere
 - Nested barrel imports
@@ -75,7 +74,7 @@ Report every code violation with exact file path and line content.
 Compile a single fix plan:
 
 1. Group violations by type (structural vs code quality)
-2. Prioritize breaking issues first (missing `'use client'`, raw `process.env`, Axios, missing Zod validation), then conventions (Tailwind ordering, import order, naming)
+2. Prioritize breaking issues first (missing `'use client'`, raw `process.env`, Axios, missing Zod validation), then conventions (import order, naming)
 3. List every file that needs changes and what changes are needed
 4. Present the plan to the user and wait for approval before touching anything
 
@@ -86,7 +85,7 @@ After approval, apply in this order:
 1. Structural changes (file moves, missing barrels, removing forbidden subdirectories)
 2. Type changes (`type` → `interface` where conventional, missing `types.ts` files)
 3. Boundary fixes (`'use client'` additions / repositioning)
-4. Style changes (Tailwind class reordering, removing inline styles that should be utilities)
+4. Style changes (removing inline styles that should be CSS classes)
 5. API and env fixes (Axios → `fetch` + Zod, raw `process.env` → `src/env.ts`)
 6. Server Actions fixes (Zod validation, discriminated-union returns, revalidation)
 7. Code style changes (braces, naming, constants extraction)

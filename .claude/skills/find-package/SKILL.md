@@ -24,7 +24,7 @@ Always resolve in this order — stop at the first match:
 
 1. **Local reuse** — the implementation already exists in the codebase
 2. **Ecosystem built-ins** — Next.js native capabilities (`next/image`, `next/link`, `next/font`, Server Actions, built-in middleware, `next/navigation`) and React built-ins (hooks, context)
-3. **Vetted npm package** — installed via the project's package manager; prefer packages well-tested in the Next.js / React ecosystem (e.g. `zod`, `date-fns`, `clsx`, `tailwind-merge`)
+3. **Vetted npm package** — installed via the project's package manager; prefer packages well-tested in the Next.js / React ecosystem (e.g. `zod`, `date-fns`, `clsx`)
 4. **Custom implementation** — write from scratch only when options 1–3 are exhausted
 
 Never propose a custom implementation without first confirming that options 1–3 were exhausted.
@@ -52,7 +52,7 @@ Search the entire codebase for existing implementations:
 Research available packages for the requested functionality:
 
 1. **Check Next.js native capabilities first** — search Next.js docs (`nextjs.org/docs`) and React docs. Next.js often covers the use case without a third-party package — `next/image` for image optimization, `next/font` for font loading, `next/link` for client-side navigation, Server Actions for mutations, middleware for request interception, `next/navigation` for client-side routing helpers. Many cross-cutting concerns (caching, revalidation, streaming) are first-class Next.js features — check before reaching for npm.
-2. **Check the npm registry for popular Next.js / React packages** — filter by weekly downloads, last-published recency, TypeScript support, and Next.js compatibility (no SSR-incompatible globals, App Router compatibility). Examples: `zod` (validation), `date-fns` (dates), `clsx` + `tailwind-merge` (className composition), `@t3-oss/env-nextjs` (env validation), `@tanstack/react-query` (client-side data), `lucide-react` (icons).
+2. **Check the npm registry for popular Next.js / React packages** — filter by weekly downloads, last-published recency, TypeScript support, and Next.js compatibility (no SSR-incompatible globals, App Router compatibility). Examples: `zod` (validation), `date-fns` (dates), `clsx` (className composition), `@t3-oss/env-nextjs` (env validation), `@tanstack/react-query` (client-side data), `lucide-react` (icons).
 3. **General JS/TS ecosystem** — universal packages with no Next.js-specific concerns (e.g. pure utility libraries)
 
 For each candidate, report:

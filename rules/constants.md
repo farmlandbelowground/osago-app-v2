@@ -57,7 +57,7 @@ import { MS_PER_DAY } from './constants'
 
 ## What Belongs in `constants.ts`
 
-Extract literal values into a sibling `constants.ts` when they are used in **logic, hooks, JSX props, or configuration** — not when they exist only to satisfy a styling utility class.
+Extract literal values into a sibling `constants.ts` when they are used in **logic, hooks, JSX props, or configuration** — not when they exist only to satisfy a styling class.
 
 ### Logic-Facing — YES
 
@@ -70,16 +70,16 @@ Extract literal values into a sibling `constants.ts` when they are used in **log
 
 ### Style — NO
 
-Style values do **not** live in `constants.ts`. If the project uses Tailwind CSS for spacing, color, typography, radius, shadow, and z-index — those concerns are encoded in the theme configuration and consumed via utility classes. See [Styling Rules](./styling.md) for the full pattern.
+Style values do **not** live in `constants.ts`. Spacing, color, typography, radius, shadow, and z-index are styling concerns and belong in CSS (`src/app/globals.css` and its `:root` custom properties), not in a constants file.
 
 ```typescript
-// ❌ FORBIDDEN — color hex in constants.ts (the theme layer handles colors)
+// ❌ FORBIDDEN — color hex in constants.ts (CSS handles colors)
 export const PRIMARY_COLOR = '#3B82F6'
 
-// ❌ FORBIDDEN — spacing value in constants.ts (the theme layer handles spacing)
+// ❌ FORBIDDEN — spacing value in constants.ts (CSS handles spacing)
 export const CARD_PADDING = 16
 
-// ❌ FORBIDDEN — z-index in constants.ts (utility classes handle stacking)
+// ❌ FORBIDDEN — z-index in constants.ts (CSS handles stacking)
 export const MODAL_Z_INDEX = 1_000
 
 // ✅ CORRECT — logic-facing limit lives in constants.ts

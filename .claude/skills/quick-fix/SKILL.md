@@ -18,7 +18,7 @@ The change is small and low-risk: a handful of lines, one or two files, no new p
 Don't load the whole rule set. Load only what directly touches the change:
 
 - The file(s) being changed, in full
-- Whichever rule(s) the change actually touches (formatting → [code-style](../../../rules/code-style.md); types → [typing](../../../rules/typing.md); imports → [imports](../../../rules/imports.md); styling → [styling](../../../rules/styling.md))
+- Whichever rule(s) the change actually touches (formatting → [code-style](../../../rules/code-style.md); types → [typing](../../../rules/typing.md); imports → [imports](../../../rules/imports.md))
 - [Code Comments](../../../rules/code-comments.md) whenever the fix adds or edits any code — a quick fix must not leave, add, or reword-and-keep an essay comment
 
 ### Step 2 — Apply the Change

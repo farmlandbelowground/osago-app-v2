@@ -31,25 +31,21 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.65.0",
     "sharp": "0.34.5",
-    "tailwind-merge": "^3.3.1",
     "xlsx": "^0.18.5",
     "zod": "^4.1.13",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
-    "@tailwindcss/postcss": "^4.1.16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-better-tailwindcss": "^3.7.11",
     "eslint-plugin-perfectionist": "^4.15.1",
     "eslint-plugin-unused-imports": "^4.2.0",
     "prettier": "3.9.5",
-    "tailwindcss": "^4.1.16",
     "typescript": "^5"
   }
 }

@@ -14,7 +14,7 @@ Components are units of meaning. A `<UserProfileCard>` describes one thing: a us
 
 ### Signals
 
-- **JSX exceeds ~60–80 lines mixing distinct concerns.** Web JSX with utility classes is denser per line than a typical mobile component, so the threshold sits lower. Past this point, the visual structure is hard to scan in one screen.
+- **JSX exceeds ~60–80 lines mixing distinct concerns.** Web JSX with CSS classes is denser per line than a typical mobile component, so the threshold sits lower. Past this point, the visual structure is hard to scan in one screen.
 - **Repeated structural patterns.** A group of elements (heading + text + action button) appears two or more times with minor variations. Extract the shared shape; pass the variations as props.
 - **Deeply nested JSX.** When the return contains more than three or four nested levels, the indentation hides intent. Extract intermediate layers as named components.
 - **Conditional rendering blocks.** Large `{condition && (...)}` or ternary blocks that span dozens of lines obscure the layout. Move each branch into its own component and call it conditionally.
@@ -208,4 +208,4 @@ export function EditableBio({ userId, initialBio }: Props) {
 }
 ```
 
-Three components, three zones of responsibility. The page composes them. The header ships zero JavaScript. The editable bio ships only what it needs. See [styling-tailwind.md](./styling-tailwind.md) for the conventions used in the className examples above.
+Three components, three zones of responsibility. The page composes them. The header ships zero JavaScript. The editable bio ships only what it needs.

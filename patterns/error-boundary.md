@@ -147,4 +147,4 @@ export default function NotFound() {
 
 `not-found.tsx` is for "resource missing" — a semantic 404. `error.tsx` is for "something went wrong" — a 5xx, a network failure, a validation crash, an upstream timeout. Use the right one per case; the user-facing copy and the support workflow differ.
 
-See [loading.md](./loading.md) for the parallel suspense mechanism, [page-and-layout.md](./page-and-layout.md) for where `error.tsx` lives in the page anatomy, and [styling-tailwind.md](./styling-tailwind.md) for the conventions used in the recovery UI examples.
+See [loading.md](./loading.md) for the parallel suspense mechanism and [page-and-layout.md](./page-and-layout.md) for where `error.tsx` lives in the page anatomy.

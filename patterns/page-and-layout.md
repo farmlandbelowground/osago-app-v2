@@ -217,4 +217,3 @@ The page stays RSC, fetches its data, and ships HTML. `PostBody` is also RSC —
 | Server-side data fetch | [./queries-in-rsc.md](./queries-in-rsc.md) |
 | Mutations | [./server-actions.md](./server-actions.md) |
 | Custom hook typing | [./custom-hook-typing.md](./custom-hook-typing.md) |
-| Styling | [./styling-tailwind.md](./styling-tailwind.md) |
