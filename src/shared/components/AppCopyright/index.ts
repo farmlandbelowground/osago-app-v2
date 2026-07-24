@@ -1,0 +1,1 @@
+export { AppCopyright } from './AppCopyright'

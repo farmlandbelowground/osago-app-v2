@@ -13,8 +13,8 @@ export { ValuationReportPrereqGate } from './components/ValuationReportPrereqGat
 export {
   DEFAULT_DCF_NEW_INPUTS,
   getCompanyValuationFields,
+  getDashboardValuation,
   getDcfAdminDefaults,
-  getEstimatedValue,
   getFinancials,
   getGammaValuationData,
   getSmallEbitdaDeductions,
@@ -24,6 +24,7 @@ export {
   isValuationMade,
   resolveDcfNewInputs,
   resolveDisplayCompanyData,
+  type DashboardValuation,
   type GammaDcfDetail,
   type GammaValuationData,
   type ResolvedCompanyData,

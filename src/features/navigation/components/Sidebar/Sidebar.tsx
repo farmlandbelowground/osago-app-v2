@@ -7,7 +7,7 @@ import { type FC } from 'react'
 import { logout } from '@shared/auth/actions'
 import { Logo } from '@shared/components/Logo'
 
-import { HelpIcon, LogoutIcon } from '../../assets/icons'
+import { LogoutIcon } from '../../assets/icons'
 import {
   FOOTER_ICON_SIZE_PX,
   MEDEWERKER_NAV_SECTION,
@@ -15,6 +15,7 @@ import {
   USER_AVATAR_SIZE_PX,
 } from '../../constants'
 import { buildDisplayName, buildInitials } from '../../lib/buildUserDisplay'
+import { HelpButton } from '../HelpButton'
 import { NavItem } from '../NavItem'
 import { type Props } from './types'
 
@@ -87,14 +88,7 @@ export const Sidebar: FC<Props> = ({
             <div className="user-email">{email}</div>
           </div>
         </Link>
-        <button
-          aria-label="Hulp nodig? Start chat"
-          className="help-btn"
-          title="Hulp nodig? Start chat"
-          type="button"
-        >
-          <HelpIcon height={FOOTER_ICON_SIZE_PX} width={FOOTER_ICON_SIZE_PX} />
-        </button>
+        <HelpButton />
         <button
           className="logout-btn"
           onClick={() => void logout()}

@@ -3,26 +3,29 @@ import { type FC } from 'react'
 import { KpiTile } from '@shared/components/KpiTile'
 
 import { BuyersIcon, ConversationsIcon, ValueIcon } from '../../assets/icons'
+import { formatMoney } from '../../lib/formatMoney'
 import { type Props } from './types'
 
 export const DashboardKpiRow: FC<Props> = ({
   counts,
-  estimatedValue,
   hasWerkruimteAccess,
+  valuation,
 }) => {
+  const valuationLabel = valuation?.useShareholder
+    ? 'Aandeelhouderswaarde'
+    : 'Ondernemingswaarde'
+
   return (
     <div className="grid-3 mb-5 grid">
       <KpiTile
         icon={<ValueIcon height={18} width={18} />}
         label="Geschatte waarde"
         meta={
-          estimatedValue !== null ? 'Indicatieve waarde' : 'Nog niet bepaald'
+          valuation !== null
+            ? `${valuationLabel} · ${formatMoney(valuation.low)} – ${formatMoney(valuation.high)}`
+            : 'Nog niet bepaald'
         }
-        value={
-          estimatedValue !== null
-            ? `€ ${Math.round(estimatedValue).toLocaleString('nl-NL')}`
-            : '—'
-        }
+        value={valuation !== null ? formatMoney(valuation.value) : '—'}
       />
       <KpiTile
         icon={<BuyersIcon height={18} width={18} />}
