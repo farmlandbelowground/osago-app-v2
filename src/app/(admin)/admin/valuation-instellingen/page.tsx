@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import { AdminValuationSettings } from '@features/valuation'
 import {
   getDcfAdminDefaults,
@@ -6,6 +8,10 @@ import {
   getValuationMultiples,
 } from '@features/valuation/queries'
 import { requireRole } from '@shared/auth/guards'
+
+export const metadata: Metadata = {
+  title: 'Valuation',
+}
 
 export default async function AdminValuationInstellingenPage() {
   await requireRole('admin')

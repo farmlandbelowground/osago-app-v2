@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { type ReactNode } from 'react'
 
@@ -12,6 +13,10 @@ import { QueryProvider } from '@shared/components/QueryProvider'
 
 interface Props {
   children: ReactNode
+}
+
+export const metadata: Metadata = {
+  title: 'Onboarding',
 }
 
 export default async function OnboardingLayout({ children }: Props) {

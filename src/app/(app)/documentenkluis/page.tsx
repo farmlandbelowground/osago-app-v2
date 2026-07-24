@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { DocumentVaultSections, getUserDocuments } from '@features/documents'
@@ -8,6 +9,10 @@ import {
 import { hasActiveSubscription } from '@features/subscriptions/lib/hasActiveSubscription'
 import { getSubscription } from '@features/subscriptions/queries'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Documentenkluis',
+}
 
 export default async function DocumentenkluisPage() {
   const session = await requireSession()

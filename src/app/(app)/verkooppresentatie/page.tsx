@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { MIJN_BEDRIJF_PATH } from '@features/company/constants'
@@ -29,6 +30,10 @@ const hasAnyFinancialValue = (financials: FinancialYearInput[]): boolean =>
       row.interest !== null ||
       row.taxesPaid !== null,
   )
+
+export const metadata: Metadata = {
+  title: 'Presentatie',
+}
 
 export default async function VerkooppresentatiePage() {
   const session = await requireSession()

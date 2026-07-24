@@ -1,8 +1,14 @@
+import { type Metadata } from 'next'
+
 import {
   ValueDriversForm,
   getCompanyValuationFields,
 } from '@features/valuation'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Value drivers',
+}
 
 export default async function ValueDriversPage() {
   const session = await requireSession()

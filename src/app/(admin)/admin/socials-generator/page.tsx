@@ -1,5 +1,11 @@
+import { type Metadata } from 'next'
+
 import { SocialsGenerator } from '@features/socials'
 import { requireRole } from '@shared/auth/guards'
+
+export const metadata: Metadata = {
+  title: 'Socials generator',
+}
 
 export default async function AdminSocialsGeneratorPage() {
   await requireRole('admin')

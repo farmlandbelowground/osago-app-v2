@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import {
   PhotoSection,
@@ -17,6 +19,10 @@ import {
 import { requireSession } from '@shared/auth/session'
 
 const REPORT_PHOTO_TAB_ID = 'waarderingsrapport'
+
+export const metadata: Metadata = {
+  title: 'Waarderingsrapport',
+}
 
 export default async function WaarderingsrapportPage() {
   const session = await requireSession()

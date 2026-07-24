@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { getCompany } from '@features/company/queries'
@@ -34,6 +35,10 @@ import {
 } from '@features/valuation'
 import { AdminResetButton } from '@shared/admin-reset'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Waardebepaling',
+}
 
 export default async function WaardebepalingPage() {
   const session = await requireSession()

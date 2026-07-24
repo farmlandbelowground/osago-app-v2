@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import {
   DashboardKpiRow,
   DashboardTodoList,
@@ -10,6 +12,10 @@ import {
 import { hasWerkruimteAccess } from '@features/subscriptions/lib/hasWerkruimteAccess'
 import { getSubscription } from '@features/subscriptions/queries'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+}
 
 export default async function DashboardPage() {
   const session = await requireSession()

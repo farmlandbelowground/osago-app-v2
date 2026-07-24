@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import {
@@ -10,6 +11,10 @@ import { ACCOUNT_PATH, PLANS } from '@features/subscriptions/constants'
 
 interface Props {
   searchParams: Promise<{ paid?: string; plan?: string }>
+}
+
+export const metadata: Metadata = {
+  title: 'Abonnement',
 }
 
 export default async function AbonnementAfsluitenPage({ searchParams }: Props) {

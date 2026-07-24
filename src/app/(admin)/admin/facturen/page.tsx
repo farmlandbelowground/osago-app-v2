@@ -1,9 +1,15 @@
+import { type Metadata } from 'next'
+
 import { AdminInvoicesTable } from '@features/subscriptions'
 import {
   adminListInvoices,
   listCustomers,
 } from '@features/subscriptions/queries'
 import { type CustomerSelectOption } from '@features/subscriptions/types'
+
+export const metadata: Metadata = {
+  title: 'Facturatie',
+}
 
 export default async function AdminFacturenPage() {
   const [invoices, customerOptions] = await Promise.all([

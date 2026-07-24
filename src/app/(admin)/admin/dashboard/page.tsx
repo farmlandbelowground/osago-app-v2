@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import {
   AdminDashboardKpiRow,
   AdminDashboardPeriodFilter,
@@ -16,6 +18,10 @@ import { requireRole } from '@shared/auth/guards'
 
 interface Props {
   searchParams: Promise<{ from?: string; preset?: string; to?: string }>
+}
+
+export const metadata: Metadata = {
+  title: 'Overzicht',
 }
 
 export default async function AdminDashboardPage({ searchParams }: Props) {
@@ -55,9 +61,7 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
 
       <div className="grid-2 mb-5 grid">
         <div className="card">
-          <h3 style={{ margin: '0 0 4px' }}>
-            Verhouding lopende abonnementen
-          </h3>
+          <h3 style={{ margin: '0 0 4px' }}>Verhouding lopende abonnementen</h3>
           <p className="desc" style={{ marginBottom: 14 }}>
             Verdeling tussen volledige verkoopabonnementen en
             alleen-waardebepaling.

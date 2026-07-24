@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import { AdminAppointmentTypesGrid } from '@features/appointments'
 import {
   adminListBookings,
@@ -5,6 +7,10 @@ import {
   adminListTypes,
 } from '@features/appointments/queries'
 import { requireRole } from '@shared/auth/guards'
+
+export const metadata: Metadata = {
+  title: 'Afspraaktypen',
+}
 
 export default async function AdminAfspraakInstellingenPage() {
   await requireRole('admin')

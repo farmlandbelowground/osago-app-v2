@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import { getCompany } from '@features/company/queries'
 import {
   DEFAULT_DCF_NEW_INPUTS,
@@ -10,6 +12,10 @@ import {
   getValuationMultiples,
 } from '@features/valuation'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Financiële gegevens',
+}
 
 export default async function FinancieleGegevensPage() {
   const session = await requireSession()

@@ -1,6 +1,12 @@
+import { type Metadata } from 'next'
+
 import { CompanyProfilePanel } from '@features/company'
 import { getCompany, getSectorOptions } from '@features/company/queries'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Mijn bedrijf',
+}
 
 export default async function MijnBedrijfPage() {
   const session = await requireSession()

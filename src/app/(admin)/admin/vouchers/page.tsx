@@ -1,6 +1,12 @@
+import { type Metadata } from 'next'
+
 import { AdminVouchersTable } from '@features/subscriptions'
 import { adminListVouchers } from '@features/subscriptions/queries'
 import { requireRole } from '@shared/auth/guards'
+
+export const metadata: Metadata = {
+  title: 'Vouchers',
+}
 
 export default async function AdminVouchersPage() {
   await requireRole('admin')

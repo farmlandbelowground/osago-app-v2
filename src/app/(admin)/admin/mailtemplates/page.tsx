@@ -1,5 +1,11 @@
+import { type Metadata } from 'next'
+
 import { getEmailTemplates, MailTemplateViewer } from '@features/mail-templates'
 import { requireRole } from '@shared/auth/guards'
+
+export const metadata: Metadata = {
+  title: 'Email templates',
+}
 
 export default async function AdminMailTemplatesPage() {
   await requireRole('admin')

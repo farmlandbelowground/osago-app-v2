@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import {
   AccountPasswordForm,
   AccountPersonalInfoForm,
@@ -7,6 +9,10 @@ import {
 } from '@features/auth'
 import { getAccountProfile } from '@features/auth/queries'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Mijn account',
+}
 
 export default async function AdminAccountPage() {
   const session = await requireSession()

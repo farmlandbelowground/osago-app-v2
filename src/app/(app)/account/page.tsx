@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import Link from 'next/link'
 import { type ReactNode } from 'react'
 
@@ -35,6 +36,10 @@ import {
   getSubscription,
 } from '@features/subscriptions/queries'
 import { requireSession } from '@shared/auth/session'
+
+export const metadata: Metadata = {
+  title: 'Mijn account',
+}
 
 export default async function AccountPage() {
   const session = await requireSession()
