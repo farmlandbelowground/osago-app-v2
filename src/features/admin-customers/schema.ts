@@ -14,12 +14,6 @@ export const CreateCustomerSchema = z.object({
 
 export type CreateCustomerInput = z.infer<typeof CreateCustomerSchema>
 
-export const SignupResponseSchema = z.object({
-  error: z.string().optional(),
-  ok: z.boolean().optional(),
-  userId: z.string().optional(),
-})
-
 export const UploadDocumentSchema = z.object({
   dataUrl: z.string().min(1),
   description: z.string(),

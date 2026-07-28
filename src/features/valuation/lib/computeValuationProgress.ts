@@ -30,6 +30,14 @@ interface ComputeValuationProgressInput {
   valueDriverAnswers: ValueDriverAnswers
 }
 
+// Exposed on its own because /waardebepaling's missing-data gate needs only
+// this check, without the document and report lookups the full progress object
+// would otherwise require.
+export const hasAnyFinancialValue = (
+  financials: FinancialYearInput[],
+): boolean =>
+  financials.some(row => REQUIRED_FIN_KEYS.some(key => row[key] !== null))
+
 export const computeValuationProgress = ({
   financials,
   hasValuationPdfInVault,
@@ -37,9 +45,7 @@ export const computeValuationProgress = ({
   valuationReport,
   valuationMade,
 }: ComputeValuationProgressInput): ValuationProgress => {
-  const financialsAnyValue = financials.some(row =>
-    REQUIRED_FIN_KEYS.some(key => row[key] !== null),
-  )
+  const financialsAnyValue = hasAnyFinancialValue(financials)
 
   const valueDriversComplete = Array.from(
     { length: VALUE_DRIVER_QUESTION_COUNT },

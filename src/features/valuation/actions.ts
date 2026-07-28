@@ -27,6 +27,7 @@ import { getServerClient } from '@shared/supabase/server'
 import { APP_CONFIG_DCF_ADMIN_DEFAULTS_KEY } from './constants/dcf'
 import {
   FINANCIELE_GEGEVENS_PATH,
+  VALUE_DRIVERS_PATH,
   WAARDEBEPALING_PATH,
   WAARDERINGSRAPPORT_PATH,
 } from './constants/routes'
@@ -278,8 +279,12 @@ export const saveValueDrivers = async (
     return { error: 'Opslaan van de value drivers is mislukt.' }
   }
 
-  revalidatePath('/value-drivers')
+  // valueDriversComplete also drives the dashboard to-do and the
+  // /waarderingsrapport prereq gate, so both must be invalidated too.
+  revalidatePath(VALUE_DRIVERS_PATH)
   revalidatePath(WAARDEBEPALING_PATH)
+  revalidatePath(WAARDERINGSRAPPORT_PATH)
+  revalidatePath(DASHBOARD_PATH)
   return { error: null }
 }
 
@@ -316,6 +321,35 @@ export const saveShareholderValueInputs = async (
   }
 
   revalidatePath(FINANCIELE_GEGEVENS_PATH)
+  revalidatePath(WAARDEBEPALING_PATH)
+  return { error: null }
+}
+
+// The Bandbreedte card on /waardebepaling. Legacy's saveShareholderValueInputs
+// (osago-bundle.js:16490-16501) persists the band and nothing else from this
+// page — the working-capital fields it shares a name with live on
+// /financiele-gegevens and are saved by the action above.
+export const saveValuationBand = async (
+  band: number,
+): Promise<ActionResult> => {
+  const session = await requireSession()
+  const supabase = await getServerClient()
+
+  // `valuation_band` is a dedicated column, not an `extra` key — legacy's
+  // COMPANY_KNOWN_KEYS (osago-data.js:97-104) deliberately keeps it out of the
+  // jsonb catch-all, and getCompanyValuationFields reads the column.
+  const { error } = await supabase.from('companies').upsert(
+    {
+      user_id: session.user.id,
+      valuation_band: band,
+    },
+    { onConflict: 'user_id' },
+  )
+
+  if (error) {
+    return { error: 'Opslaan van de bandbreedte is mislukt.' }
+  }
+
   revalidatePath(WAARDEBEPALING_PATH)
   return { error: null }
 }
@@ -450,7 +484,11 @@ export const makeValuation = async (
     return { error: 'Waardering maken is mislukt.' }
   }
 
+  // valuationMade also drives the dashboard to-do and the /waarderingsrapport
+  // prereq gate, so both must be invalidated too.
   revalidatePath(WAARDEBEPALING_PATH)
+  revalidatePath(WAARDERINGSRAPPORT_PATH)
+  revalidatePath(DASHBOARD_PATH)
   return { error: null }
 }
 

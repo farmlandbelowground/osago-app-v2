@@ -1,11 +1,6 @@
-import { type DcfNewComputeResult } from '@features/valuation/types'
-
 export interface Props {
-  ashHigh: number
-  ashLow: number
-  bandHigh: number
-  bandLow: number
-  dcfResult: DcfNewComputeResult
-  enterpriseValue: number
-  shareholderValue: number
+  // ± offset for the slider labels. Legacy derives this from the DCF total,
+  // not from the enterprise value — see the note in DcfResultCard.
+  band: number
+  totalen: { waardeScenario: number; waardeRest: number; totaal: number }
 }

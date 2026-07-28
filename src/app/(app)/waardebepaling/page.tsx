@@ -2,24 +2,22 @@ import { type Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { getCompany } from '@features/company/queries'
-import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import { getSubscription } from '@features/subscriptions/queries'
 import {
   DCF_SECTORCORRECTIE_BASE_MULTIPLE,
   DcfResultCard,
   FINANCIELE_GEGEVENS_PATH,
   MIJN_BEDRIJF_PATH,
+  MethodeToelichtingCard,
   VALUATION_BAND_DEFAULT_PCT,
+  ValuationBandCard,
   ValuationControleCard,
   ValuationControleDcfCard,
+  ValuationDisclaimer,
   ValuationLockGate,
-  ValuationProgressTracker,
-  ValuationResultCard,
-  ValuationReviewStatusCard,
-  ValuationUnlockButton,
+  ValuationRangeCard,
   buildHistoryWeightOverrides,
   computeIndicatieveOndernemingswaarde,
-  computeValuationProgress,
   dcfNewCompute,
   getCompanyValuationFields,
   getDcfAdminDefaults,
@@ -28,6 +26,8 @@ import {
   getSmallOrgDeductions,
   getValuationMultiples,
   getValuationRecord,
+  hasAnyFinancialValue,
+  isNonLegalEntityForm,
   recomputeHeuristicValuation,
   resetValuationByAdmin,
   resolveDcfNewInputs,
@@ -40,37 +40,26 @@ export const metadata: Metadata = {
   title: 'Waardebepaling',
 }
 
+// Ports renderValuation (osago-bundle.js:14843-15124). Section order, wording
+// and the medewerker-only blocks follow legacy exactly.
 export default async function WaardebepalingPage() {
   const session = await requireSession()
 
   await recomputeHeuristicValuation(session.user.id)
 
-  const [resolved, liveFields, subscription, hasValuationPdfInVault] =
-    await Promise.all([
-      resolveDisplayCompanyData(session.user.id),
-      getCompanyValuationFields(session.user.id),
-      getSubscription(session.user.id),
-      documentExistsByPrefix(session.user.id, [
-        DOCUMENT_PREFIXES.valuationReport,
-      ]),
-    ])
+  const [resolved, liveFields, subscription] = await Promise.all([
+    resolveDisplayCompanyData(session.user.id),
+    getCompanyValuationFields(session.user.id),
+    getSubscription(session.user.id),
+  ])
 
   if (!resolved) {
     redirect(MIJN_BEDRIJF_PATH)
   }
-
-  const progress = computeValuationProgress({
-    financials: resolved.financialsList,
-    hasValuationPdfInVault,
-    valuationMade: resolved.made,
-    valuationReport: liveFields?.valuationReport ?? null,
-    valueDriverAnswers: resolved.valueDriverAnswers,
-  })
-
   if (!resolved.sector) {
     redirect(MIJN_BEDRIJF_PATH)
   }
-  if (!progress.financialsAnyValue) {
+  if (!hasAnyFinancialValue(resolved.financialsList)) {
     redirect(FINANCIELE_GEGEVENS_PATH)
   }
 
@@ -113,10 +102,6 @@ export default async function WaardebepalingPage() {
   const valuationBand =
     resolved.valuationBand ??
     Math.ceil(enterpriseValue * VALUATION_BAND_DEFAULT_PCT)
-  const bandLow = enterpriseValue - valuationBand
-  const bandHigh = enterpriseValue + valuationBand
-  const ashLow = shareholderValue - valuationBand
-  const ashHigh = shareholderValue + valuationBand
 
   const dcfInputs = resolved.dcfApplyEnabled
     ? resolveDcfNewInputs(
@@ -129,6 +114,17 @@ export default async function WaardebepalingPage() {
   const dcfResult = dcfInputs
     ? dcfNewCompute(dcfInputs, resolved.financials, resolved.normalizations)
     : null
+
+  // Legacy quirk (renderDcfNewWaardebepalingBlockV2, :5666-5674): the DCF card
+  // falls back to a default derived from the DCF total, while the other
+  // sliders default off the enterprise value. Only a saved band unifies them.
+  const dcfBand =
+    dcfResult !== null
+      ? (resolved.valuationBand ??
+        Math.ceil(
+          dcfResult.berekening.totalen.totaal * VALUATION_BAND_DEFAULT_PCT,
+        ))
+      : 0
 
   const requiresReview = subscription?.type === 'valuation-premium'
   const reviewStatus = liveFields?.valuationReview?.status ?? 'none'
@@ -145,42 +141,73 @@ export default async function WaardebepalingPage() {
         <div>
           <h1 className="page-title">Waardebepaling</h1>
         </div>
+        <div className="page-actions">
+          {resolved.made && isMedewerker && (
+            <AdminResetButton
+              label="Waardering resetten (medewerker)"
+              resetAction={resetValuationByAdmin}
+              resetType="valuation"
+            />
+          )}
+        </div>
       </div>
 
-      {resolved.made && <ValuationProgressTracker progress={progress} />}
-
-      <ValuationLockGate isMade={resolved.made}>
-        {dcfResult ? (
-          <DcfResultCard
-            ashHigh={ashHigh}
-            ashLow={ashLow}
-            bandHigh={bandHigh}
-            bandLow={bandLow}
-            dcfResult={dcfResult}
-            enterpriseValue={enterpriseValue}
-            shareholderValue={shareholderValue}
-          />
-        ) : (
-          <ValuationResultCard
-            ashHigh={ashHigh}
-            ashLow={ashLow}
-            bandHigh={bandHigh}
-            bandLow={bandLow}
-            enterpriseValue={enterpriseValue}
-            indicativeResult={indicativeResult}
-            shareholderValue={shareholderValue}
-          />
-        )}
-      </ValuationLockGate>
-
-      <ValuationReviewStatusCard
+      <ValuationLockGate
+        isMade={resolved.made}
+        isMedewerker={isMedewerker}
         requiresReview={requiresReview}
         reviewStatus={reviewStatus}
-      />
+      >
+        {dcfResult ? (
+          <DcfResultCard
+            band={dcfBand}
+            totalen={dcfResult.berekening.totalen}
+          />
+        ) : (
+          <ValuationRangeCard
+            band={valuationBand}
+            idSuffix="v2"
+            isLive
+            mid={enterpriseValue}
+            title="Indicatieve ondernemingswaarde"
+          />
+        )}
 
-      {isMedewerker && (
-        <>
-          {dcfResult && dcfInputs ? (
+        {!isNonLegalEntityForm(resolved.legalForm ?? '') && (
+          <ValuationRangeCard
+            band={valuationBand}
+            idSuffix="ash"
+            isLive
+            mid={shareholderValue}
+            title="Indicatieve aandeelhouderswaarde"
+          />
+        )}
+
+        <div className="grid grid-2">
+          <MethodeToelichtingCard
+            input={{
+              dcf: dcfInputs
+                ? {
+                    groeiRest: dcfInputs.uitgangspunten.groeiRest,
+                    kostenvoet: dcfResult?.kostenvoet ?? 0,
+                    scenarioStartYear: dcfInputs.scenarioStartYear,
+                    scenarioYearCount: dcfInputs.scenarioYearCount,
+                    vermogensvoetRest:
+                      dcfInputs.uitgangspunten.vermogensvoetRest,
+                  }
+                : null,
+              dcfApplyEnabled: resolved.dcfApplyEnabled,
+              indicative: indicativeResult,
+              normalizations: resolved.normalizations,
+              sector: resolved.sector,
+            }}
+          />
+
+          <ValuationBandCard initialBand={valuationBand} />
+        </div>
+
+        {isMedewerker &&
+          (dcfResult && dcfInputs ? (
             <ValuationControleDcfCard
               data={{
                 company: {
@@ -198,24 +225,10 @@ export default async function WaardebepalingPage() {
             />
           ) : (
             <ValuationControleCard result={indicativeResult} />
-          )}
+          ))}
+      </ValuationLockGate>
 
-          <div
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}
-          >
-            {requiresReview && reviewStatus === 'submitted' && (
-              <ValuationUnlockButton />
-            )}
-            {resolved.made && (
-              <AdminResetButton
-                label="Waardering resetten (medewerker)"
-                resetAction={resetValuationByAdmin}
-                resetType="valuation"
-              />
-            )}
-          </div>
-        </>
-      )}
+      <ValuationDisclaimer />
     </main>
   )
 }

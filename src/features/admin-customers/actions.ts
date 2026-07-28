@@ -2,24 +2,21 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { legacyApiFetch } from '@shared/api/legacyApiFetch'
 import { requireRole } from '@shared/auth/guards'
 import { sendTemplatedEmail } from '@shared/email'
-import { getServerClient } from '@shared/supabase/server'
+import { getServerClient, getServiceRoleClient } from '@shared/supabase/server'
 
 import {
   ADMIN_KLANTEN_PATH,
   ADMIN_PROJECTEN_PATH,
   DOCS_BUCKET,
   DOWNLOAD_URL_TTL_SECONDS,
-  SIGNUP_ENDPOINT,
 } from './constants'
 import { ensureCustomerIds } from './lib/customerIds'
 import { getCustomerDetail, getCustomerOverview } from './queries'
 import {
   AddBuyerSchema,
   CreateCustomerSchema,
-  SignupResponseSchema,
   UploadDocumentSchema,
   type AddBuyerInput,
   type CreateCustomerInput,
@@ -77,11 +74,10 @@ export const downloadCustomerDocument = async (
   return { error: null, url: data.signedUrl }
 }
 
-// Ports saveAdminCustomer (osago-bundle.js:24222) verbatim (D-C): the EXACT
-// legacy call to the frozen /api/auth/signup with { email, password, firstName,
-// lastName, phone } and NO recaptchaToken. The endpoint's server-side bot-check
-// may reject it (it always requires a token) — that fails exactly as it does in
-// legacy today; a token/endpoint fix is future work, not this slice's concern.
+// The account is created service-role instead of through /api/auth/signup:
+// that endpoint rejects any request without a Turnstile token, which an
+// already-authenticated admin has no way to produce. email_confirm lets the
+// customer sign in immediately with the temporary password.
 export const createCustomer = async (
   input: CreateCustomerInput,
 ): Promise<ActionResult> => {
@@ -95,21 +91,34 @@ export const createCustomer = async (
 
   await requireRole('admin_user')
 
-  const result = await legacyApiFetch(SIGNUP_ENDPOINT, {
-    body: JSON.stringify({
-      email: parsed.data.email.toLowerCase(),
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      password: parsed.data.password,
-      phone: parsed.data.phone,
-    }),
-    method: 'POST',
-    schema: SignupResponseSchema,
-  })
+  const { email, firstName, lastName, password, phone } = parsed.data
+  const serviceRoleClient = getServiceRoleClient()
+  const { data: created, error: createError } =
+    await serviceRoleClient.auth.admin.createUser({
+      email: email.toLowerCase(),
+      email_confirm: true,
+      password,
+      user_metadata: {
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        role: 'customer',
+      },
+    })
 
-  if (result.error !== null || !result.data.ok || !result.data.userId) {
-    return { error: result.data?.error ?? 'Aanmaken klant mislukt.' }
+  if (createError || !created.user) {
+    if (createError?.code === 'email_exists') {
+      return { error: 'Dit e-mailadres is al in gebruik.' }
+    }
+
+    return { error: createError?.message ?? 'Aanmaken klant mislukt.' }
   }
+
+  // handle_new_user seeds the profile with id/email/role only.
+  await serviceRoleClient
+    .from('profiles')
+    .update({ first_name: firstName, last_name: lastName, phone })
+    .eq('id', created.user.id)
 
   // Assign the new customer a K-code (and backfill any that lack one).
   const supabase = await getServerClient()

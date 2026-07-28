@@ -1,72 +1,49 @@
 import { type FC } from 'react'
 
-import { PERCENT_DECIMALS, PERCENT_MULTIPLIER } from './constants'
+import { formatDcfEuro } from '../../lib/formatValuationEuro'
+import { ValuationRangeCard } from '../ValuationRangeCard'
+import {
+  TOTALS_LABEL_STYLE,
+  TOTALS_ROW_STYLE,
+  TOTALS_TABLE_STYLE,
+  TOTALS_TOTAL_LABEL_STYLE,
+  TOTALS_TOTAL_ROW_STYLE,
+  TOTALS_TOTAL_VALUE_STYLE,
+  TOTALS_VALUE_STYLE,
+} from './constants'
 import { type Props } from './types'
 
-const formatEuro = (value: number): string =>
-  `€ ${Math.round(value).toLocaleString('nl-NL')}`
-const formatPercentage = (value: number): string =>
-  `${(value * PERCENT_MULTIPLIER).toFixed(PERCENT_DECIMALS)}%`
-
-export const DcfResultCard: FC<Props> = ({
-  ashHigh,
-  ashLow,
-  bandHigh,
-  bandLow,
-  dcfResult,
-  enterpriseValue,
-  shareholderValue,
-}) => {
-  const { totalen } = dcfResult.berekening
-
-  return (
-    <>
-      <div className="valuation-result">
-        <div className="label">Indicatieve ondernemingswaarde</div>
-        <div className="value">{formatEuro(enterpriseValue)}</div>
-        <div className="range">
-          {formatEuro(bandLow)} – {formatEuro(bandHigh)}
+// Ports renderDcfNewWaardebepalingBlockV2 (osago-bundle.js:5659-5714). Shown in
+// place of the "Indicatieve ondernemingswaarde" slider when dcfApplyEnabled.
+// `isLive` is deliberately off: legacy's updateShareholderValueLive never
+// touches this card's labels, so they stay put while the customer types in
+// Bandbreedte and only refresh on save.
+export const DcfResultCard: FC<Props> = ({ band, totalen }) => (
+  <ValuationRangeCard
+    band={band}
+    idSuffix="dcf"
+    mid={totalen.totaal}
+    title="DCF Waarde"
+  >
+    <div style={TOTALS_TABLE_STYLE}>
+      <div style={TOTALS_ROW_STYLE}>
+        <div style={TOTALS_LABEL_STYLE}>Waarde scenarioperiode</div>
+        <div style={TOTALS_VALUE_STYLE}>
+          {formatDcfEuro(totalen.waardeScenario)}
         </div>
       </div>
-
-      <div className="shv-band card-tight">
-        <div className="shv-band-header">
-          <span className="shv-band-title">Aandeelhouderswaarde</span>
-          <span className="shv-band-method-badge">DCF</span>
-        </div>
-        <div className="shv-band-mid">{formatEuro(shareholderValue)}</div>
-        <div className="shv-band-footer">
-          <span className="text-sm text-muted">
-            {formatEuro(ashLow)} – {formatEuro(ashHigh)}
-          </span>
+      <div style={TOTALS_ROW_STYLE}>
+        <div style={TOTALS_LABEL_STYLE}>Waarde restperiode</div>
+        <div style={TOTALS_VALUE_STYLE}>
+          {formatDcfEuro(totalen.waardeRest)}
         </div>
       </div>
-
-      <div className="dcf-panel open">
-        <div className="dcf-panel-header">
-          <h3>DCF-methodiek</h3>
+      <div style={TOTALS_TOTAL_ROW_STYLE}>
+        <div style={TOTALS_TOTAL_LABEL_STYLE}>Totaal</div>
+        <div style={TOTALS_TOTAL_VALUE_STYLE}>
+          {formatDcfEuro(totalen.totaal)}
         </div>
-        <table className="dcfn-wacc-table">
-          <tbody>
-            <tr>
-              <td>Kostenvoet (WACC)</td>
-              <td>{formatPercentage(dcfResult.kostenvoet)}</td>
-            </tr>
-            <tr>
-              <td>Waarde scenarioperiode</td>
-              <td>{formatEuro(totalen.waardeScenario)}</td>
-            </tr>
-            <tr>
-              <td>Restwaarde</td>
-              <td>{formatEuro(totalen.waardeRest)}</td>
-            </tr>
-            <tr>
-              <td>Totaal</td>
-              <td>{formatEuro(totalen.totaal)}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
-    </>
-  )
-}
+    </div>
+  </ValuationRangeCard>
+)

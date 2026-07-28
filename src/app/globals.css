@@ -2718,6 +2718,10 @@ tbody tr:hover > th {
   max-width: 580px;
   box-shadow: var(--shadow-lg);
   animation: modalIn 0.2s ease-out;
+  /* Modals render in place at their trigger's DOM position rather than in a
+     portal, so without this they inherit alignment from whatever contains the
+     trigger — e.g. the centred .val-locked-message overlay. */
+  text-align: left;
 }
 .modal-lg {
   max-width: 780px;
