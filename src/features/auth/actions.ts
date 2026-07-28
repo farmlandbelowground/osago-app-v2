@@ -12,6 +12,7 @@ import { getServerClient, getServiceRoleClient } from '@shared/supabase/server'
 import {
   ACCOUNT_PATH,
   ADMIN_ACCOUNT_PATH,
+  ALWAYS_SHOW_TWO_FACTOR_STEP,
   DASHBOARD_PATH,
   LOGIN_PATH,
   PASSWORD_RESET_ENDPOINT,
@@ -23,7 +24,6 @@ import {
 import {
   AccountPersonalInfoSchema,
   ForgotPasswordSchema,
-  LoginSchema,
   PasswordResetResponseSchema,
   PhoneRequiredSchema,
   RegisterSchema,
@@ -35,6 +35,7 @@ import {
 } from './schema'
 import {
   type AuthFlowState,
+  type CreateAccountState,
   type ForgotPasswordState,
   type UpdatePersonalInfoState,
   type VerifyCodeState,
@@ -76,7 +77,7 @@ const parseAuthApiResponse = async <T>(
   return result.success ? result.data : null
 }
 
-const verifyTurnstileToken = async (token: string): Promise<boolean> => {
+export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
   const response = await postJson(TURNSTILE_VERIFY_ENDPOINT, { token }, false)
 
   if (!response) {
@@ -120,48 +121,22 @@ export const sendTwoFactorCode = async (): Promise<AuthFlowState> => {
   }
 }
 
-export const login = async (
-  _prevState: AuthFlowState,
-  formData: FormData,
-): Promise<AuthFlowState> => {
-  const parsed = LoginSchema.safeParse(Object.fromEntries(formData))
+// Legacy's beginTwilioTwoFa (osago-bundle.js:2178) only reached the SMS screen
+// on a successful send and signed the user back out otherwise; per
+// ALWAYS_SHOW_TWO_FACTOR_STEP the step is now entered either way.
+export const beginTwoFactorFlow = async (): Promise<AuthFlowState> => {
+  const result = await sendTwoFactorCode()
 
-  if (!parsed.success) {
-    return {
-      error: 'Vul een geldig e-mailadres en wachtwoord in.',
-      status: 'error',
-    }
+  if (result.status === 'error' && ALWAYS_SHOW_TWO_FACTOR_STEP) {
+    return { phoneMasked: null, status: 'twofa' }
   }
 
-  const isHuman = await verifyTurnstileToken(parsed.data.turnstileToken)
-
-  if (!isHuman) {
-    return {
-      error: 'Bot-verificatie mislukt. Probeer opnieuw.',
-      status: 'error',
-    }
-  }
-
-  const supabase = await getServerClient()
-  const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  })
-
-  if (error) {
-    return {
-      error: 'Onjuiste inloggegevens. Probeer het opnieuw.',
-      status: 'error',
-    }
-  }
-
-  return sendTwoFactorCode()
+  return result
 }
 
 export const register = async (
-  _prevState: AuthFlowState,
   formData: FormData,
-): Promise<AuthFlowState> => {
+): Promise<CreateAccountState> => {
   const parsed = RegisterSchema.safeParse(Object.fromEntries(formData))
 
   if (!parsed.success) {
@@ -237,21 +212,7 @@ export const register = async (
     .update(patch)
     .eq('id', signupData.user.id)
 
-  const supabase = await getServerClient()
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) {
-    return {
-      error:
-        'Account aangemaakt, maar inloggen is mislukt. Probeer in te loggen.',
-      status: 'error',
-    }
-  }
-
-  return sendTwoFactorCode()
+  return { status: 'created' }
 }
 
 export const verifyTwoFactorCode = async (
@@ -337,7 +298,7 @@ export const updatePhoneAndResendCode = async (
     return { error: message, status: 'phone-required' }
   }
 
-  return sendTwoFactorCode()
+  return beginTwoFactorFlow()
 }
 
 export const cancelTwoFactor = async (): Promise<never> => {

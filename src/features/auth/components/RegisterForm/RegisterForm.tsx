@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useActionState, useState, type ChangeEvent, type FC } from 'react'
+import { useState, type ChangeEvent, type FC } from 'react'
 
-import { register } from '../../actions'
 import { PASSWORD_REQUIREMENTS_TOOLTIP } from '../../constants'
+import { useRegisterFlow } from '../../hooks/useRegisterFlow'
 import { useTwoFactorFlow } from '../../hooks/useTwoFactorFlow'
 import { AuthAlert } from '../AuthAlert'
 import { AuthField } from '../AuthField'
@@ -33,12 +33,10 @@ const initialFormValues: RegisterFormValues = {
 }
 
 export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
-  const [state, formAction, isPending] = useActionState(register, {
-    status: 'idle',
-  })
+  const { flowState, isPending, onSubmit } = useRegisterFlow()
   const [password, setPassword] = useState('')
   const [formValues, setFormValues] = useState(initialFormValues)
-  const twoFactor = useTwoFactorFlow({ flowState: state })
+  const twoFactor = useTwoFactorFlow({ flowState })
 
   const onPasswordChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setPassword(event.target.value)
@@ -53,7 +51,7 @@ export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
       }))
     }
 
-  if (state.status === 'twofa' || state.status === 'phone-required') {
+  if (flowState.status === 'twofa' || flowState.status === 'phone-required') {
     if (twoFactor.step === 'twofa') {
       return (
         <TwoFactorStep
@@ -87,11 +85,11 @@ export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
     <div>
       <AuthHeading>Account aanmaken</AuthHeading>
 
-      {state.status === 'error' && (
-        <AuthAlert variant="error">{state.error}</AuthAlert>
+      {flowState.status === 'error' && (
+        <AuthAlert variant="error">{flowState.error}</AuthAlert>
       )}
 
-      <form action={formAction}>
+      <form onSubmit={onSubmit}>
         <div className="form-row">
           <AuthField label="Voornaam">
             <AuthTextInput
@@ -159,7 +157,7 @@ export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
 
         <TurnstileWidget
           name="turnstileToken"
-          resetSignal={state.status === 'error' ? state : undefined}
+          resetSignal={flowState.status === 'error' ? flowState : undefined}
         />
 
         {referralPartnerSlug && (

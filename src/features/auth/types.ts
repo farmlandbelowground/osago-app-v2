@@ -6,6 +6,9 @@ export type AuthFlowState =
   | { error?: string; status: 'phone-required' }
   | { phoneMasked: string | null; status: 'twofa' }
 
+export type CreateAccountState =
+  { error: string; status: 'error' } | { status: 'created' }
+
 export type VerifyCodeState =
   { error: string; status: 'error' } | { status: 'idle' }
 

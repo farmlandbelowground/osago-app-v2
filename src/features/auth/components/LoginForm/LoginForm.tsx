@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useActionState, type FC } from 'react'
+import { type FC } from 'react'
 
-import { login } from '../../actions'
+import { useLoginFlow } from '../../hooks/useLoginFlow'
 import { useTwoFactorFlow } from '../../hooks/useTwoFactorFlow'
 import { AuthAlert } from '../AuthAlert'
 import { AuthField } from '../AuthField'
@@ -15,12 +15,10 @@ import { TurnstileWidget } from '../TurnstileWidget'
 import { TwoFactorStep } from '../TwoFactorStep'
 
 export const LoginForm: FC = () => {
-  const [state, formAction, isPending] = useActionState(login, {
-    status: 'idle',
-  })
-  const twoFactor = useTwoFactorFlow({ flowState: state })
+  const { flowState, isPending, onSubmit } = useLoginFlow()
+  const twoFactor = useTwoFactorFlow({ flowState })
 
-  if (state.status === 'twofa' || state.status === 'phone-required') {
+  if (flowState.status === 'twofa' || flowState.status === 'phone-required') {
     if (twoFactor.step === 'twofa') {
       return (
         <TwoFactorStep
@@ -54,11 +52,11 @@ export const LoginForm: FC = () => {
     <div>
       <AuthHeading>Welkom terug</AuthHeading>
 
-      {state.status === 'error' && (
-        <AuthAlert variant="error">{state.error}</AuthAlert>
+      {flowState.status === 'error' && (
+        <AuthAlert variant="error">{flowState.error}</AuthAlert>
       )}
 
-      <form action={formAction}>
+      <form onSubmit={onSubmit}>
         <AuthField label="E-mailadres">
           <AuthTextInput
             name="email"
@@ -81,7 +79,7 @@ export const LoginForm: FC = () => {
 
         <TurnstileWidget
           name="turnstileToken"
-          resetSignal={state.status === 'error' ? state : undefined}
+          resetSignal={flowState.status === 'error' ? flowState : undefined}
         />
 
         <AuthSubmitButton isDisabled={isPending}>

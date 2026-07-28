@@ -2,6 +2,11 @@ export const PASSWORD_MIN_LENGTH = 9
 export const PASSWORD_REQUIREMENTS_TOOLTIP =
   'Minimaal 9 tekens, met ten minste 1 letter, 1 cijfer en 1 symbool (bv. ! @ # $ %).'
 export const TWO_FACTOR_CODE_LENGTH = 6
+// The SMS step is entered after every successful password check, even when
+// /api/2fa/send fails — Twilio is not live yet and the screen is still expected
+// to appear. Set to false to restore legacy's "error on the login screen"
+// behaviour once the flow moves to Supabase's built-in MFA.
+export const ALWAYS_SHOW_TWO_FACTOR_STEP = true
 
 export const TURNSTILE_VERIFY_ENDPOINT = '/api/turnstile/verify'
 export const TWO_FACTOR_SEND_ENDPOINT = '/api/2fa/send'
