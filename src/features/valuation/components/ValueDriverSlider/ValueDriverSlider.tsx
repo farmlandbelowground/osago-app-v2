@@ -3,11 +3,11 @@
 import { type ChangeEvent, type FC } from 'react'
 
 import {
-  VD_PERCENTAGE_SLIDER_DEFAULT,
   VD_PERCENTAGE_SLIDER_MAX,
   VD_PERCENTAGE_SLIDER_MIN,
   VD_PERCENTAGE_SLIDER_STEP,
 } from '@features/valuation/constants/valueDrivers'
+import { resolveValueDriverDisplayValue } from '@features/valuation/lib/resolveValueDriverDisplayValue'
 import { cn } from '@shared/utils/cn'
 
 import {
@@ -109,14 +109,15 @@ export const ValueDriverSlider: FC<Props> = ({
           step={VD_PERCENTAGE_SLIDER_STEP}
           value={
             Math.round(
-              (value ?? VD_PERCENTAGE_SLIDER_DEFAULT) / PERCENTAGE_SNAP_STEP,
+              resolveValueDriverDisplayValue(definition, value) /
+                PERCENTAGE_SNAP_STEP,
             ) * PERCENTAGE_SNAP_STEP
           }
         />
       ) : (
         (() => {
           const labels = definition.labels ?? []
-          const currentIndex = value ?? Math.floor(labels.length / 2)
+          const currentIndex = resolveValueDriverDisplayValue(definition, value)
           return (
             <TrackSlider
               labels={labels}

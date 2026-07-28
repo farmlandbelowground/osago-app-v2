@@ -39,6 +39,7 @@ import {
   AppConfigSmallEbitdaDeductionsSchema,
   AppConfigSmallOrgDeductionsSchema,
   CompanyValuationRowSchema,
+  DcfNewInputsSchema,
   FinancialsRowSchema,
   ValuationDcfParamsSchema,
   ValuationResultRecordSchema,
@@ -59,6 +60,7 @@ import {
   type ValuationReportContent,
   type ValuationReview,
   type ValuationSettings,
+  type ValuationSnapshotCompany,
   type ValueDriverAnswers,
   type ShareholderValueInputs,
 } from './types'
@@ -332,6 +334,23 @@ export interface ResolvedCompanyData {
 
 const FALLBACK_LAST_CLOSED_YEAR = new Date().getFullYear() - 1
 
+// `snapshotCompany` is persisted as unvalidated jsonb (ValuationResultRecordSchema
+// types it `z.unknown()`), and snapshots exist in the wild that hold the DCF
+// inputs under `dcfNewInputs` with `dcfParams` left as `{}`. Validate both and
+// fall back to the defaults, because handing dcfNewCompute a shape without
+// `klein` throws and takes the whole page down.
+const resolveSnapshotDcfNewInputs = (
+  snapshot: ValuationSnapshotCompany,
+): DcfNewInputs => {
+  for (const candidate of [snapshot.dcfParams, snapshot.dcfNewInputs]) {
+    const parsed = DcfNewInputsSchema.safeParse(candidate)
+    if (parsed.success) {
+      return parsed.data
+    }
+  }
+  return DEFAULT_DCF_NEW_INPUTS
+}
+
 export const resolveDisplayCompanyData = async (
   userId: string,
 ): Promise<ResolvedCompanyData | null> => {
@@ -364,7 +383,7 @@ export const resolveDisplayCompanyData = async (
       nonLegalEntityConfig: snapshot.nonLegalEntityValuation,
       valuationSettings: snapshot.valuationSettings,
       dcfApplyEnabled: snapshot.dcfApplyEnabled,
-      dcfNewInputs: snapshot.dcfParams,
+      dcfNewInputs: resolveSnapshotDcfNewInputs(snapshot),
       valuationBand: snapshot.valuationBand,
       valueDriverAnswers: snapshot.valueDrivers,
     }

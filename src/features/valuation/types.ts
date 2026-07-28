@@ -251,6 +251,9 @@ export interface ValuationSnapshotCompany
   valuationBand: number | null
   valuationSettings: ValuationSettings
   valueDrivers: ValueDriverAnswers
+  // Snapshots written before the inputs moved to `dcfParams` carry them here
+  // instead; resolveSnapshotDcfNewInputs reads whichever one validates.
+  dcfNewInputs?: DcfNewInputs
 }
 
 export interface ValuationResultRecord {
@@ -287,6 +290,8 @@ export interface ValuationReview {
   approvedAt?: number
   approvedBy?: string
 }
+
+export type ValuationReviewStatus = ValuationReview['status'] | 'none'
 
 export interface ValuationProgress {
   financialsAnyValue: boolean

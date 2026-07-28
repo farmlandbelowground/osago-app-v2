@@ -8,6 +8,7 @@ import {
   VD_SECTIONS,
   type ValueDriverDefinition,
 } from '@features/valuation/constants/valueDrivers'
+import { resolveValueDriverDisplayValue } from '@features/valuation/lib/resolveValueDriverDisplayValue'
 import { type ValueDriverAnswers } from '@features/valuation/types'
 
 import { ValueDriverSlider } from '../ValueDriverSlider'
@@ -35,7 +36,19 @@ export const ValueDriversForm: FC<Props> = ({ initialAnswers }) => {
   const onSubmit = async (): Promise<void> => {
     setStatus('pending')
     setErrorMessage(null)
-    const result = await saveValueDrivers(answers)
+
+    // Persist every question, using the value each slider is displaying for the
+    // ones never dragged — legacy reads the DOM on save, so untouched sliders
+    // are stored too. Without this, an untouched question has no key and
+    // valueDriversComplete stays false however many sliders were moved.
+    const completeAnswers: ValueDriverAnswers = Object.fromEntries(
+      VALUE_DRIVERS.map(definition => [
+        definition.id,
+        resolveValueDriverDisplayValue(definition, answers[definition.id]),
+      ]),
+    )
+
+    const result = await saveValueDrivers(completeAnswers)
 
     if (result.error !== null) {
       setStatus('error')
@@ -43,6 +56,7 @@ export const ValueDriversForm: FC<Props> = ({ initialAnswers }) => {
       return
     }
 
+    setAnswers(completeAnswers)
     setStatus('success')
   }
 

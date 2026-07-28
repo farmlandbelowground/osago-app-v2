@@ -1,10 +1,11 @@
 export { FinancialsPageContent } from './components/FinancialsPageContent'
 export { ValueDriversForm } from './components/ValueDriversForm'
-export { ValuationProgressTracker } from './components/ValuationProgressTracker'
-export { ValuationResultCard } from './components/ValuationResultCard'
+export { ValuationRangeCard } from './components/ValuationRangeCard'
 export { DcfResultCard } from './components/DcfResultCard'
+export { MethodeToelichtingCard } from './components/MethodeToelichtingCard'
+export { ValuationBandCard } from './components/ValuationBandCard'
+export { ValuationDisclaimer } from './components/ValuationDisclaimer'
 export { ValuationLockInModal } from './components/ValuationLockInModal'
-export { ValuationReviewStatusCard } from './components/ValuationReviewStatusCard'
 export { MakeValuationButton } from './components/MakeValuationButton'
 export { ValuationLockGate } from './components/ValuationLockGate'
 export { ValuationReportEditor } from './components/ValuationReportEditor'
@@ -38,7 +39,11 @@ export {
   submitValuationForReview,
 } from './actions'
 
-export { computeValuationProgress } from './lib/computeValuationProgress'
+export {
+  computeValuationProgress,
+  hasAnyFinancialValue,
+} from './lib/computeValuationProgress'
+export { isNonLegalEntityForm } from './lib/isNonLegalEntityForm'
 export { computeIndicatieveOndernemingswaarde } from './lib/computeIndicatieveOndernemingswaarde'
 export { buildHistoryWeightOverrides } from './lib/buildHistoryWeightOverrides'
 export { computeAandeelhouderswaardeVerrekening } from './lib/computeAandeelhouderswaardeVerrekening'
