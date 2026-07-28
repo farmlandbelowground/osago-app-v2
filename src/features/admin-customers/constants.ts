@@ -1,7 +1,6 @@
 export const ADMIN_KLANTEN_PATH = '/admin/klanten'
 export const ADMIN_PROJECTEN_PATH = '/admin/projecten'
 
-export const SIGNUP_ENDPOINT = '/api/auth/signup'
 export const DOCS_BUCKET = 'osago-documents'
 export const DOC_MAX_SIZE_BYTES = 25 * 1024 * 1024
 export const PASSWORD_MIN_LENGTH = 8
