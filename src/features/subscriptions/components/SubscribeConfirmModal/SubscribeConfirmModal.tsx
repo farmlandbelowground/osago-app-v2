@@ -229,6 +229,7 @@ export const SubscribeConfirmModal: FC<Props> = ({
             <a
               href="https://www.osago.nl/algemene-voorwaarden/"
               rel="noopener noreferrer"
+              style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
               target="_blank"
             >
               algemene voorwaarden
@@ -237,6 +238,7 @@ export const SubscribeConfirmModal: FC<Props> = ({
             <a
               href="https://www.osago.nl/privacy/"
               rel="noopener noreferrer"
+              style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
               target="_blank"
             >
               privacybeleid

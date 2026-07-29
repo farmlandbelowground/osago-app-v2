@@ -184,6 +184,7 @@ export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
             <a
               href="https://www.osago.nl/algemene-voorwaarden/"
               rel="noopener noreferrer"
+              style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
               target="_blank"
             >
               algemene voorwaarden
@@ -192,6 +193,7 @@ export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
             <a
               href="https://www.osago.nl/privacy/"
               rel="noopener noreferrer"
+              style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
               target="_blank"
             >
               privacybeleid
