@@ -87,7 +87,7 @@ export const CompanyDetailsForm: FC<Props> = ({
           </CompanyFormField>
         </div>
 
-        <div className="form-row" style={{ gridTemplateColumns: '1fr 110px 130px' }}>
+        <div className="form-row" style={{ gridTemplateColumns: '1fr 150px 130px' }}>
           <CompanyFormField
             error={errors.street?.message}
             field="street"
