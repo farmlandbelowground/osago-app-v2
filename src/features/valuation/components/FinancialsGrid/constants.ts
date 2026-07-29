@@ -72,8 +72,7 @@ export const FIN_ROWS: readonly FinRowDefinition[] = [
     kind: 'derived',
     key: 'ebitda',
     label: 'EBITDA',
-    tooltip:
-      'Nettowinst v.b. + Afschrijvingen + Rentelasten + Belastingen + Normaliseringen',
+    tooltip: 'Nettowinst v.b. + Afschrijvingen + Normaliseringen',
   },
 ] as const
 

@@ -55,7 +55,11 @@ export const buildValuationGammaDoc = (
   const ev = data.enterpriseValue
   const sv = data.shareholderValue
   const band = data.band
-  const finTableMd = buildFinancialsTableMd(data.financials, currentYear)
+  const finTableMd = buildFinancialsTableMd(
+    data.financials,
+    currentYear,
+    data.normalizations,
+  )
 
   const methodiekFallback = dcf
     ? 'Deze waardering is tot stand gekomen via de Discounted Cash Flow-methodiek (DCF): de verwachte vrije kasstromen over de scenarioperiode en de restperiode zijn contant gemaakt tegen een samengestelde vermogenskostenvoet (WACC).'
