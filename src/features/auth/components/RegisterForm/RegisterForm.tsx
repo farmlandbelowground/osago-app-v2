@@ -155,6 +155,53 @@ export const RegisterForm: FC<Props> = ({ referralPartnerSlug }) => {
           <PasswordChecklist password={password} />
         </AuthField>
 
+        <label
+          style={{
+            alignItems: 'flex-start',
+            cursor: 'pointer',
+            display: 'flex',
+            fontSize: 13,
+            gap: 10,
+            lineHeight: 1.5,
+            marginBottom: 16,
+          }}
+        >
+          <input
+            name="termsAccepted"
+            required
+            style={{
+              accentColor: 'var(--green)',
+              cursor: 'pointer',
+              flexShrink: 0,
+              height: 16,
+              marginTop: 3,
+              width: 16,
+            }}
+            type="checkbox"
+          />
+          <span>
+            Ik ga akkoord met de{' '}
+            <a
+              href="https://www.osago.nl/algemene-voorwaarden/"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
+              target="_blank"
+            >
+              algemene voorwaarden
+            </a>{' '}
+            en het{' '}
+            <a
+              href="https://www.osago.nl/privacy/"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
+              target="_blank"
+            >
+              privacybeleid
+            </a>
+            .
+          </span>
+        </label>
+
         <TurnstileWidget
           name="turnstileToken"
           resetSignal={flowState.status === 'error' ? flowState : undefined}

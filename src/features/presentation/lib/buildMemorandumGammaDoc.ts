@@ -109,7 +109,11 @@ export const buildMemorandumGammaDoc = (
           ? '### Methode toelichting\n\n' + v.methodeMarkdown
           : '',
         (() => {
-          const t = buildFinancialsTableMd(v.financials, input.currentYear)
+          const t = buildFinancialsTableMd(
+            v.financials,
+            input.currentYear,
+            v.normalizations,
+          )
           return t ? '### Financiële kengetallen\n\n' + t : ''
         })(),
       ]

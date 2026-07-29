@@ -225,9 +225,28 @@ export const SubscribeConfirmModal: FC<Props> = ({
               }}
               type="checkbox"
             />
-            Ik ga akkoord met de algemene voorwaarden en geef toestemming voor
-            automatische verlenging na 6 maanden (uiterlijk 30 dagen vóór
-            einddatum opzegbaar).
+            <span>
+              Ik ga akkoord met de{' '}
+              <a
+                href="https://www.osago.nl/algemene-voorwaarden/"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
+                target="_blank"
+              >
+                algemene voorwaarden
+              </a>{' '}
+              en het{' '}
+              <a
+                href="https://www.osago.nl/privacy/"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--green-dark)', whiteSpace: 'nowrap' }}
+                target="_blank"
+              >
+                privacybeleid
+              </a>{' '}
+              en geef toestemming voor automatische verlenging na 6 maanden
+              (uiterlijk 30 dagen vóór einddatum opzegbaar).
+            </span>
           </label>
         </>
       ) : (

@@ -60,10 +60,16 @@ const dcfNewComputeBerekening = (
     const interest = row.interest ?? 0
     const taxes = row.taxesPaid ?? 0
 
-    const ebitda = revenue - cogs - opex
-    const ebit = ebitda - depreciation
-    const nettoResultaat = ebit - interest - taxes
     const norm = computeNormalizationsForYear(normalizations, year)
+    // EBIT expliciet berekenen (los van EBITDA) zodat de DCF-keten onder
+    // (nettoResultaat, noplat, fcf) NIET verandert door de nieuwe EBITDA-
+    // definitie hieronder.
+    const ebit = revenue - cogs - opex - depreciation
+    // EBITDA volgt de tabel-definitie op /financiele-gegevens:
+    // Nettowinst v.b. (= revenue − cogs − opex) + Afschrijvingen + Normaliseringen.
+    // Rentelasten en Betaalde belastingen tellen niet meer mee.
+    const ebitda = revenue - cogs - opex + depreciation + norm
+    const nettoResultaat = ebit - interest - taxes
     const nettoResultaatGenorm = nettoResultaat + norm
     const noplat = ebit - taxes
 

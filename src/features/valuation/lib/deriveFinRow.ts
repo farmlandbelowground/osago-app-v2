@@ -27,17 +27,17 @@ export const deriveFinRow = (
         (input.operatingExpenses ?? 0) -
         operatingExpensesAddon
 
+  // EBITDA = Nettowinst voor belastingen + Afschrijvingen + Normaliseringen.
+  // Rentelasten en Betaalde belastingen worden hier NIET meer opgeteld: de
+  // "Nettowinst voor belastingen" in deze tabel zit al vóór rente/tax
+  // (PBT = omzet − kostprijs − bedrijfskosten), dus dubbeltellen zou fout zijn.
   const ebitda =
     profitBeforeTax === null &&
     input.depreciation === null &&
-    input.interest === null &&
-    input.taxesPaid === null &&
     normalizationsAddon === 0
       ? null
       : (profitBeforeTax ?? 0) +
         (input.depreciation ?? 0) +
-        (input.interest ?? 0) +
-        (input.taxesPaid ?? 0) +
         normalizationsAddon
 
   return {
