@@ -19,11 +19,20 @@ export const MoneyInput: FC<Props> = ({
   }
 
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    const digitsOnly = event.target.value.replace(/[^\d-]/g, '')
-    setRawText(digitsOnly)
-    onChange(
-      digitsOnly === '' || digitsOnly === '-' ? null : parseInt(digitsOnly, 10),
-    )
+    // Sanitize: strip alles behalve cijfers en minteken.
+    const cleaned = event.target.value.replace(/[^\d-]/g, '')
+    // Minteken is alleen geldig als leading character (positie 0). Overige
+    // mintekens worden gestript, anders gaat parseInt('1-2000') fout (→ 1)
+    // en verdwijnt een negatief teken achter cijfers (zoals '12000-' → 12000).
+    const isNegative = cleaned.startsWith('-')
+    const digitsOnly = cleaned.replace(/-/g, '')
+    const normalized =
+      digitsOnly === '' ? (isNegative ? '-' : '') : `${isNegative ? '-' : ''}${digitsOnly}`
+    setRawText(normalized)
+    const parsed = normalized === '' || normalized === '-'
+      ? null
+      : parseInt(normalized, 10)
+    onChange(Number.isFinite(parsed) ? parsed : null)
   }
 
   const displayValue = isFocused

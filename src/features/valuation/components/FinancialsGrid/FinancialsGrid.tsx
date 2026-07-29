@@ -473,7 +473,7 @@ export const FinancialsGrid: FC<Props> = ({
                 >
                   <td className="fin-row-label">
                     {row.label}
-                    {row.kind !== 'input' && (
+                    {row.tooltip && (
                       <span
                         className="info-tip"
                         data-tip={row.tooltip}

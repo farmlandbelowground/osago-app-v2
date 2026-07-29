@@ -22,6 +22,7 @@ interface FinInputRowDefinition {
   key: FinInputField
   kind: 'input'
   label: string
+  tooltip?: string
 }
 
 interface FinDerivedRowDefinition {
@@ -54,7 +55,12 @@ export const FIN_ROWS: readonly FinRowDefinition[] = [
   },
   { kind: 'input', key: 'depreciation', label: 'Afschrijvingen' },
   { kind: 'input', key: 'interest', label: 'Rentelasten' },
-  { kind: 'input', key: 'taxesPaid', label: 'Betaalde belastingen' },
+  {
+    kind: 'input',
+    key: 'taxesPaid',
+    label: 'Betaalde belastingen',
+    tooltip: 'Betaalde vennootschapsbelasting',
+  },
   {
     kind: 'soft-derived',
     key: 'normalizationsApplied',
