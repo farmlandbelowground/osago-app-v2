@@ -1,0 +1,1 @@
+export { IdentityVerificationCard } from './IdentityVerificationCard'

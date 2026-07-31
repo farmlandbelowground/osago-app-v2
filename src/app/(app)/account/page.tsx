@@ -22,6 +22,10 @@ import {
   AccountPhotoUpload,
 } from '@features/auth'
 import { getAccountProfile } from '@features/auth/queries'
+import {
+  IdentityVerificationCard,
+  getIdentityStatus,
+} from '@features/identity'
 import { WELKOM_PATHS } from '@features/onboarding'
 import {
   AccountBlockedBanner,
@@ -46,10 +50,11 @@ export default async function AccountPage() {
 
   await reconcileSalesInvoiceActivations()
 
-  const [subscription, invoices, profile] = await Promise.all([
+  const [subscription, invoices, profile, identity] = await Promise.all([
     getSubscription(session.user.id),
     getOwnInvoices(),
     getAccountProfile(session.user.id),
+    getIdentityStatus(session.user.id),
   ])
 
   if (!profile) {
@@ -128,6 +133,7 @@ export default async function AccountPage() {
         role={session.role}
       />
       <AccountPersonalInfoForm profile={profile} />
+      <IdentityVerificationCard profile={identity} variant="account" />
       <AccountPasswordForm email={profile.email} />
 
       <AccountBlockedBanner
