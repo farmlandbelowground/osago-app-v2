@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, type FC, type SVGProps } from 'react'
 
-import { type ScreenState } from '@features/preparation'
+import { type ScreenState } from '@features/preparation/types'
 import { logout } from '@shared/auth/actions'
 import { Logo } from '@shared/components/Logo'
 import { cn } from '@shared/utils/cn'

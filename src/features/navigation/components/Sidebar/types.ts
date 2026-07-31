@@ -1,5 +1,5 @@
-import { type IdentityStatus } from '@features/identity'
-import { type PreparationState } from '@features/preparation'
+import { type IdentityStatus } from '@features/identity/types'
+import { type PreparationState } from '@features/preparation/types'
 
 export interface Props {
   allowedPaths: string[] | null

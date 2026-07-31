@@ -1,4 +1,4 @@
-import { type PreparationScreenId } from '@features/preparation'
+import { type PreparationScreenId } from '@features/preparation/types'
 
 import {
   FinancieleGegevensIcon,
