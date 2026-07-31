@@ -1,7 +1,23 @@
 import { getServiceRoleClient } from '@shared/supabase/server'
 
-import { type StripeVerificationSession } from './stripe'
 import { mapStripeStatus } from './mapStripeStatus'
+import { type StripeVerificationSession } from './stripe'
+
+// Minimal structural shape that both the REST-call return type
+// (StripeVerificationSession) and the webhook's Zod-parsed shape satisfy —
+// avoiding a mismatch on fields the writer doesn't need (client_secret, url).
+export interface IdentitySessionSnapshot {
+  id: StripeVerificationSession['id']
+  last_error?:
+    | { code?: string; reason: string }
+    | null
+    | undefined
+  status: StripeVerificationSession['status']
+  verified_outputs?:
+    | { first_name?: string; id_number_type?: string; last_name?: string }
+    | null
+    | undefined
+}
 
 // Merges a Stripe VerificationSession snapshot back into public.profiles.
 // Called by both the "start" server action, the "refresh" server action, and
@@ -14,7 +30,7 @@ import { mapStripeStatus } from './mapStripeStatus'
 // caller-side session guard is what enforces authorization.
 export const upsertIdentityFromSession = async (
   userId: string,
-  session: StripeVerificationSession,
+  session: IdentitySessionSnapshot,
 ): Promise<void> => {
   const nextStatus = mapStripeStatus(session.status)
   const verifiedName = session.verified_outputs?.first_name
