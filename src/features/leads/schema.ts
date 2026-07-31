@@ -54,6 +54,7 @@ export const LeadRowSchema = z.object({
   promoted_at: z.string().nullable(),
   promoted_from_manual_at: z.string().nullable(),
   promoted_from_osago_lead_at: z.string().nullable(),
+  stage_actions_completed: z.record(z.string(), z.boolean()).default({}),
 })
 
 export type LeadRow = z.infer<typeof LeadRowSchema>

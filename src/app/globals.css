@@ -4440,3 +4440,82 @@ details[open] > summary > .advanced-fin-chevron {
   border-color: var(--green); background: var(--green-soft);
   color: var(--green-dark);
 }
+
+/* ── Buyer-modal step-info panel (per-stage guidance) ── */
+.step-info {
+  background: var(--green-soft);
+  border: 1px solid var(--green-light);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin: 4px 0 20px;
+}
+.step-info-head {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.step-info-badge {
+  background: #fff;
+  border: 1px solid var(--green-light);
+  color: var(--green-dark);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+.step-info-title {
+  font-size: 13px; font-weight: 600; color: var(--green-dark);
+}
+.step-block {
+  display: block;
+  padding: 11px 0;
+  border-top: 1px solid rgba(0, 179, 60, 0.14);
+}
+.step-block:first-of-type { border-top: none; padding-top: 0; }
+.step-block-q {
+  font-size: 12px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px;
+}
+.step-block-a { font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.step-block-empty { color: var(--muted); font-style: italic; }
+
+.check-list {
+  display: flex; flex-direction: column; gap: 6px; margin-top: 2px;
+}
+.check-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 11px; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  cursor: pointer; text-align: left; width: 100%;
+  font: inherit;
+  transition: border-color 0.12s, transform 0.12s;
+}
+.check-item:hover { border-color: var(--green); transform: translateX(2px); }
+.check-item .check-box {
+  flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px;
+  border-radius: 50%; border: 2px solid var(--line);
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  transition: background 0.15s, border-color 0.15s;
+}
+.check-item .check-box svg { display: none; }
+.check-item.done .check-box {
+  background: var(--green); border-color: var(--green);
+}
+.check-item.done .check-box svg { display: block; }
+.check-item .ct { flex: 1; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.check-item.done .ct {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--line);
+}
+
+.step-next {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(0, 179, 60, 0.14);
+  font-size: 12.5px; color: var(--green-dark);
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 500; flex-wrap: wrap;
+}
+.step-next-text { flex: 1; min-width: 200px; }

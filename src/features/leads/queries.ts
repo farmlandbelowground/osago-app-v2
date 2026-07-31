@@ -31,6 +31,7 @@ const rowToLead = (row: LeadRow): Lead => ({
   sector: row.sector,
   source: row.source,
   stage: row.stage,
+  stageActionsCompleted: row.stage_actions_completed,
   street: row.street,
   type: row.type,
   userId: row.user_id,

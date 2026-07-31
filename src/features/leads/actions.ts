@@ -544,6 +544,45 @@ export const updatePipelineLead = async (
   return { error: null }
 }
 
+// Persists a single StageGuidancePanel check toggle. The map is keyed by the
+// panel's `${stage}:actions:${itemId}` / `${stage}:docs:${itemId}` scheme, so
+// state is scoped per buyer × per stage × per item and survives modal close.
+// Only truthy entries are stored to keep the jsonb compact.
+export const toggleStageAction = async (
+  id: string,
+  itemKey: string,
+  checked: boolean,
+): Promise<ActionResult> => {
+  const session = await requireSession()
+  const userId = session.user.id
+
+  const lead = await getLeadById(userId, id)
+  if (!lead || lead.leadType !== 'pipeline') {
+    return { error: 'Koper niet gevonden.' }
+  }
+
+  const next = { ...lead.stageActionsCompleted }
+  if (checked) {
+    next[itemKey] = true
+  } else {
+    delete next[itemKey]
+  }
+
+  const supabase = await getServerClient()
+  const { error } = await supabase
+    .from('leads')
+    .update({ stage_actions_completed: next })
+    .eq('user_id', userId)
+    .eq('id', id)
+
+  if (error) {
+    return { error: 'Opslaan van de checklist is mislukt.' }
+  }
+
+  revalidatePath(VERKOOPPROCES_PATH)
+  return { error: null }
+}
+
 export const moveLeadStage = async (
   id: string,
   stage: string,

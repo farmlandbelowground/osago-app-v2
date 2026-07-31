@@ -13,6 +13,7 @@ import { type Lead, type LeadStage, type PipelineLeadInput } from '../../types'
 import { LeadModalShell } from '../LeadModalShell'
 import { OsagoBadge } from '../OsagoBadge'
 import { SalesDocButtons } from '../SalesDocButtons'
+import { StageGuidancePanel } from '../StageGuidancePanel'
 import { TeaserModal } from '../TeaserModal'
 import { ValidationUpdateModal } from '../ValidationUpdateModal'
 import { type Props } from './types'
@@ -178,6 +179,14 @@ export const PipelineDetailModal: FC<Props> = ({
             />
           </div>
         </div>
+
+        <StageGuidancePanel
+          initialChecked={lead.stageActionsCompleted}
+          leadId={lead.id}
+          onStageChange={setStage}
+          stage={stage}
+          stageDefinitions={LEAD_STAGES}
+        />
 
         <div className="form-section" style={{ marginBottom: '18px' }}>
           <h3

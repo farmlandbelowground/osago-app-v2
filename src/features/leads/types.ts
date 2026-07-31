@@ -44,6 +44,7 @@ export interface Lead {
   sector: string | null
   source: string | null
   stage: LeadStage | null
+  stageActionsCompleted: Record<string, boolean>
   street: string | null
   type: string | null
   userId: string
