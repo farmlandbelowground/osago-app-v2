@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 
 import { getCompany } from '@features/company/queries'
 import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
+import { IdentityGuard } from '@features/identity'
 import {
   KOPERMATCHING_PATH,
   PipelineBoard,
@@ -43,8 +44,9 @@ export default async function VerkoopprocesPage() {
   ])
 
   return (
-    <main className="main">
-      <WerkruimteLockGate unlocked={memoDone && anonDone}>
+    <IdentityGuard>
+      <main className="main">
+        <WerkruimteLockGate unlocked={memoDone && anonDone}>
         <div className="page-header">
           <div>
             <h1 className="page-title">Verkoopproces</h1>
@@ -65,7 +67,8 @@ export default async function VerkoopprocesPage() {
             leads={leads}
           />
         )}
-      </WerkruimteLockGate>
-    </main>
+        </WerkruimteLockGate>
+      </main>
+    </IdentityGuard>
   )
 }

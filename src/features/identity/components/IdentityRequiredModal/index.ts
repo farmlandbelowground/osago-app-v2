@@ -1,0 +1,1 @@
+export { IdentityRequiredModal } from './IdentityRequiredModal'

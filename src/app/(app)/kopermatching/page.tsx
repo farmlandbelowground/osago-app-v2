@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { MIJN_BEDRIJF_PATH } from '@features/company/constants'
 import { getCompany } from '@features/company/queries'
 import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
+import { IdentityGuard } from '@features/identity'
 import {
   AutoLeadsPanel,
   BuyerMatchingTabs,
@@ -42,6 +43,7 @@ export default async function KopermatchingPage() {
 
   if (!company?.sector) {
     return (
+      <IdentityGuard>
       <main className="main">
         <div className="page-header">
           <div>
@@ -74,6 +76,7 @@ export default async function KopermatchingPage() {
           </div>
         </div>
       </main>
+      </IdentityGuard>
     )
   }
 
@@ -90,8 +93,9 @@ export default async function KopermatchingPage() {
     ])
 
   return (
-    <main className="main">
-      <WerkruimteLockGate unlocked={memoDone && anonDone}>
+    <IdentityGuard>
+      <main className="main">
+        <WerkruimteLockGate unlocked={memoDone && anonDone}>
         <div className="page-header">
           <div>
             <h1 className="page-title">Kopermatching</h1>
@@ -109,7 +113,8 @@ export default async function KopermatchingPage() {
           manualPanel={<ManualLeadsPanel leads={manualLeads} />}
           osagoPanel={<OsagoValidatedPanel leads={osagoLeads} />}
         />
-      </WerkruimteLockGate>
-    </main>
+        </WerkruimteLockGate>
+      </main>
+    </IdentityGuard>
   )
 }
