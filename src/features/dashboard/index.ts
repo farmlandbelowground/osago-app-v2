@@ -2,6 +2,7 @@ export { ConversionDashboard } from './components/ConversionDashboard'
 export { DashboardKpiRow } from './components/DashboardKpiRow'
 export { DashboardTodoList } from './components/DashboardTodoList'
 export { DashboardWelcomeVideoCard } from './components/DashboardWelcomeVideoCard'
+export { PreparationDashboard } from './components/PreparationDashboard'
 export { WELCOME_VIDEO_DONE_THRESHOLD } from './constants'
 export {
   getDashboardState,

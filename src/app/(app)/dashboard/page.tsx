@@ -5,6 +5,7 @@ import {
   DashboardKpiRow,
   DashboardTodoList,
   DashboardWelcomeVideoCard,
+  PreparationDashboard,
   WELCOME_VIDEO_DONE_THRESHOLD,
   getBuyerPipelineCounts,
   getDashboardState,
@@ -27,9 +28,18 @@ export default async function DashboardPage() {
     return <ConversionDashboard firstName={session.firstName} />
   }
 
-  // Fases 2d/e/f take over the remaining kinds; until then, fall back to
+  if (state.kind === 'in_preparation') {
+    return (
+      <PreparationDashboard
+        firstName={session.firstName}
+        preparation={state.preparation}
+      />
+    )
+  }
+
+  // Fases 2e/f take over the remaining kinds; until then, fall back to
   // the operational KPIs + to-do list so the existing dashboard keeps
-  // working for accounts already past the "no_subscription" state.
+  // working for accounts already past preparation.
   const [todos, buyerPipelineCounts, valuation, subscription] =
     await Promise.all([
       getDashboardTodos(session.user.id),
