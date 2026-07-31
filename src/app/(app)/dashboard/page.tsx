@@ -1,11 +1,13 @@
 import { type Metadata } from 'next'
 
 import {
+  ConversionDashboard,
   DashboardKpiRow,
   DashboardTodoList,
   DashboardWelcomeVideoCard,
   WELCOME_VIDEO_DONE_THRESHOLD,
   getBuyerPipelineCounts,
+  getDashboardState,
   getDashboardTodos,
   getDashboardValuation,
 } from '@features/dashboard'
@@ -19,7 +21,15 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const session = await requireSession()
+  const state = await getDashboardState(session.user.id)
 
+  if (state.kind === 'no_subscription') {
+    return <ConversionDashboard firstName={session.firstName} />
+  }
+
+  // Fases 2d/e/f take over the remaining kinds; until then, fall back to
+  // the operational KPIs + to-do list so the existing dashboard keeps
+  // working for accounts already past the "no_subscription" state.
   const [todos, buyerPipelineCounts, valuation, subscription] =
     await Promise.all([
       getDashboardTodos(session.user.id),
