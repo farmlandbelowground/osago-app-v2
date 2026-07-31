@@ -3,9 +3,17 @@ import { redirect } from 'next/navigation'
 import { type ReactNode } from 'react'
 
 import { getCompany } from '@features/company/queries'
+import {
+  getIdentityStatus,
+  type IdentityStatus,
+} from '@features/identity'
 import { ImpersonationBanner } from '@features/impersonation'
 import { CustomerAccessGuard, Sidebar } from '@features/navigation'
 import { WELKOM_PATHS } from '@features/onboarding'
+import {
+  getPreparationState,
+  type PreparationState,
+} from '@features/preparation'
 import { ACCOUNT_PATH } from '@features/subscriptions/constants'
 import {
   firstAllowedCustomerPage,
@@ -53,15 +61,21 @@ export default async function AppLayout({ children }: Props) {
   // client-side navigation (a shared layout is not re-run across <Link> nav).
   let lockReason: LockReason = null
   let allowedPaths: string[] | null = null
+  let preparation: PreparationState | undefined
+  let identityStatus: IdentityStatus | undefined
 
   if (session.role === 'customer' && !isMedewerker) {
-    const [subscription, invoices] = await Promise.all([
+    const [subscription, invoices, prep, identity] = await Promise.all([
       getSubscription(session.user.id),
       getOwnInvoices(),
+      getPreparationState(session.user.id),
+      getIdentityStatus(session.user.id),
     ])
 
     lockReason = lockStatus(subscription, invoices)
     allowedPaths = getAllowedCustomerPages(subscription)
+    preparation = prep
+    identityStatus = identity.status
 
     if (lockReason) {
       if (!lockPermitsPath(lockReason, pathname)) {
@@ -89,9 +103,11 @@ export default async function AppLayout({ children }: Props) {
           allowedPaths={allowedPaths}
           email={session.user.email ?? ''}
           firstName={session.firstName}
+          identityStatus={identityStatus}
           isMedewerker={isMedewerker}
           lastName={session.lastName}
           photo={session.photo}
+          preparation={preparation}
         />
         {session.role === 'customer' && !isMedewerker && (
           <CustomerAccessGuard
