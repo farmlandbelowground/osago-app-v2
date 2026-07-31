@@ -2,19 +2,13 @@ import { type Metadata } from 'next'
 
 import {
   ConversionDashboard,
-  DashboardKpiRow,
-  DashboardTodoList,
-  DashboardWelcomeVideoCard,
   PreparationDashboard,
+  SalesDashboard,
   VerificationRequiredDashboard,
-  WELCOME_VIDEO_DONE_THRESHOLD,
-  getBuyerPipelineCounts,
   getDashboardState,
-  getDashboardTodos,
-  getDashboardValuation,
 } from '@features/dashboard'
-import { hasWerkruimteAccess } from '@features/subscriptions/lib/hasWerkruimteAccess'
-import { getSubscription } from '@features/subscriptions/queries'
+import { getCompany } from '@features/company/queries'
+import { getPipelineLeads } from '@features/leads'
 import { requireSession } from '@shared/auth/session'
 
 export const metadata: Metadata = {
@@ -47,31 +41,18 @@ export default async function DashboardPage() {
     )
   }
 
-  // Fase 2f takes over the in_sales kind; until then, fall back to the
-  // operational KPIs + to-do list.
-  const [todos, buyerPipelineCounts, valuation, subscription] =
-    await Promise.all([
-      getDashboardTodos(session.user.id),
-      getBuyerPipelineCounts(session.user.id),
-      getDashboardValuation(session.user.id),
-      getSubscription(session.user.id),
-    ])
+  // in_sales — pipeline kanban + operational to-dos + stage-matched upsells
+  const [leads, company] = await Promise.all([
+    getPipelineLeads(session.user.id),
+    getCompany(session.user.id),
+  ])
 
   return (
-    <main className="main">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Welkom, {session.firstName}.</h1>
-        </div>
-      </div>
-      <DashboardKpiRow
-        counts={buyerPipelineCounts}
-        hasWerkruimteAccess={hasWerkruimteAccess(subscription)}
-        valuation={valuation}
-      />
-      {todos.filter(todo => todo.done).length <
-        WELCOME_VIDEO_DONE_THRESHOLD && <DashboardWelcomeVideoCard />}
-      <DashboardTodoList todos={todos} />
-    </main>
+    <SalesDashboard
+      companyHasName={Boolean(company?.name?.trim())}
+      firstName={session.firstName}
+      isMedewerker={Boolean(session.impersonatedBy)}
+      leads={leads}
+    />
   )
 }
