@@ -4770,3 +4770,15 @@ details[open] > summary > .advanced-fin-chevron {
   font-size: 12px; color: var(--muted); margin-top: 10px;
   display: flex; align-items: center; gap: 6px;
 }
+.prep-done {
+  display: flex; align-items: center; gap: 11px;
+  background: var(--green-soft); border: 1px solid var(--green-light);
+  border-radius: 10px; padding: 12px 16px;
+  font-size: 14px; font-weight: 500; color: var(--green-dark);
+  margin: 26px 0 16px;
+}
+.prep-done-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--green); color: #fff;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}

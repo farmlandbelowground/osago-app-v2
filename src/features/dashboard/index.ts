@@ -3,6 +3,7 @@ export { DashboardKpiRow } from './components/DashboardKpiRow'
 export { DashboardTodoList } from './components/DashboardTodoList'
 export { DashboardWelcomeVideoCard } from './components/DashboardWelcomeVideoCard'
 export { PreparationDashboard } from './components/PreparationDashboard'
+export { VerificationRequiredDashboard } from './components/VerificationRequiredDashboard'
 export { WELCOME_VIDEO_DONE_THRESHOLD } from './constants'
 export {
   getDashboardState,

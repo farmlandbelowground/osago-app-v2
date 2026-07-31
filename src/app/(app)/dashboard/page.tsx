@@ -6,6 +6,7 @@ import {
   DashboardTodoList,
   DashboardWelcomeVideoCard,
   PreparationDashboard,
+  VerificationRequiredDashboard,
   WELCOME_VIDEO_DONE_THRESHOLD,
   getBuyerPipelineCounts,
   getDashboardState,
@@ -37,9 +38,17 @@ export default async function DashboardPage() {
     )
   }
 
-  // Fases 2e/f take over the remaining kinds; until then, fall back to
-  // the operational KPIs + to-do list so the existing dashboard keeps
-  // working for accounts already past preparation.
+  if (state.kind === 'verification_required') {
+    return (
+      <VerificationRequiredDashboard
+        firstName={session.firstName}
+        identity={state.identity}
+      />
+    )
+  }
+
+  // Fase 2f takes over the in_sales kind; until then, fall back to the
+  // operational KPIs + to-do list.
   const [todos, buyerPipelineCounts, valuation, subscription] =
     await Promise.all([
       getDashboardTodos(session.user.id),
