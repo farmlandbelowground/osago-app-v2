@@ -1,10 +1,7 @@
 import Link from 'next/link'
 import { type FC } from 'react'
 
-import {
-  PREPARATION_GROUPS,
-  type ScreenState,
-} from '@features/preparation'
+import { type ScreenState } from '@features/preparation'
 import { cn } from '@shared/utils/cn'
 
 import { type Props } from './types'
@@ -166,10 +163,9 @@ export const PreparationDashboard: FC<Props> = ({
         )}
 
         <div className="prep-groups">
-          {PREPARATION_GROUPS.map(group => {
+          {groups.map(group => {
             const groupScreens = screens.filter(s => s.group === group.id)
             const reached = groupScreens.some(s => s.status !== 'locked')
-            const done = groupScreens.filter(s => s.status === 'done').length
             return (
               <div className="prep-group" key={group.id}>
                 <div className="prep-group-head">
@@ -177,7 +173,7 @@ export const PreparationDashboard: FC<Props> = ({
                   <span className="deel-n">Stap {group.stepNumber}</span>
                   <span>· {group.label}</span>
                   <span className="prep-group-badge">
-                    {done}/{groupScreens.length}
+                    {group.done}/{group.total}
                   </span>
                 </div>
                 <div className="prep-list">

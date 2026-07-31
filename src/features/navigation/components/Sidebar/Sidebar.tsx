@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, type FC, type SVGProps } from 'react'
 
-import { PREPARATION_GROUPS, type ScreenState } from '@features/preparation'
+import { type ScreenState } from '@features/preparation'
 import { logout } from '@shared/auth/actions'
 import { Logo } from '@shared/components/Logo'
 import { cn } from '@shared/utils/cn'
@@ -242,7 +242,7 @@ export const Sidebar: FC<Props> = ({
                 )}
               </button>
               {prepOpen &&
-                PREPARATION_GROUPS.map(group => {
+                (preparation?.groups ?? []).map(group => {
                   const groupScreens = (preparation?.screens ?? []).filter(
                     s => s.group === group.id,
                   )

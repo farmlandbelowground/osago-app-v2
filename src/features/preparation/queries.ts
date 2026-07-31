@@ -2,6 +2,8 @@ import { getCompany } from '@features/company/queries'
 import { isCompanyProfileComplete } from '@features/dashboard/lib/computeDashboardTodos'
 import { DOCUMENT_PREFIXES, documentExistsByPrefix } from '@features/documents'
 import { getPresentationData } from '@features/presentation/queries'
+import { hasWerkruimteAccess } from '@features/subscriptions/lib/hasWerkruimteAccess'
+import { getSubscription } from '@features/subscriptions/queries'
 import { computeValuationProgress } from '@features/valuation/lib/computeValuationProgress'
 import {
   getCompanyValuationFields,
@@ -14,12 +16,21 @@ import {
   computePreparationState,
   type ScreenDoneFlags,
 } from './computePreparationState'
-import { type PreparationState } from './types'
+import { type PreparationGroupId, type PreparationState } from './types'
 
-// Composite per-screen done-flags for the six prep screens (docx §3 table).
+const VALUATION_ONLY_GROUPS: ReadonlySet<PreparationGroupId> = new Set([
+  'bedrijf',
+  'waardering',
+])
+
+// Composite per-screen done-flags for the prep screens (docx §3 table).
 // Individual conditions are already derived inside computeValuationProgress
 // and the document-existence checks — this aggregates them under the screen
 // ids the sidebar + dashboard consume.
+//
+// Valuation-only accounts (subscription without werkruimte-access) get the
+// truncated journey — Stap 1 (bedrijf) + Stap 2 (waardering) only, no
+// Stap 3 (presentatie) — per docx §0.
 export const getPreparationState = async (
   userId: string,
 ): Promise<PreparationState> => {
@@ -32,6 +43,7 @@ export const getPreparationState = async (
     memoDone,
     anonDone,
     presentation,
+    subscription,
   ] = await Promise.all([
     getCompany(userId),
     getFinancials(userId),
@@ -44,6 +56,7 @@ export const getPreparationState = async (
     ]),
     documentExistsByPrefix(userId, [DOCUMENT_PREFIXES.anonymousProfile]),
     getPresentationData(userId),
+    getSubscription(userId),
   ])
 
   const valuationMade = isValuationMade(valuationRecord.result)
@@ -72,5 +85,9 @@ export const getPreparationState = async (
     waarderingsrapport: hasValuationPdfInVault,
   }
 
-  return computePreparationState(flags)
+  const includeGroups = hasWerkruimteAccess(subscription)
+    ? undefined
+    : VALUATION_ONLY_GROUPS
+
+  return computePreparationState(flags, { includeGroups })
 }
